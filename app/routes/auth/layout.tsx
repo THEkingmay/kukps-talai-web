@@ -1,0 +1,24 @@
+import { useEffect } from "react";
+import { Outlet, useNavigate } from "react-router";
+import { useAuth } from "~/components/providers/AuthProvider";
+import Loading from "~/components/ui/Loading";
+
+export default function AuthLayout() {
+  const { user, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      navigate("/admin/dashboard", { replace: true });
+    }
+  }, [user, navigate, isLoading]);
+
+  if (isLoading) {
+    return <Loading />;
+  }
+  if (!user) {
+    return <Outlet />;
+  }
+
+  return null;
+}

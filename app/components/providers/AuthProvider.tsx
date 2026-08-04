@@ -1,0 +1,103 @@
+import { createContext, useContext, useState, useEffect } from "react";
+import type { User } from "~/types";
+import {
+  loginAction,
+  loginWithSessionAction,
+  registerAction,
+  logoutAction,
+} from "~/actions/auth.action";
+import Swal from "sweetalert2";
+
+interface AuthContextProps {
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    invite_code: string,
+  ) => Promise<void>;
+  user: User | null;
+}
+
+const AuthContext = createContext<AuthContextProps>({
+  isLoading: false,
+  login: async (_email, _password) => {},
+  logout: async () => {},
+  register: async (_email, _password, _invite_code) => {},
+  user: null,
+});
+
+export const useAuth = () => useContext(AuthContext);
+
+export default function AuthProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  useEffect(() => {
+    const checkSession = async () => {
+      setIsLoading(true);
+      const result = await loginWithSessionAction();
+      if (result.success) {
+        setUser(result.data.user);
+      }
+      setIsLoading(false);
+    };
+    checkSession();
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    setIsLoading(true);
+    const result = await loginAction(email, password);
+    setIsLoading(false);
+
+    if (!result.success) {
+      Swal.fire({
+        icon: "error",
+        title: "เข้าสู่ระบบไม่สำเร็จ",
+        text: result.error,
+      });
+      return;
+    }
+
+    setUser(result.data.user);
+  };
+
+  const register = async (
+    email: string,
+    password: string,
+    invite_code: string,
+  ) => {
+    setIsLoading(true);
+    const result = await registerAction(email, password, invite_code);
+    setIsLoading(false);
+
+    if (!result.success) {
+      Swal.fire({
+        icon: "error",
+        title: "สมัครสมาชิกไม่สำเร็จ",
+        text: result.error,
+      });
+      return;
+    }
+
+    setUser(result.data.user);
+    Swal.fire({ icon: "success", title: "สมัครสมาชิกสำเร็จ" });
+  };
+
+  const logout = async () => {
+    setIsLoading(true);
+    await logoutAction();
+    setIsLoading(false);
+    setUser(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ isLoading, login, logout, register, user }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
