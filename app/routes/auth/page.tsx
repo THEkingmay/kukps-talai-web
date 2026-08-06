@@ -1,7 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "~/components/providers/AuthProvider";
-import { useNavigate, Link } from "react-router";
+import { Link } from "react-router";
 import Swal from "sweetalert2";
+
+export function meta() {
+  return [
+    { title: "เข้าสู่ระบบผู้ดูแลระบบ — KUKPS smart talai" },
+    { name: "description", content: "ระบบควบคุมและบริหารจัดการ KUKPS smart talai มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตกำแพงแสน" },
+  ];
+}
 
 export default function AuthPage() {
   const { login, register, isLoading } = useAuth();
@@ -35,56 +42,59 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 font-sans">
-      {/* Top bar */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+    <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800 antialiased">
+      {/* Top Header Bar */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-20">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link
             to="/"
-            className="flex items-center gap-2.5 group"
+            className="flex items-center gap-3 group"
             id="auth-home-link"
           >
-            <div className="w-7 h-7 bg-sky-500 rounded flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 bg-emerald-600 rounded-lg flex items-center justify-center shrink-0 shadow-sm group-hover:bg-emerald-700 transition-colors">
               <svg
-                className="w-4 h-4 text-white"
+                className="w-5 h-5 text-white"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                strokeWidth={2.5}
+                strokeWidth={2.2}
               >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M12 3c4.97 0 9 4.03 9 9s-4.03 9-9 9-9-4.03-9-9 4.03-9 9-9z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 7v5l3 3"
+                  d="M8 7h8m-8 4h8m-4 4h4m1 5H7a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012 2v14a2 2 0 01-2 2z"
                 />
               </svg>
             </div>
-            <span className="text-sm font-semibold text-gray-900 tracking-tight group-hover:text-sky-600 transition-colors">
-              KUKPS Talai Transit
-            </span>
+            <div>
+              <span className="text-base font-bold text-slate-900 tracking-tight group-hover:text-emerald-700 transition-colors block leading-none">
+                KUKPS smart talai
+              </span>
+              <span className="text-[11px] font-mono uppercase tracking-wider text-emerald-700 font-medium mt-0.5 block">
+                มหาวิทยาลัยเกษตรศาสตร์
+              </span>
+            </div>
           </Link>
-          <span className="text-xs font-mono text-gray-400 uppercase tracking-widest select-none">
-            Admin Portal
-          </span>
+
+          <div className="flex items-center gap-2 px-2.5 py-1 rounded border border-slate-200 bg-slate-100/80">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span className="text-xs font-mono text-slate-600 uppercase tracking-widest select-none">
+              Admin Portal
+            </span>
+          </div>
         </div>
       </header>
 
-      {/* Center card */}
+      {/* Main Center Auth Surface */}
       <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-sm">
-          {/* Card */}
-          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-            {/* Header strip */}
-            <div className="px-7 pt-7 pb-5 border-b border-gray-100">
-              {/* Icon */}
-              <div className="w-10 h-10 bg-sky-50 border border-sky-100 rounded-lg flex items-center justify-center mb-4">
+        <div className="w-full max-w-md">
+          {/* Card Container */}
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            {/* Header Strip */}
+            <div className="px-8 pt-8 pb-6 bg-slate-50/60 border-b border-slate-100">
+              <div className="w-11 h-11 bg-emerald-50 border border-emerald-200/80 rounded-xl flex items-center justify-center mb-4 text-emerald-700">
                 <svg
-                  className="w-5 h-5 text-sky-500"
+                  className="w-6 h-6"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -105,23 +115,25 @@ export default function AuthPage() {
                   )}
                 </svg>
               </div>
-              <h1 className="text-lg font-semibold text-gray-900 tracking-tight">
-                {isRegister ? "ลงทะเบียนผู้ดูแลระบบ" : "เข้าสู่ระบบ"}
+              <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+                {isRegister ? "ลงทะเบียนผู้ดูแลระบบ" : "เข้าสู่ระบบผู้ดูแลระบบ"}
               </h1>
-              <p className="text-sm text-gray-400 mt-0.5">
-                {isRegister ? "กรอกรหัสเชิญจากผู้ดูแลระบบ" : "ระบบจัดการรถตะไล"}
+              <p className="text-xs text-slate-600 mt-1 font-normal">
+                {isRegister
+                  ? "กรอกข้อมูลและรหัสเชิญจากผู้ดูแลระบบเพื่อเปิดสิทธิ์"
+                  : "ระบบควบคุมและบริหารจัดการ KUKPS smart talai"}
               </p>
             </div>
 
             {/* Form */}
-            <form onSubmit={submit} className="px-7 py-6 space-y-4">
-              {/* Email */}
+            <form onSubmit={submit} className="px-8 py-6 space-y-4">
+              {/* Email Input */}
               <div className="space-y-1.5">
                 <label
                   htmlFor="auth-email"
-                  className="block text-xs font-medium text-gray-700"
+                  className="block text-xs font-semibold text-slate-700"
                 >
-                  อีเมล
+                  อีเมลสถาบัน / บุคลากร
                 </label>
                 <input
                   id="auth-email"
@@ -131,16 +143,16 @@ export default function AuthPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isLoading}
-                  placeholder="xxxx@ku.th"
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md bg-white text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 disabled:bg-gray-50 disabled:text-gray-400 transition-colors"
+                  placeholder="admin@ku.th"
+                  className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 disabled:bg-slate-50 disabled:text-slate-400 transition-colors"
                 />
               </div>
 
-              {/* Password */}
+              {/* Password Input */}
               <div className="space-y-1.5">
                 <label
                   htmlFor="auth-password"
-                  className="block text-xs font-medium text-gray-700"
+                  className="block text-xs font-semibold text-slate-700"
                 >
                   รหัสผ่าน
                 </label>
@@ -156,16 +168,16 @@ export default function AuthPage() {
                   minLength={8}
                   disabled={isLoading}
                   placeholder="อย่างน้อย 8 ตัวอักษร"
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md bg-white text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 disabled:bg-gray-50 disabled:text-gray-400 transition-colors"
+                  className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 disabled:bg-slate-50 disabled:text-slate-400 transition-colors"
                 />
               </div>
 
-              {/* Confirm Password — register only */}
+              {/* Confirm Password — register mode */}
               {isRegister && (
                 <div className="space-y-1.5">
                   <label
                     htmlFor="auth-confirm-password"
-                    className="block text-xs font-medium text-gray-700"
+                    className="block text-xs font-semibold text-slate-700"
                   >
                     ยืนยันรหัสผ่าน
                   </label>
@@ -179,19 +191,22 @@ export default function AuthPage() {
                     minLength={8}
                     disabled={isLoading}
                     placeholder="กรอกรหัสผ่านอีกครั้ง"
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md bg-white text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 disabled:bg-gray-50 disabled:text-gray-400 transition-colors"
+                    className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 disabled:bg-slate-50 disabled:text-slate-400 transition-colors"
                   />
                 </div>
               )}
 
-              {/* Invite code — register only */}
+              {/* Invite Code — register mode */}
               {isRegister && (
                 <div className="space-y-1.5">
                   <label
                     htmlFor="auth-invite-code"
-                    className="block text-xs font-medium text-gray-700"
+                    className="block text-xs font-semibold text-slate-700 flex items-center justify-between"
                   >
-                    รหัสเชิญ
+                    <span>รหัสเชิญ (Invite Code)</span>
+                    <span className="text-[10px] text-emerald-700 font-mono font-medium">
+                      จำเป็นสำหรับผู้สมัครใหม่
+                    </span>
                   </label>
                   <input
                     id="auth-invite-code"
@@ -202,17 +217,17 @@ export default function AuthPage() {
                     required
                     disabled={isLoading}
                     placeholder="xxxxxx"
-                    className="w-full px-3 py-2 text-sm font-mono border border-gray-200 rounded-md bg-white text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 disabled:bg-gray-50 disabled:text-gray-400 transition-colors"
+                    className="w-full px-3.5 py-2.5 text-sm font-mono tracking-widest uppercase border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 disabled:bg-slate-50 disabled:text-slate-400 transition-colors"
                   />
                 </div>
               )}
 
-              {/* Submit */}
+              {/* Submit Button */}
               <button
                 id="auth-submit-btn"
                 type="submit"
                 disabled={isLoading}
-                className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md text-sm font-medium text-white bg-sky-500 hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm"
+                className="w-full mt-3 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-600 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm active:scale-[0.99]"
               >
                 {isLoading ? (
                   <>
@@ -239,35 +254,37 @@ export default function AuthPage() {
                     กำลังดำเนินการ...
                   </>
                 ) : isRegister ? (
-                  "สมัครสมาชิก"
+                  "สร้างบัญชีผู้ดูแลระบบ"
                 ) : (
                   "เข้าสู่ระบบ"
                 )}
               </button>
             </form>
 
-            {/* Footer toggle */}
-            <div className="px-7 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-center">
+            {/* Footer Mode Switch */}
+            <div className="px-8 py-4 bg-slate-50/80 border-t border-slate-100 flex items-center justify-center">
               <button
                 id="auth-mode-toggle"
                 type="button"
                 onClick={switchMode}
                 disabled={isLoading}
-                className="text-xs text-gray-500 hover:text-sky-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                className="text-xs font-medium text-slate-600 hover:text-emerald-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isRegister
-                  ? "มีบัญชีอยู่แล้ว? เข้าสู่ระบบที่นี่"
-                  : "รับรหัสเชิญแล้ว? ลงทะเบียนที่นี่"}
+                  ? "มีบัญชีผู้ดูแลระบบอยู่แล้ว? เข้าสู่ระบบที่นี่"
+                  : "มีรหัสเชิญลงทะเบียน? สมัครสมาชิกที่นี่"}
               </button>
             </div>
           </div>
 
-          {/* Below card note */}
-          <p className="text-center text-xs font-mono text-gray-400 mt-5">
-            การเข้าถึงระบบนี้จำกัดเฉพาะเจ้าหน้าที่ที่ได้รับอนุญาต
+          {/* Sub-note */}
+          <p className="text-center text-[11px] font-mono text-slate-400 mt-6">
+            การเข้าถึงระบบนี้จำกัดเฉพาะเจ้าหน้าที่ที่ได้รับอนุญาต มก.กำแพงแสน
           </p>
         </div>
       </div>
     </div>
   );
 }
+
+

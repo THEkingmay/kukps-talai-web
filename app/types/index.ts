@@ -1,18 +1,19 @@
-export type UserRole = "admin" | "user";
+export type UserRole = "superadmin" | "admin" | "user";
 export type InviteStatus = "pending" | "accepted" | "rejected";
 export type CarStatus = "active" | "inactive" | "maintenance";
 
-export interface User {
-  id: string;
-  email: string;
-  role: UserRole;
-  createdAt: string;
+export interface User{
+    id: string;
+    email: string;
+    role: UserRole
+    status: "active" | "suspended" | "deleted";
+    createdAt: string;
 }
 
 export interface AdminInvite {
+  // ไม่แสดง code ผ่านหน้าจอ
   email: string;
   addedBy: string;
-  inviteCode: string;
   status: InviteStatus;
   createdAt: string;
 }
@@ -57,6 +58,6 @@ export interface CarHistoryLog {
 export interface SessionUserType {
   id: string;
   email: string;
-  role: "admin" | "user";
+  role: UserRole;
   loginAt: string; // timestampz
 }
