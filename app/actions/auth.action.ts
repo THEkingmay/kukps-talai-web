@@ -1,6 +1,7 @@
 import apiClient from "~/configs/axios";
 import axios from "axios";
 import type { User } from "~/types";
+
 export type ActionResult<T = unknown> =
   { success: true; data: T } | { success: false; error: string };
 
@@ -31,10 +32,16 @@ export async function loginAction(
   try {
     const res = await apiClient.post("/auth/login", { email, password });
     return { success: true, data: res.data };
-  } catch {
+  } catch (err) {
+    if(axios.isAxiosError(err)) {
+      return {
+        success: false,
+        error: err.response?.data?.message ?? "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ",
+      };
+    }
     return {
       success: false,
-      error: "กรุณาตรวจสอบอีเมลหรือรหัสผ่านใหม่อีกครั้ง",
+      error: "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ",
     };
   }
 }
@@ -117,4 +124,3 @@ export async function resetPasswordAction(
     };
   }
 }
-
