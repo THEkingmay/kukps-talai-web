@@ -66,3 +66,55 @@ export async function registerAction(
     };
   }
 }
+
+export async function requestResetPasswordAction(
+  email: string
+): Promise<ActionResult<{ message?: string }>> {
+  try {
+    const res = await apiClient.post("/auth/request-reset-password", { email });
+    return { success: true, data: res.data };
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      return {
+        success: false,
+        error:
+          err.response?.data?.message ??
+          err.response?.data?.error ??
+          "ไม่สามารถส่งคำขอรีเซ็ตรหัสผ่านได้ กรุณาตรวจสอบอีเมลอีกครั้ง",
+      };
+    }
+    return {
+      success: false,
+      error: "เกิดข้อผิดพลาดในการเชื่อมต่อระบบ",
+    };
+  }
+}
+
+export async function resetPasswordAction(
+  token: string,
+  newPassword: string
+): Promise<ActionResult<{ message?: string }>> {
+  try {
+    const res = await apiClient.post("/auth/reset-password", {
+      token,
+      newPassword,
+      password: newPassword,
+    });
+    return { success: true, data: res.data };
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      return {
+        success: false,
+        error:
+          err.response?.data?.message ??
+          err.response?.data?.error ??
+          "ลิงก์รีเซ็ตรหัสผ่านไม่ถูกต้องหรือหมดอายุแล้ว",
+      };
+    }
+    return {
+      success: false,
+      error: "เกิดข้อผิดพลาดในการรีเซ็ตรหัสผ่าน",
+    };
+  }
+}
+

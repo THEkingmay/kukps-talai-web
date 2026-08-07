@@ -10,5 +10,8 @@ export default [
   layout("routes/admin/layout.tsx", [
     route("admin/dashboard", "routes/admin/dashboard/page.tsx"),
   ]),
-  layout("routes/auth/layout.tsx", [route("auth", "routes/auth/page.tsx")]),
+  layout("routes/auth/layout.tsx", [
+    route("auth", "routes/auth/page.tsx"),
+    route("auth/reset-password", "routes/auth/reset_password/page.tsx"),
+  ]),
 ] satisfies RouteConfig;
