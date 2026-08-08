@@ -2,6 +2,16 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import Swal from "sweetalert2";
 import { resetPasswordAction } from "~/actions/auth.action";
+import {
+  Bus,
+  Eye,
+  EyeOff,
+  AlertTriangle,
+  CheckCircle2,
+  KeyRound,
+  Loader2,
+  ArrowLeft,
+} from "lucide-react";
 
 export function meta() {
   return [
@@ -45,19 +55,7 @@ function Header() {
       <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3 group">
           <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center shrink-0 shadow-xs group-hover:bg-emerald-700 transition-colors">
-            <svg
-              className="w-4 h-4 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2.2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M8 7h8m-8 4h8m-4 4h4m1 5H7a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012 2v14a2 2 0 01-2 2z"
-              />
-            </svg>
+            <Bus className="w-4 h-4 text-white" />
           </div>
           <div>
             <span className="text-sm font-bold text-slate-900 tracking-tight group-hover:text-emerald-700 transition-colors block leading-none">
@@ -80,58 +78,12 @@ function Header() {
   );
 }
 
-/** Eye Icon for Password Input */
-function EyeToggleIcon({ show }: { show: boolean }) {
-  return (
-    <svg
-      className="w-4 h-4 text-slate-400 hover:text-slate-600 transition-colors"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={1.8}
-    >
-      {show ? (
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22"
-        />
-      ) : (
-        <>
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-          />
-        </>
-      )}
-    </svg>
-  );
-}
-
 /** Invalid / Missing Token View */
 function InvalidTokenCard() {
   return (
     <div className="bg-white border border-rose-200/80 rounded-2xl p-8 text-center shadow-xs">
       <div className="w-12 h-12 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center mx-auto mb-4 text-rose-600">
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-          />
-        </svg>
+        <AlertTriangle className="w-6 h-6" />
       </div>
       <h2 className="text-base font-bold text-slate-900 tracking-tight">
         ไม่พบโทเคนรีเซ็ตรหัสผ่าน
@@ -141,9 +93,10 @@ function InvalidTokenCard() {
       </p>
       <Link
         to="/auth"
-        className="mt-6 inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] transition-all shadow-xs"
+        className="mt-6 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] transition-all shadow-xs"
       >
-        กลับไปหน้าเข้าสู่ระบบ
+        <ArrowLeft className="w-4 h-4" />
+        <span>กลับไปหน้าเข้าสู่ระบบ</span>
       </Link>
     </div>
   );
@@ -155,19 +108,7 @@ function SuccessCard() {
   return (
     <div className="bg-white border border-slate-200/90 rounded-2xl p-8 text-center shadow-xs">
       <div className="w-12 h-12 bg-emerald-50 border border-emerald-200/80 rounded-xl flex items-center justify-center mx-auto mb-4 text-emerald-600">
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2.2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M5 13l4 4L19 7"
-          />
-        </svg>
+        <CheckCircle2 className="w-6 h-6" />
       </div>
       <h2 className="text-lg font-bold text-slate-900 tracking-tight">
         ตั้งรหัสผ่านใหม่สำเร็จ
@@ -258,7 +199,7 @@ export default function ResetPasswordPage() {
         <div className="w-full max-w-md">
           {isInitializing ? (
             <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center">
-              <div className="w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <Loader2 className="w-5 h-5 text-emerald-600 animate-spin mx-auto mb-3" />
               <p className="text-xs text-slate-500 font-mono">กำลังตรวจสอบลิงก์...</p>
             </div>
           ) : !token ? (
@@ -271,19 +212,7 @@ export default function ResetPasswordPage() {
               {/* Card Title Header */}
               <div className="px-8 pt-8 pb-6 bg-slate-50/60 border-b border-slate-100">
                 <div className="w-10 h-10 bg-emerald-50 border border-emerald-200/80 rounded-xl flex items-center justify-center mb-3.5 text-emerald-700">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={1.8}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-                    />
-                  </svg>
+                  <KeyRound className="w-5 h-5" />
                 </div>
                 <h1 className="text-lg font-bold text-slate-900 tracking-tight">
                   ตั้งรหัสผ่านใหม่
@@ -322,9 +251,13 @@ export default function ResetPasswordPage() {
                       tabIndex={-1}
                       onClick={() => setShowPassword(!showPassword)}
                       aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors"
                     >
-                      <EyeToggleIcon show={showPassword} />
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -355,9 +288,13 @@ export default function ResetPasswordPage() {
                       tabIndex={-1}
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       aria-label={showConfirmPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors"
                     >
-                      <EyeToggleIcon show={showConfirmPassword} />
+                      {showConfirmPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -395,27 +332,8 @@ export default function ResetPasswordPage() {
                 >
                   {isLoading ? (
                     <>
-                      <svg
-                        className="animate-spin w-4 h-4 text-white/80"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      กำลังบันทึกรหัสผ่านใหม่...
+                      <Loader2 className="w-4 h-4 text-white animate-spin" />
+                      <span>กำลังบันทึกรหัสผ่านใหม่...</span>
                     </>
                   ) : (
                     "บันทึกรหัสผ่านใหม่"
@@ -427,9 +345,10 @@ export default function ResetPasswordPage() {
               <div className="px-8 py-4 bg-slate-50/80 border-t border-slate-100 flex items-center justify-center">
                 <Link
                   to="/auth"
-                  className="text-xs font-medium text-slate-600 hover:text-emerald-700 transition-colors"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-emerald-700 transition-colors"
                 >
-                  ← กลับไปยังหน้าเข้าสู่ระบบ
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>กลับไปยังหน้าเข้าสู่ระบบ</span>
                 </Link>
               </div>
             </div>

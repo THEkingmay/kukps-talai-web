@@ -3,8 +3,9 @@ import Navbar from "~/components/layout/Navbar";
 import { useAuth } from "~/components/providers/AuthProvider";
 import AdminInviteComponent from "./components/admin-invite.component";
 import CarsComponent from "./components/cars.component";
-import RoutesComponent from "./components/routes.compoentn";
+import RoutesComponent from "./components/routes.component";
 import UserComponent from "./components/user.component";
+import { Users, UserPlus, Bus, Route as RouteIcon, ShieldAlert } from "lucide-react";
 
 export function meta() {
   return [
@@ -74,13 +75,7 @@ export default function DashboardRoute() {
             subtitle="User Accounts"
             value={isSuperAdmin ? "จัดการผู้ใช้" : "จำกัดสิทธิ์"}
             isLocked={!isSuperAdmin}
-            icon={
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
-              />
-            }
+            icon={<Users className="w-5 h-5" />}
             isActive={activeTab === "users"}
             onClick={() => setActiveTab("users")}
           />
@@ -89,41 +84,23 @@ export default function DashboardRoute() {
             subtitle="Admin Invites"
             value={isSuperAdmin ? "จัดการสิทธิ์" : "จำกัดสิทธิ์"}
             isLocked={!isSuperAdmin}
-            icon={
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-              />
-            }
+            icon={<UserPlus className="w-5 h-5" />}
             isActive={activeTab === "invites"}
             onClick={() => setActiveTab("invites")}
           />
           <StatCard
             title="รถตะไลสวัสดิการ"
             subtitle="Active Fleet"
-            value="3 คัน"
-            icon={
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.676v6.676m0-6.676h3.454c.456 0 .868.27 1.05.688l.848 1.95"
-              />
-            }
+            value="จัดการรถตะไล"
+            icon={<Bus className="w-5 h-5" />}
             isActive={activeTab === "cars"}
             onClick={() => setActiveTab("cars")}
           />
           <StatCard
             title="สายการเดินรถ"
             subtitle="Campus Routes"
-            value="2 เส้นทาง"
-            icon={
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 6.75V15m6-6v8.25m.503-14.25l4.372 2.186a1.125 1.125 0 01.625 1.007V19.5a1.125 1.125 0 01-1.55 1.037l-4.52-1.808a1.125 1.125 0 00-.819 0l-4.593 1.837a1.125 1.125 0 01-1.033-.146l-4.372-2.186A1.125 1.125 0 012.25 17.25V4.5a1.125 1.125 0 011.55-1.037l4.52 1.808a1.125 1.125 0 00.819 0l4.593-1.837a1.125 1.125 0 011.033.146z"
-              />
-            }
+            value="จัดการเส้นทาง"
+            icon={<RouteIcon className="w-5 h-5" />}
             isActive={activeTab === "routes"}
             onClick={() => setActiveTab("routes")}
           />
@@ -140,22 +117,11 @@ export default function DashboardRoute() {
                 : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
             }`}
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
-              />
-            </svg>
+            <Users className="w-4 h-4" />
             <span>ผู้ใช้งานระบบ</span>
             {!isSuperAdmin && (
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-amber-50 text-amber-800 border border-amber-200">
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
+                <ShieldAlert className="w-3 h-3 text-amber-600" />
                 Super Admin
               </span>
             )}
@@ -170,22 +136,11 @@ export default function DashboardRoute() {
                 : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
             }`}
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-              />
-            </svg>
+            <UserPlus className="w-4 h-4" />
             <span>จัดการรหัสเชิญ</span>
             {!isSuperAdmin && (
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-amber-50 text-amber-800 border border-amber-200">
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
+                <ShieldAlert className="w-3 h-3 text-amber-600" />
                 Super Admin
               </span>
             )}
@@ -200,19 +155,7 @@ export default function DashboardRoute() {
                 : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
             }`}
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.676v6.676m0-6.676h3.454c.456 0 .868.27 1.05.688l.848 1.95"
-              />
-            </svg>
+            <Bus className="w-4 h-4" />
             <span>การจัดการยานพาหนะ</span>
           </button>
 
@@ -225,19 +168,7 @@ export default function DashboardRoute() {
                 : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
             }`}
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 6.75V15m6-6v8.25m.503-14.25l4.372 2.186a1.125 1.125 0 01.625 1.007V19.5a1.125 1.125 0 01-1.55 1.037l-4.52-1.808a1.125 1.125 0 00-.819 0l-4.593 1.837a1.125 1.125 0 01-1.033-.146l-4.372-2.186A1.125 1.125 0 012.25 17.25V4.5a1.125 1.125 0 011.55-1.037l4.52 1.808a1.125 1.125 0 00.819 0l4.593-1.837a1.125 1.125 0 011.033.146z"
-              />
-            </svg>
+            <RouteIcon className="w-4 h-4" />
             <span>สายการเดินรถ</span>
           </button>
         </div>
@@ -303,15 +234,7 @@ function StatCard({
               : "bg-emerald-50 text-emerald-800"
           }`}
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            {icon}
-          </svg>
+          {icon}
         </div>
       </div>
 

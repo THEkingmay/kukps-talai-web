@@ -1,9 +1,23 @@
 import { Link } from "react-router";
+import {
+  Bus,
+  ArrowRight,
+  Download,
+  UserCheck,
+  MapPin,
+  Clock,
+  Map,
+  Smartphone,
+} from "lucide-react";
 
 export function meta() {
   return [
     { title: "KUKPS smart talai — ระบบติดตามรถตะไล มก.กำแพงแสน" },
-    { name: "description", content: "แอปพลิเคชันติดตามตำแหน่งและตารางเวลาการเดินรถสวัสดิการตะไล มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตกำแพงแสน" },
+    {
+      name: "description",
+      content:
+        "แอปพลิเคชันติดตามตำแหน่งและตารางเวลาการเดินรถสวัสดิการตะไล มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตกำแพงแสน",
+    },
   ];
 }
 
@@ -27,19 +41,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-emerald-600 rounded-lg flex items-center justify-center shrink-0 shadow-sm shadow-emerald-600/20">
-              <svg
-                className="w-5 h-5 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2.2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8 7h8m-8 4h8m-4 4h4m1 5H7a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012 2v14a2 2 0 01-2 2z"
-                />
-              </svg>
+              <Bus className="w-5 h-5 text-white" />
             </div>
             <div>
               <span className="text-base font-bold text-slate-900 tracking-tight block leading-none">
@@ -56,19 +58,7 @@ export default function Home() {
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-all duration-200"
           >
             <span>เข้าสู่ระบบผู้ดูแล</span>
-            <svg
-              className="w-3.5 h-3.5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-              />
-            </svg>
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       </header>
@@ -106,15 +96,8 @@ export default function Home() {
                 onClick={handleDownload}
                 className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-lg text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-600 transition-all shadow-sm active:scale-[0.99]"
               >
-                {/* Android Icon */}
-                <svg
-                  className="w-5 h-5 text-emerald-100"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.552 0 .9997.4482.9997.9993s-.4477.9997-.9997.9997zm-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.552 0 .9997.4482.9997.9993s-.4476.9997-.9997.9997zm11.4045-6.02l1.9973-3.4592c.1256-.2176.051-.4956-.1666-.6212-.2177-.1256-.4957-.051-.6213.1666l-2.0298 3.5155c-1.4883-.6796-3.1554-1.0607-4.9101-1.0607s-3.4218.3811-4.9101 1.0607l-2.0298-3.5155c-.1256-.2176-.4036-.2922-.6213-.1666-.2176.1256-.2922.4036-.1666.6212l1.9973 3.4592c-3.1706 1.7371-5.3039 4.9575-5.5907 8.7042h22.6423c-.2868-3.7467-2.4201-6.9671-5.5907-8.7042z" />
-                </svg>
-                ดาวน์โหลดแอป Android (.APK)
+                <Download className="w-5 h-5 text-emerald-100" />
+                <span>ดาวน์โหลดแอป Android (.APK)</span>
               </button>
 
               <Link
@@ -122,20 +105,8 @@ export default function Home() {
                 id="home-admin-btn"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg text-sm font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-600 transition-all"
               >
-                <svg
-                  className="w-4 h-4 text-slate-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                เข้าสู่ระบบผู้ดูแลระบบ
+                <UserCheck className="w-4 h-4 text-slate-500" />
+                <span>เข้าสู่ระบบผู้ดูแลระบบ</span>
               </Link>
             </div>
 
@@ -160,46 +131,22 @@ export default function Home() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <FeatureCard
-              icon={
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-                />
-              }
+              Icon={MapPin}
               title="เช็กตำแหน่งเรียลไทม์"
               description="มองเห็นพิกัดของรถตะไลทุกคันบนแผนที่ campus แบบสดๆ ไม่ต้องยืนรอลุ้น"
             />
             <FeatureCard
-              icon={
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              }
+              Icon={Clock}
               title="คำนวณเวลาถึงป้าย"
               description="ทราบเวลาประมาณการที่รถจะมาถึงป้ายถัดไปได้แม่นยำ วางแผนเวลาเรียนได้เป๊ะ"
             />
             <FeatureCard
-              icon={
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                />
-              }
+              Icon={Map}
               title="แผนที่สายการเดินรถ"
               description="รวมข้อมูลเส้นทางเดินรถทุกสายใน มก.กำแพงแสน เข้าใจง่าย ครอบคลุมทุกคณะ"
             />
             <FeatureCard
-              icon={
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-                />
-              }
+              Icon={Smartphone}
               title="ติดตั้งบน Android"
               description="ออกแบบไฟล์ติดตั้ง APK ให้มีขนาดเบา ใช้งานเสถียร ประหยัดแบตเตอรี่"
             />
@@ -273,11 +220,11 @@ export default function Home() {
 
 /* Feature Card Sub-component */
 function FeatureCard({
-  icon,
+  Icon,
   title,
   description,
 }: {
-  icon: React.ReactNode;
+  Icon: React.ComponentType<{ className?: string }>;
   title: string;
   description: string;
 }) {
@@ -285,15 +232,7 @@ function FeatureCard({
     <div className="bg-white border border-slate-200 rounded-xl p-5 hover:border-emerald-300 hover:shadow-sm transition-all group flex flex-col justify-between">
       <div className="space-y-3">
         <div className="w-10 h-10 bg-emerald-50 border border-emerald-100 rounded-lg flex items-center justify-center text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            {icon}
-          </svg>
+          <Icon className="w-5 h-5" />
         </div>
         <h3 className="text-base font-bold text-slate-900">
           {title}

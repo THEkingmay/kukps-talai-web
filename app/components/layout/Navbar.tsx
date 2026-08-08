@@ -1,6 +1,7 @@
 import { useAuth } from "~/components/providers/AuthProvider";
 import { Link } from "react-router";
 import Swal from "sweetalert2";
+import { Bus, LogOut } from "lucide-react";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -33,19 +34,7 @@ export default function Navbar() {
         {/* Left: Brand logo */}
         <Link to="/admin/dashboard" className="flex items-center gap-3 group">
           <div className="w-9 h-9 bg-emerald-600 rounded-lg flex items-center justify-center shrink-0 shadow-sm shadow-emerald-600/20 group-hover:bg-emerald-700 transition-colors">
-            <svg
-              className="w-5 h-5 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2.2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M8 7h8m-8 4h8m-4 4h4m1 5H7a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 01-2 2v14a2 2 0 01-2 2z"
-              />
-            </svg>
+            <Bus className="w-5 h-5 text-white" />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -88,19 +77,7 @@ export default function Navbar() {
             id="nav-logout-btn"
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200/80 transition-colors"
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
-              />
-            </svg>
+            <LogOut className="w-4 h-4" />
             <span className="hidden sm:inline">ออกจากระบบ</span>
           </button>
         </div>

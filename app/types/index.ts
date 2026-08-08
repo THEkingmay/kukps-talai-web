@@ -36,17 +36,15 @@ export interface RoutePoint {
   timeToNextSecs: number | null;
 }
 
-export interface Car {
-  id: string;
-  carNumber: string;
-  carMqttUsername: string;
-  status: CarStatus;
-  routeId: string | null;
-  updatedBy: string | null;
-  createdAt: string;
-  updatedAt: string;
+export type ResponseCarData = {
+    routeId: string | null;
+    carNumber: string;
+    status: "active" | "inactive" | "maintenance";
+    createdAt: Date;
+    id: string;
+    updatedBy: string | null;
+    updatedAt: Date;
 }
-
 export interface CarHistoryLog {
   id: string;
   carId: string;

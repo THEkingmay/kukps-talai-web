@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import Swal from "sweetalert2";
 import { useAuth } from "~/components/providers/AuthProvider";
 import { requestResetPasswordAction } from "~/actions/auth.action";
+import { Bus, UserPlus, KeyRound, Lock, Mail, Loader2, ArrowLeft } from "lucide-react";
 
 type AuthMode = "login" | "register" | "forgot_password";
 
@@ -100,19 +101,7 @@ export default function AuthPage() {
             id="auth-home-link"
           >
             <div className="w-9 h-9 bg-emerald-600 rounded-lg flex items-center justify-center shrink-0 shadow-sm group-hover:bg-emerald-700 transition-colors">
-              <svg
-                className="w-5 h-5 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2.2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8 7h8m-8 4h8m-4 4h4m1 5H7a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012 2v14a2 2 0 01-2 2z"
-                />
-              </svg>
+              <Bus className="w-5 h-5 text-white" />
             </div>
             <div>
               <span className="text-base font-bold text-slate-900 tracking-tight group-hover:text-emerald-700 transition-colors block leading-none">
@@ -141,33 +130,13 @@ export default function AuthPage() {
             {/* Header Strip */}
             <div className="px-8 pt-8 pb-6 bg-slate-50/60 border-b border-slate-100">
               <div className="w-11 h-11 bg-emerald-50 border border-emerald-200/80 rounded-xl flex items-center justify-center mb-4 text-emerald-700">
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1.8}
-                >
-                  {mode === "register" ? (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                    />
-                  ) : mode === "forgot_password" ? (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-                    />
-                  ) : (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                    />
-                  )}
-                </svg>
+                {mode === "register" ? (
+                  <UserPlus className="w-6 h-6" />
+                ) : mode === "forgot_password" ? (
+                  <KeyRound className="w-6 h-6" />
+                ) : (
+                  <Lock className="w-6 h-6" />
+                )}
               </div>
               <h1 className="text-xl font-bold text-slate-900 tracking-tight">
                 {mode === "register"
@@ -189,19 +158,7 @@ export default function AuthPage() {
             {mode === "forgot_password" && resetSuccessEmail ? (
               <div className="px-8 py-8 text-center space-y-4">
                 <div className="w-12 h-12 bg-emerald-50 border border-emerald-200/80 rounded-full flex items-center justify-center mx-auto text-emerald-600">
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    />
-                  </svg>
+                  <Mail className="w-6 h-6" />
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-slate-900">
@@ -346,27 +303,8 @@ export default function AuthPage() {
                 >
                   {isLoading ? (
                     <>
-                      <svg
-                        className="animate-spin w-4 h-4 text-white/80"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      กำลังดำเนินการ...
+                      <Loader2 className="w-4 h-4 text-white animate-spin" />
+                      <span>กำลังดำเนินการ...</span>
                     </>
                   ) : mode === "register" ? (
                     "สร้างบัญชีผู้ดูแลระบบ"
@@ -387,9 +325,10 @@ export default function AuthPage() {
                   type="button"
                   onClick={() => switchMode("login")}
                   disabled={isLoading}
-                  className="text-xs font-medium text-slate-600 hover:text-emerald-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-emerald-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  ← กลับสู่หน้าเข้าสู่ระบบ
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>กลับสู่หน้าเข้าสู่ระบบ</span>
                 </button>
               ) : (
                 <button
