@@ -1,20 +1,18 @@
-import { Bus, CheckCircle2, Wrench, XCircle } from "lucide-react";
+import { Bus, CheckCircle2, XCircle } from "lucide-react";
 
 interface CarMetricsProps {
   total: number;
   active: number;
-  maintenance: number;
   inactive: number;
 }
 
 export default function CarMetrics({
   total,
   active,
-  maintenance,
   inactive,
 }: CarMetricsProps) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <MetricCard
         label="รถตะไลทั้งหมด"
         value={total}
@@ -29,13 +27,6 @@ export default function CarMetrics({
         badgeColor="bg-emerald-50 text-emerald-800 border-emerald-200"
         icon={<CheckCircle2 className="w-4 h-4 text-emerald-600" />}
         activeDot
-      />
-      <MetricCard
-        label="ซ่อมบำรุง"
-        value={maintenance}
-        subtext="Maintenance"
-        badgeColor="bg-amber-50 text-amber-800 border-amber-200"
-        icon={<Wrench className="w-4 h-4 text-amber-600" />}
       />
       <MetricCard
         label="ปิดใช้งาน"

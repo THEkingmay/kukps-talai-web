@@ -7,8 +7,8 @@ import {
   Route,
   User,
   CheckCircle2,
-  Wrench,
   XCircle,
+  KeyRound,
 } from "lucide-react";
 
 interface CarItemCardProps {
@@ -18,6 +18,7 @@ interface CarItemCardProps {
   onOpenDetail: (id: string) => void;
   onOpenEdit: (car: ResponseCarData) => void;
   onDelete: (car: ResponseCarData) => void;
+  onOpenCredential: (id: string) => void;
 }
 
 export default function CarItemCard({
@@ -27,6 +28,7 @@ export default function CarItemCard({
   onOpenDetail,
   onOpenEdit,
   onDelete,
+  onOpenCredential,
 }: CarItemCardProps) {
   const routeName = car.routeId
     ? routeNameMap[car.routeId] || `สาย: ${car.routeId}`
@@ -98,13 +100,19 @@ export default function CarItemCard({
             <span>แก้ไข</span>
           </button>
           <button
+            onClick={() => onOpenCredential(car.id)}
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200/80 hover:bg-amber-100 active:bg-amber-200 transition-all shadow-2xs"
+            title="ดู MQTT Credentials"
+          >
+            <KeyRound className="w-3.5 h-3.5" />
+          </button>
+          <button
             onClick={() => onDelete(car)}
             disabled={deletingId === car.id}
             className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200/80 hover:bg-rose-100 active:bg-rose-200 transition-all disabled:opacity-50 shadow-2xs"
             title="ลบรถตะไล"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span>ลบ</span>
           </button>
         </div>
       </div>
@@ -119,13 +127,6 @@ function CarStatusBadge({ status }: { status: string }) {
         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 shrink-0">
           <CheckCircle2 className="w-3 h-3 text-emerald-600 animate-pulse" />
           พร้อมใช้งาน
-        </span>
-      );
-    case "maintenance":
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-amber-50 text-amber-800 border border-amber-200 shrink-0">
-          <Wrench className="w-3 h-3 text-amber-600" />
-          ซ่อมบำรุง
         </span>
       );
     case "inactive":

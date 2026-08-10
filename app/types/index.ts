@@ -1,13 +1,13 @@
 export type UserRole = "superadmin" | "admin" | "user";
 export type InviteStatus = "pending" | "accepted" | "rejected";
-export type CarStatus = "active" | "inactive" | "maintenance";
+export type CarStatus = "active" | "inactive";
 
-export interface User{
-    id: string;
-    email: string;
-    role: UserRole
-    status: "active" | "suspended" | "deleted";
-    createdAt: string;
+export interface User {
+  id: string;
+  email: string;
+  role: UserRole;
+  status: "active" | "suspended" | "deleted";
+  createdAt: string;
 }
 
 export interface AdminInvite {
@@ -37,14 +37,14 @@ export interface RoutePoint {
 }
 
 export type ResponseCarData = {
-    routeId: string | null;
-    carNumber: string;
-    status: "active" | "inactive" | "maintenance";
-    createdAt: Date;
-    id: string;
-    updatedBy: string | null;
-    updatedAt: Date;
-}
+  routeId: string | null;
+  carNumber: string;
+  status: "active" | "inactive";
+  createdAt: Date;
+  id: string;
+  updatedBy: string | null;
+  updatedAt: Date;
+};
 export interface CarHistoryLog {
   id: string;
   carId: string;

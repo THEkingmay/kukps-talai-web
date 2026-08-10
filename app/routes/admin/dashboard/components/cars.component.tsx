@@ -16,6 +16,7 @@ import CarItemCard from "./cars/CarItemCard";
 import CarDetailModal from "./cars/CarDetailModal";
 import CreateCarModal from "./cars/CreateCarModal";
 import EditCarModal from "./cars/EditCarModal";
+import CredentialModal from "./cars/CredentialModal";
 
 type StatusFilter = "all" | CarStatus;
 
@@ -45,15 +46,15 @@ export default function CarsComponent() {
   // Edit Form State
   const [editCarNumber, setEditCarNumber] = useState<string>("");
   const [editRouteId, setEditRouteId] = useState<string>("");
-  const [editStatus, setEditStatus] = useState<"inactive" | "maintenance">("maintenance");
 
   // Action Pending States
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [credentialCarId, setCredentialCarId] = useState<string | null>(null);
 
   // Prevent background scrolling when any modal is active
   const isAnyModalOpen =
-    isCreateModalOpen || Boolean(editingCar) || Boolean(selectedCarId);
+    isCreateModalOpen || Boolean(editingCar) || Boolean(selectedCarId) || Boolean(credentialCarId);
 
   useEffect(() => {
     if (isAnyModalOpen) {
@@ -115,16 +116,17 @@ export default function CarsComponent() {
   const metrics = useMemo(() => {
     const total = cars.length;
     const active = cars.filter((c) => c.status === "active").length;
-    const maintenance = cars.filter((c) => c.status === "maintenance").length;
     const inactive = cars.filter((c) => c.status === "inactive").length;
-    return { total, active, maintenance, inactive };
+    return { total, active, inactive };
   }, [cars]);
 
   // Filtered Cars
   const filteredCars = useMemo(() => {
     return cars.filter((c) => {
       const query = searchQuery.trim().toLowerCase();
-      const routeName = c.routeId ? (routeNameMap[c.routeId] || "").toLowerCase() : "";
+      const routeName = c.routeId
+        ? (routeNameMap[c.routeId] || "").toLowerCase()
+        : "";
       const matchesSearch =
         query === "" ||
         c.carNumber.toLowerCase().includes(query) ||
@@ -213,7 +215,6 @@ export default function CarsComponent() {
     setEditingCar(car);
     setEditCarNumber(car.carNumber);
     setEditRouteId(car.routeId || "");
-    setEditStatus(car.status === "inactive" ? "inactive" : "maintenance");
   };
 
   // Update Car Handler
@@ -231,7 +232,7 @@ export default function CarsComponent() {
             : editingCar.createdAt?.toISOString() || new Date().toISOString(),
         routeId: editRouteId,
         carNumber: editCarNumber.trim(),
-        status: editStatus,
+        status: editingCar.status,
       });
 
       if (res.success) {
@@ -310,7 +311,8 @@ export default function CarsComponent() {
   const formatDate = (dateInput?: Date | string | null) => {
     if (!dateInput) return "-";
     try {
-      const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+      const date =
+        typeof dateInput === "string" ? new Date(dateInput) : dateInput;
       return new Intl.DateTimeFormat("th-TH", {
         dateStyle: "medium",
         timeStyle: "short",
@@ -326,7 +328,6 @@ export default function CarsComponent() {
       <CarMetrics
         total={metrics.total}
         active={metrics.active}
-        maintenance={metrics.maintenance}
         inactive={metrics.inactive}
       />
 
@@ -388,13 +389,18 @@ export default function CarsComponent() {
                   onOpenDetail={handleOpenDetailModal}
                   onOpenEdit={handleOpenEdit}
                   onDelete={handleDeleteCar}
+                  onOpenCredential={setCredentialCarId}
                 />
               ))}
             </div>
           )}
         </div>
       </div>
-
+      <CredentialModal
+        isOpen={Boolean(credentialCarId)}
+        carId={credentialCarId || ""}
+        onClose={() => setCredentialCarId(null)}
+      />
       {/* Detail Modal (getCarById) */}
       <CarDetailModal
         isOpen={Boolean(selectedCarId)}
@@ -423,12 +429,10 @@ export default function CarsComponent() {
         car={editingCar}
         carNumber={editCarNumber}
         routeId={editRouteId}
-        status={editStatus}
         routes={routes}
         isSubmitting={isSubmitting}
         onChangeCarNumber={setEditCarNumber}
         onChangeRouteId={setEditRouteId}
-        onChangeStatus={setEditStatus}
         onSubmit={handleUpdateSubmit}
         onClose={() => setEditingCar(null)}
       />

@@ -95,7 +95,6 @@ export default function CarSearchToolbar({
           >
             <option value="all">ทุกสถานะ (All Status)</option>
             <option value="active">พร้อมใช้งาน (Active)</option>
-            <option value="maintenance">ซ่อมบำรุง (Maintenance)</option>
             <option value="inactive">ปิดใช้งาน (Inactive)</option>
           </select>
         </div>

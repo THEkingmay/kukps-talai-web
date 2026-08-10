@@ -84,7 +84,7 @@ export async function updateCar(
     createdAt: string;
     routeId: string;
     carNumber: string;
-    status: "inactive" | "maintenance";
+    status: "active" | "inactive";
   },
 ): Promise<ActionResult<{ data: ResponseCarData }>> {
   try {
