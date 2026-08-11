@@ -1,5 +1,5 @@
 import type { Route } from "~/types";
-import { Eye, Pencil, Trash2, Route as RouteIcon } from "lucide-react";
+import { Eye, Pencil, Trash2, Route as RouteIcon, MapPin } from "lucide-react";
 
 interface RouteItemCardProps {
   route: Route;
@@ -7,6 +7,7 @@ interface RouteItemCardProps {
   deletingId: string | null;
   onOpenDetail: (id: string) => void;
   onOpenEdit: (route: Route) => void;
+  onOpenPoints: (route: Route) => void;
   onDelete: (route: Route) => void;
   formatDate: (isoString?: string | null) => string;
 }
@@ -17,6 +18,7 @@ export default function RouteItemCard({
   deletingId,
   onOpenDetail,
   onOpenEdit,
+  onOpenPoints,
   onDelete,
   formatDate,
 }: RouteItemCardProps) {
@@ -49,6 +51,14 @@ export default function RouteItemCard({
         >
           <Eye className="w-3.5 h-3.5" />
           <span>ดูข้อมูล</span>
+        </button>
+        <button
+          onClick={() => onOpenPoints(route)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 hover:bg-emerald-100 active:bg-emerald-200 transition-all shadow-2xs"
+          title="จัดการจุดจอด"
+        >
+          <MapPin className="w-3.5 h-3.5" />
+          <span>จุดจอด</span>
         </button>
         <button
           onClick={() => onOpenEdit(route)}

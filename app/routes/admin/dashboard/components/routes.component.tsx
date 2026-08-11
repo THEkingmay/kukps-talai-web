@@ -14,6 +14,7 @@ import RouteDetailModal from "./routes/RouteDetailModal";
 import CreateRouteModal from "./routes/CreateRouteModal";
 import EditRouteModal from "./routes/EditRouteModal";
 import RouteItemCard from "./routes/RouteItemCard";
+import RoutePointModal from "./routes/RoutePoint.component";
 
 export default function RoutesComponent() {
   const [routes, setRoutes] = useState<Route[]>([]);
@@ -30,6 +31,9 @@ export default function RoutesComponent() {
   const [detailRoute, setDetailRoute] = useState<Route | null>(null);
   const [isDetailLoading, setIsDetailLoading] = useState<boolean>(false);
 
+  // Route Points State
+  const [pointsRoute, setPointsRoute] = useState<Route | null>(null);
+
   // Form & Action States
   const [newRouteName, setNewRouteName] = useState<string>("");
   const [editRouteName, setEditRouteName] = useState<string>("");
@@ -38,7 +42,7 @@ export default function RoutesComponent() {
 
   // Prevent background scrolling when any modal is active
   const isAnyModalOpen =
-    isCreateModalOpen || Boolean(editingRoute) || Boolean(selectedRouteId);
+    isCreateModalOpen || Boolean(editingRoute) || Boolean(selectedRouteId) || Boolean(pointsRoute);
 
   useEffect(() => {
     if (isAnyModalOpen) {
@@ -398,6 +402,7 @@ export default function RoutesComponent() {
                   setEditingRoute(r);
                   setEditRouteName(r.name);
                 }}
+                onOpenPoints={(r) => setPointsRoute(r)}
                 onDelete={handleDelete}
                 formatDate={formatDate}
               />
@@ -433,6 +438,13 @@ export default function RoutesComponent() {
         onChangeName={setEditRouteName}
         onSubmit={handleUpdateSubmit}
         onClose={() => setEditingRoute(null)}
+      />
+
+      {/* Points Modal */}
+      <RoutePointModal
+        isOpen={Boolean(pointsRoute)}
+        route={pointsRoute}
+        onClose={() => setPointsRoute(null)}
       />
     </div>
   );

@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
-import { X, Eye, EyeOff, Copy, Check, KeyRound, Loader2 } from "lucide-react";
+import {
+  X,
+  Eye,
+  EyeOff,
+  Copy,
+  Check,
+  KeyRound,
+  Loader2,
+  RefreshCw,
+} from "lucide-react";
 import apiClient from "~/configs/axios";
+import Swal from "sweetalert2";
 
 interface CredentialModalProps {
   isOpen: boolean;
@@ -24,6 +34,14 @@ export default function CredentialModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchCredentials = async () => {
+    apiClient
+      .get(`/cars/mqtt-credentials/${carId}`)
+      .then((res) => setCredentials(res.data.data))
+      .catch(() => setError("ไม่สามารถโหลดข้อมูล Credentials ได้"))
+      .finally(() => setIsLoading(false));
+  };
+
   useEffect(() => {
     if (!isOpen || !carId) return;
 
@@ -32,12 +50,7 @@ export default function CredentialModal({
     setCredentials(null);
     setShowPassword(false);
     setCopiedField(null);
-
-    apiClient
-      .get(`/cars/mqtt-credentials/${carId}`)
-      .then((res) => setCredentials(res.data.data))
-      .catch(() => setError("ไม่สามารถโหลดข้อมูล Credentials ได้"))
-      .finally(() => setIsLoading(false));
+    fetchCredentials();
   }, [isOpen, carId]);
 
   if (!isOpen) return null;
@@ -50,6 +63,48 @@ export default function CredentialModal({
     navigator.clipboard.writeText(value);
     setCopiedField(field);
     setTimeout(() => setCopiedField(null), 1500);
+  }
+
+  async function handleReset() {
+    const result = await Swal.fire({
+      title: "รีเซ็ต Credentials",
+      text: "คุณแน่ใจหรือไม่ว่าต้องการรีเซ็ต MQTT Credentials สำหรับรถคันนี้? ข้อมูลเก่าจะใช้ไม่ได้อีกต่อไป",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "รีเซ็ตเลย",
+      cancelButtonText: "ยกเลิก",
+      confirmButtonColor: "#dc2626",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        setIsLoading(true);
+        const res = await apiClient.post(
+          `/cars/mqtt-credentials/${carId}/reset`,
+        );
+
+        if (res.data.success) {
+          fetchCredentials();
+          Swal.fire({
+            toast: true,
+            position: "top-end",
+            icon: "success",
+            title: "รีเซ็ตข้อมูลสำเร็จ",
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        }
+      } catch (err: any) {
+        Swal.fire({
+          icon: "error",
+          title: "เกิดข้อผิดพลาด",
+          text:
+            err.response?.data?.message || "ไม่สามารถรีเซ็ต Credentials ได้",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
   }
 
   return (
@@ -71,7 +126,7 @@ export default function CredentialModal({
                 MQTT Credentials
               </h3>
               <p className="text-[10px] font-mono text-slate-400 tracking-wider">
-                {carId.length > 8 ? `${carId.slice(0, 8)}…` : carId}
+                จัดการรหัสผ่านและข้อมูลเชื่อมต่อ
               </p>
             </div>
           </div>
@@ -118,6 +173,13 @@ export default function CredentialModal({
           ) : (
             <>
               <CredentialField
+                label="Car ID"
+                value={carId}
+                isCopied={copiedField === "carId"}
+                onCopy={() => handleCopy(carId, "carId")}
+              />
+
+              <CredentialField
                 label="Username"
                 value={username}
                 isCopied={copiedField === "username"}
@@ -148,7 +210,17 @@ export default function CredentialModal({
           )}
         </div>
 
-        <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/70 flex justify-end">
+        <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/70 flex justify-between items-center">
+          <button
+            type="button"
+            onClick={handleReset}
+            disabled={isLoading || !credentials}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-600 hover:text-white hover:bg-rose-500 border border-transparent hover:border-rose-600 transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <RefreshCw className="w-3 h-3" />
+            รีเซ็ต
+          </button>
+
           <button
             type="button"
             onClick={onClose}
