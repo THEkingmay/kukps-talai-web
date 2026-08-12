@@ -50,6 +50,9 @@ function formatTime(date: Date) {
   });
 }
 
+// wss://api.talai-kukps.app
+// https://api.talai-kukps.app/cars
+
 export default function CarDetailMap({ car }: CarDetailMapProps) {
   const { currentLocation } = useCarLocation(WS_URL);
 

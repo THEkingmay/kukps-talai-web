@@ -53,30 +53,32 @@ L.Icon.Default.mergeOptions({
 });
 
 // Custom Icon builder to show sequence numbers
-const createSequenceIcon = (seqIndex: number, isPending: boolean = false, isStop: boolean = false) => {
+const createSequenceIcon = (seqText: string | number, isPending: boolean = false, isStop: boolean = false) => {
+  const text = String(seqText);
+
   if (isPending) {
     return L.divIcon({
       className: "custom-leaflet-icon",
-      html: `<div class="flex items-center justify-center w-8 h-8 rounded-full border-2 shadow-sm font-mono text-[11px] font-bold leading-none transition-all bg-amber-100 border-amber-500 text-amber-800">${seqIndex}</div>`,
-      iconSize: [32, 32],
-      iconAnchor: [16, 16],
+      html: `<div style="transform: translate(-50%, -50%);" class="flex items-center justify-center min-w-[32px] h-8 px-1.5 rounded-full border-2 shadow-sm font-mono text-[11px] font-bold leading-none transition-all bg-amber-100 border-amber-500 text-amber-800 whitespace-nowrap">${text}</div>`,
+      iconSize: [0, 0],
+      iconAnchor: [0, 0],
     });
   }
 
   if (isStop) {
     return L.divIcon({
       className: "custom-leaflet-icon",
-      html: `<div class="flex items-center justify-center w-8 h-8 rounded-full border-2 border-white shadow-sm font-mono text-[11px] font-bold leading-none transition-all bg-sky-500 text-white">${seqIndex}</div>`,
-      iconSize: [32, 32],
-      iconAnchor: [16, 16],
+      html: `<div style="transform: translate(-50%, -50%);" class="flex items-center justify-center min-w-[32px] h-8 px-1.5 rounded-full border-2 border-white shadow-sm font-mono text-[11px] font-bold leading-none transition-all bg-sky-500 text-white whitespace-nowrap">${text}</div>`,
+      iconSize: [0, 0],
+      iconAnchor: [0, 0],
     });
   }
 
   return L.divIcon({
     className: "custom-leaflet-icon",
-    html: `<div class="flex items-center justify-center w-5 h-5 rounded-full border-[1.5px] border-slate-300 bg-white shadow-sm font-mono text-[9px] font-bold leading-none transition-all text-slate-500">${seqIndex}</div>`,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
+    html: `<div style="transform: translate(-50%, -50%);" class="flex items-center justify-center min-w-[20px] h-5 px-1 rounded-full border-[1.5px] border-slate-300 bg-white shadow-sm font-mono text-[9px] font-bold leading-none transition-all text-slate-500 whitespace-nowrap">${text}</div>`,
+    iconSize: [0, 0],
+    iconAnchor: [0, 0],
   });
 };
 
@@ -100,7 +102,7 @@ function MapCenterer({ points }: { points: { lat: number; lng: number }[] }) {
   useEffect(() => {
     if (points.length > 0 && !hasCentered.current) {
       const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng]));
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 17 });
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 18 });
       hasCentered.current = true;
     }
   }, [points, map]);
@@ -391,6 +393,42 @@ export default function RoutePointModal({
     return Boolean(p?.name?.trim() || p?.timeToNextSecs);
   };
 
+  // Group points for Map rendering
+  const groupedPoints = (() => {
+    if (points.length > 0) {
+      const groups = new Map<string, { lat: number; lng: number; indices: number[]; isStop: boolean; names: string[] }>();
+      points.forEach((p, idx) => {
+        const key = `${p.lat},${p.lng}`;
+        if (!groups.has(key)) {
+          groups.set(key, { lat: p.lat, lng: p.lng, indices: [], isStop: false, names: [] });
+        }
+        const g = groups.get(key)!;
+        g.indices.push(idx + 1);
+        if (p.name) g.names.push(p.name);
+        if (isStopPoint(p.id)) {
+          g.isStop = true;
+        }
+      });
+      return Array.from(groups.values());
+    }
+    return [];
+  })();
+
+  const groupedPendingPoints = (() => {
+    if (points.length === 0 && pendingPoints.length > 0) {
+      const groups = new Map<string, { lat: number; lng: number; indices: number[] }>();
+      pendingPoints.forEach((p, idx) => {
+        const key = `${p.lat},${p.lng}`;
+        if (!groups.has(key)) {
+          groups.set(key, { lat: p.lat, lng: p.lng, indices: [] });
+        }
+        groups.get(key)!.indices.push(idx + 1);
+      });
+      return Array.from(groups.values());
+    }
+    return [];
+  })();
+
   // Derived state for Map
   const mapPoints =
     points.length > 0
@@ -448,7 +486,7 @@ export default function RoutePointModal({
 
             <MapContainer
               center={defaultCenter}
-              zoom={15}
+              zoom={17}
               style={{ height: "100%", width: "100%", zIndex: 0 }}
             >
               <TileLayer
@@ -458,41 +496,60 @@ export default function RoutePointModal({
               <MapClickHandler onMapClick={handleMapClick} />
 
               {/* Existing Points */}
-              {points.map((p, idx) => {
-                const isStop = isStopPoint(p.id);
+              {groupedPoints.map((g, idx) => {
+                const seqText = g.indices.join(",");
                 return (
                   <Marker
-                    key={p.id}
-                    position={[p.lat, p.lng]}
-                    icon={createSequenceIcon(idx + 1, false, isStop)}
+                    key={`grouped-${g.lat}-${g.lng}`}
+                    position={[g.lat, g.lng]}
+                    icon={createSequenceIcon(seqText, false, g.isStop)}
+                    eventHandlers={{
+                      click: (e) => {
+                        // อนุญาตให้คลิกจุดเดิมเพื่อแทรก/ต่อจุดที่พิกัดเดิมได้
+                        if (mode === "insert") {
+                          handleMapClick(e.latlng);
+                        }
+                      },
+                    }}
                   >
                     <Popup className="font-mono text-xs">
-                      <strong>ลำดับ: {idx + 1}</strong>
+                      <strong>ลำดับ: {seqText}</strong>
                       <br />
-                      ประเภท: {isStop ? "จุดจอดรถ (Stop)" : "จุดผ่าน (Point)"}
-                      <br />
-                      ชื่อ: {p.name || "ไม่มีชื่อ"}
-                      <br />
-                      SEQ: {p.sequence}
+                      ประเภท: {g.isStop ? "จุดจอดรถ (Stop)" : "จุดผ่าน (Point)"}
+                      {g.names.length > 0 && (
+                        <>
+                          <br />
+                          ชื่อ: {g.names.join(", ")}
+                        </>
+                      )}
                     </Popup>
                   </Marker>
                 );
               })}
 
               {/* Pending Points */}
-              {pendingPoints.map((p, idx) => (
-                <Marker
-                  key={`pending-${idx}`}
-                  position={[p.lat, p.lng]}
-                  icon={createSequenceIcon(idx + 1, true)}
-                >
-                  <Popup className="font-mono text-xs">
-                    <strong>จุดใหม่ลำดับ: {idx + 1}</strong>
-                    <br />
-                    SEQ: {p.sequence}
-                  </Popup>
-                </Marker>
-              ))}
+              {groupedPendingPoints.map((g, idx) => {
+                const seqText = g.indices.join(",");
+                return (
+                  <Marker
+                    key={`pending-grouped-${g.lat}-${g.lng}`}
+                    position={[g.lat, g.lng]}
+                    icon={createSequenceIcon(seqText, true)}
+                    eventHandlers={{
+                      click: (e) => {
+                        // อนุญาตให้คลิกจุดเดิมเพื่อสร้างเส้นทางวนกลับ (Loop)
+                        if (points.length === 0) {
+                          handleMapClick(e.latlng);
+                        }
+                      },
+                    }}
+                  >
+                    <Popup className="font-mono text-xs">
+                      <strong>จุดใหม่ลำดับ: {seqText}</strong>
+                    </Popup>
+                  </Marker>
+                );
+              })}
 
               {/* Lines connecting points */}
               {mapPoints.length > 1 && (
@@ -548,127 +605,132 @@ export default function RoutePointModal({
                   {points.map((p, idx) => {
                     const isStop = isStopPoint(p.id);
                     return (
-                    <div key={p.id}>
-                      <div
-                        className={`p-3 rounded-xl border transition-all ${
-                          updatingId === p.id 
-                            ? "bg-sky-50 border-sky-200" 
-                            : isStop 
-                              ? "bg-white border-sky-100 shadow-sm hover:border-sky-300"
-                              : "bg-white border-slate-100 shadow-2xs hover:border-slate-300 opacity-80 hover:opacity-100"
-                        }`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className={`w-7 h-7 rounded-full font-mono text-xs font-bold flex items-center justify-center shrink-0 border ${
-                            isStop 
-                              ? "bg-sky-500 text-white border-sky-600 shadow-sm"
-                              : "bg-slate-50 text-slate-500 border-slate-200"
-                          }`}>
-                            {idx + 1}
-                          </div>
-                          <div className="flex-1 space-y-2.5 min-w-0">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                              <div>
-                                <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                                  ชื่อจุด / ป้าย
-                                </label>
-                                <input
-                                  type="text"
-                                  value={editState[p.id]?.name || ""}
-                                  onChange={(e) =>
-                                    setEditState((prev) => ({
-                                      ...prev,
-                                      [p.id]: {
-                                        ...prev[p.id],
-                                        name: e.target.value,
-                                      },
-                                    }))
-                                  }
-                                  placeholder="เช่น หน้า มก."
-                                  className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                                  เวลาไปจุดถัดไป (วิ)
-                                </label>
-                                <input
-                                  type="number"
-                                  value={editState[p.id]?.timeToNextSecs || ""}
-                                  onChange={(e) =>
-                                    setEditState((prev) => ({
-                                      ...prev,
-                                      [p.id]: {
-                                        ...prev[p.id],
-                                        timeToNextSecs: e.target.value,
-                                      },
-                                    }))
-                                  }
-                                  placeholder="เช่น 120"
-                                  className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all font-mono"
-                                />
-                              </div>
+                      <div key={p.id}>
+                        <div
+                          className={`p-3 rounded-xl border transition-all ${
+                            updatingId === p.id
+                              ? "bg-sky-50 border-sky-200"
+                              : isStop
+                                ? "bg-white border-sky-100 shadow-sm hover:border-sky-300"
+                                : "bg-white border-slate-100 shadow-2xs hover:border-slate-300 opacity-80 hover:opacity-100"
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div
+                              className={`w-7 h-7 rounded-full font-mono text-xs font-bold flex items-center justify-center shrink-0 border ${
+                                isStop
+                                  ? "bg-sky-500 text-white border-sky-600 shadow-sm"
+                                  : "bg-slate-50 text-slate-500 border-slate-200"
+                              }`}
+                            >
+                              {idx + 1}
                             </div>
-
-                            <div className="flex items-center justify-between pt-1">
-                              <span className="text-[10px] font-mono text-slate-400">
-                                SEQ: {p.sequence}
-                              </span>
-                              <div className="flex items-center gap-1.5">
-                                {hasChanges(p.id) && (
-                                  <button
-                                    onClick={() =>
-                                      handleUpdateExistingPoint(p.id)
+                            <div className="flex-1 space-y-2.5 min-w-0">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div>
+                                  <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                                    ชื่อจุด / ป้าย
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={editState[p.id]?.name || ""}
+                                    onChange={(e) =>
+                                      setEditState((prev) => ({
+                                        ...prev,
+                                        [p.id]: {
+                                          ...prev[p.id],
+                                          name: e.target.value,
+                                        },
+                                      }))
                                     }
-                                    disabled={updatingId === p.id}
-                                    className="px-2.5 py-1 rounded-md text-[11px] font-semibold text-white bg-sky-600 hover:bg-sky-700 transition-all shadow-xs disabled:opacity-50 flex items-center gap-1"
-                                  >
-                                    {updatingId === p.id ? (
-                                      <Loader2 className="w-3 h-3 animate-spin" />
-                                    ) : (
-                                      <Save className="w-3 h-3" />
-                                    )}
-                                    บันทึก
-                                  </button>
-                                )}
-                                <button
-                                  onClick={() => handleDeletePoint(p.id)}
-                                  disabled={deletingId === p.id}
-                                  className="p-1.5 rounded-md text-slate-400 hover:text-rose-600 transition-colors disabled:opacity-50"
-                                  title="ลบจุดนี้"
-                                >
-                                  {deletingId === p.id ? (
-                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="w-3.5 h-3.5" />
+                                    placeholder="เช่น หน้า มก."
+                                    className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                                    เวลาไปจุดถัดไป (วิ)
+                                  </label>
+                                  <input
+                                    type="number"
+                                    value={
+                                      editState[p.id]?.timeToNextSecs || ""
+                                    }
+                                    onChange={(e) =>
+                                      setEditState((prev) => ({
+                                        ...prev,
+                                        [p.id]: {
+                                          ...prev[p.id],
+                                          timeToNextSecs: e.target.value,
+                                        },
+                                      }))
+                                    }
+                                    placeholder="เช่น 120"
+                                    className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all font-mono"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-between pt-1">
+                                <span className="text-[10px] font-mono text-slate-400">
+                                  SEQ: {p.sequence}
+                                </span>
+                                <div className="flex items-center gap-1.5">
+                                  {hasChanges(p.id) && (
+                                    <button
+                                      onClick={() =>
+                                        handleUpdateExistingPoint(p.id)
+                                      }
+                                      disabled={updatingId === p.id}
+                                      className="px-2.5 py-1 rounded-md text-[11px] font-semibold text-white bg-sky-600 hover:bg-sky-700 transition-all shadow-xs disabled:opacity-50 flex items-center gap-1"
+                                    >
+                                      {updatingId === p.id ? (
+                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                      ) : (
+                                        <Save className="w-3 h-3" />
+                                      )}
+                                      บันทึก
+                                    </button>
                                   )}
-                                </button>
+                                  <button
+                                    onClick={() => handleDeletePoint(p.id)}
+                                    disabled={deletingId === p.id}
+                                    className="p-1.5 rounded-md text-slate-400 hover:text-rose-600 transition-colors disabled:opacity-50"
+                                    title="ลบจุดนี้"
+                                  >
+                                    {deletingId === p.id ? (
+                                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    )}
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Insert Point Divider */}
-                      {idx < points.length - 1 && (
-                        <div className="flex justify-center my-1 relative group">
-                          <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-slate-100 group-hover:border-sky-200 transition-colors border-dashed" />
+                        {/* Insert Point Divider */}
+                        {idx < points.length - 1 && (
+                          <div className="flex justify-center my-1 relative group">
+                            <div className="absolute inset-0 flex items-center">
+                              <div className="w-full border-t border-slate-100 group-hover:border-sky-200 transition-colors border-dashed" />
+                            </div>
+                            <button
+                              onClick={() => {
+                                setMode("insert");
+                                setInsertAfterSeq(p.sequence);
+                                setInsertBeforeSeq(points[idx + 1].sequence);
+                              }}
+                              className="relative bg-white px-2 py-0.5 rounded-full text-[10px] font-semibold text-slate-400 group-hover:text-sky-600 border border-slate-200 group-hover:border-sky-300 transition-all flex items-center gap-1 opacity-0 group-hover:opacity-100 focus:opacity-100 shadow-2xs"
+                            >
+                              <Plus className="w-3 h-3" /> แทรกจุด
+                            </button>
                           </div>
-                          <button
-                            onClick={() => {
-                              setMode("insert");
-                              setInsertAfterSeq(p.sequence);
-                              setInsertBeforeSeq(points[idx + 1].sequence);
-                            }}
-                            className="relative bg-white px-2 py-0.5 rounded-full text-[10px] font-semibold text-slate-400 group-hover:text-sky-600 border border-slate-200 group-hover:border-sky-300 transition-all flex items-center gap-1 opacity-0 group-hover:opacity-100 focus:opacity-100 shadow-2xs"
-                          >
-                            <Plus className="w-3 h-3" /> แทรกจุด
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )})}
+                        )}
+                      </div>
+                    );
+                  })}
 
                   {/* Add to End Button (only if points exist) */}
                   {points.length > 0 && mode === "view" && (
