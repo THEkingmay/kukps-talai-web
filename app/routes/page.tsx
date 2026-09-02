@@ -31,7 +31,9 @@ export default function Home() {
     link.click();
     document.body.removeChild(link);
 
-    alert("กำลังเริ่มดาวน์โหลดแอปพลิเคชัน KUKPS smart talai สำหรับ Android (.apk)");
+    alert(
+      "กำลังเริ่มดาวน์โหลดแอปพลิเคชัน KUKPS smart talai สำหรับ Android (.apk)",
+    );
   };
 
   return (
@@ -45,7 +47,7 @@ export default function Home() {
             </div>
             <div>
               <span className="text-base font-bold text-slate-900 tracking-tight block leading-none">
-                KUKPS smart talai
+                TalaiETA
               </span>
               <span className="text-[11px] font-mono uppercase tracking-wider text-emerald-700 font-medium mt-0.5 block">
                 มหาวิทยาลัยเกษตรศาสตร์
@@ -113,7 +115,9 @@ export default function Home() {
             {/* Platform Note */}
             <div className="flex items-center gap-2 text-xs text-slate-500 font-mono pt-1">
               <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
-              <span>รองรับเฉพาะระบบปฏิบัติการ Android เท่านั้น (Android 8.0 ขึ้นไป)</span>
+              <span>
+                รองรับเฉพาะระบบปฏิบัติการ Android เท่านั้น (Android 8.0 ขึ้นไป)
+              </span>
             </div>
           </div>
         </section>
@@ -169,7 +173,9 @@ export default function Home() {
               <div className="w-9 h-9 rounded-lg bg-emerald-600 text-white font-bold font-mono flex items-center justify-center text-base shadow-sm">
                 1
               </div>
-              <h3 className="font-bold text-slate-900 text-base">กดดาวน์โหลดไฟล์ APK</h3>
+              <h3 className="font-bold text-slate-900 text-base">
+                กดดาวน์โหลดไฟล์ APK
+              </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
                 กดปุ่มดาวน์โหลดบนหน้าเว็บเพื่อรับไฟล์ติดตั้งสำหรับมือถือ Android
               </p>
@@ -179,9 +185,12 @@ export default function Home() {
               <div className="w-9 h-9 rounded-lg bg-emerald-600 text-white font-bold font-mono flex items-center justify-center text-base shadow-sm">
                 2
               </div>
-              <h3 className="font-bold text-slate-900 text-base">เปิดแอปและเลือกสายรถ</h3>
+              <h3 className="font-bold text-slate-900 text-base">
+                เปิดแอปและเลือกสายรถ
+              </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                กดติดตั้งแอปพลิเคชันและเปิดใช้งาน เลือกสายรถตะไลที่ต้องการเดินทาง
+                กดติดตั้งแอปพลิเคชันและเปิดใช้งาน
+                เลือกสายรถตะไลที่ต้องการเดินทาง
               </p>
             </div>
 
@@ -189,7 +198,9 @@ export default function Home() {
               <div className="w-9 h-9 rounded-lg bg-emerald-600 text-white font-bold font-mono flex items-center justify-center text-base shadow-sm">
                 3
               </div>
-              <h3 className="font-bold text-slate-900 text-base">เดินทางได้ทันที</h3>
+              <h3 className="font-bold text-slate-900 text-base">
+                เดินทางได้ทันที
+              </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
                 ติดตามพิกัดรถบนแผนที่และออกมารอรถตะไลได้ตรงตามเวลา
               </p>
@@ -234,9 +245,7 @@ function FeatureCard({
         <div className="w-10 h-10 bg-emerald-50 border border-emerald-100 rounded-lg flex items-center justify-center text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
           <Icon className="w-5 h-5" />
         </div>
-        <h3 className="text-base font-bold text-slate-900">
-          {title}
-        </h3>
+        <h3 className="text-base font-bold text-slate-900">{title}</h3>
         <p className="text-xs text-slate-600 leading-relaxed">{description}</p>
       </div>
     </div>

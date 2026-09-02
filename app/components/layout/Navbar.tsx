@@ -39,7 +39,7 @@ export default function Navbar() {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-base font-bold text-slate-900 tracking-tight group-hover:text-emerald-700 transition-colors leading-none">
-                KUKPS smart talai
+                TalaiETA
               </span>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200">
                 Admin

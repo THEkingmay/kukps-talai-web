@@ -3,7 +3,15 @@ import { Link } from "react-router";
 import Swal from "sweetalert2";
 import { useAuth } from "~/components/providers/AuthProvider";
 import { requestResetPasswordAction } from "~/actions/auth.action";
-import { Bus, UserPlus, KeyRound, Lock, Mail, Loader2, ArrowLeft } from "lucide-react";
+import {
+  Bus,
+  UserPlus,
+  KeyRound,
+  Lock,
+  Mail,
+  Loader2,
+  ArrowLeft,
+} from "lucide-react";
 
 type AuthMode = "login" | "register" | "forgot_password";
 
@@ -28,7 +36,7 @@ export default function AuthPage() {
   const [inviteCode, setInviteCode] = useState("");
   const [isResetSubmitting, setIsResetSubmitting] = useState(false);
   const [resetSuccessEmail, setResetSuccessEmail] = useState<string | null>(
-    null
+    null,
   );
 
   const isLoading = isAuthLoading || isResetSubmitting;
@@ -105,7 +113,7 @@ export default function AuthPage() {
             </div>
             <div>
               <span className="text-base font-bold text-slate-900 tracking-tight group-hover:text-emerald-700 transition-colors block leading-none">
-                KUKPS smart talai
+                TalaiETA
               </span>
               <span className="text-[11px] font-mono uppercase tracking-wider text-emerald-700 font-medium mt-0.5 block">
                 มหาวิทยาลัยเกษตรศาสตร์
@@ -142,15 +150,15 @@ export default function AuthPage() {
                 {mode === "register"
                   ? "ลงทะเบียนผู้ดูแลระบบ"
                   : mode === "forgot_password"
-                  ? "ขอลิงก์ตั้งรหัสผ่านใหม่"
-                  : "เข้าสู่ระบบผู้ดูแลระบบ"}
+                    ? "ขอลิงก์ตั้งรหัสผ่านใหม่"
+                    : "เข้าสู่ระบบผู้ดูแลระบบ"}
               </h1>
               <p className="text-xs text-slate-600 mt-1 font-normal">
                 {mode === "register"
                   ? "กรอกข้อมูลและรหัสเชิญจากผู้ดูแลระบบเพื่อเปิดสิทธิ์"
                   : mode === "forgot_password"
-                  ? "ระบุอีเมลสถาบันเพื่อรับลิงก์สำหรับรีเซ็ตรหัสผ่าน"
-                  : "ระบบควบคุมและบริหารจัดการ KUKPS smart talai"}
+                    ? "ระบุอีเมลสถาบันเพื่อรับลิงก์สำหรับรีเซ็ตรหัสผ่าน"
+                    : "ระบบควบคุมและบริหารจัดการ KUKPS smart talai"}
               </p>
             </div>
 

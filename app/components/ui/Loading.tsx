@@ -12,7 +12,7 @@ export default function Loading() {
         {/* Brand title */}
         <div className="text-center">
           <span className="text-sm font-bold text-slate-900 tracking-tight block">
-            KUKPS smart talai
+            Talai ETA
           </span>
           <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-700 font-medium">
             มหาวิทยาลัยเกษตรศาสตร์
