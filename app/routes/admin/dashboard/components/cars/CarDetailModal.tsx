@@ -53,7 +53,7 @@ export default function CarDetailModal({
                 <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
                   {car ? `รถตะไล หมายเลข ${car.carNumber}` : "รายละเอียดรถตะไล"}
                 </h3>
-                {car && <StatusBadge status={car.status} />}
+                {/*{car && <StatusBadge status={car.status} />}*/}
               </div>
               <p className="text-xs text-slate-500 font-mono">
                 {car ? `ID: ${car.id}` : "Vehicle Details & GPS History Log"}
@@ -107,7 +107,7 @@ export default function CarDetailModal({
                     </div>
                   </div>
 
-                  <StatusBadge status={car.status} />
+                  {/*<StatusBadge status={car.status} />*/}
                 </div>
 
                 {/* Grid Metadata Cards */}

@@ -54,7 +54,10 @@ export default function CarsComponent() {
 
   // Prevent background scrolling when any modal is active
   const isAnyModalOpen =
-    isCreateModalOpen || Boolean(editingCar) || Boolean(selectedCarId) || Boolean(credentialCarId);
+    isCreateModalOpen ||
+    Boolean(editingCar) ||
+    Boolean(selectedCarId) ||
+    Boolean(credentialCarId);
 
   useEffect(() => {
     if (isAnyModalOpen) {
@@ -75,7 +78,11 @@ export default function CarsComponent() {
       const [carRes, routeRes] = await Promise.all([getCars(), getRoutes()]);
 
       if (carRes.success) {
-        setCars(carRes.data.data || []);
+        setCars(
+          carRes.data.data.sort((a, b) =>
+            a.createdAt > b.createdAt ? -1 : 1,
+          ) || [],
+        );
       } else {
         setError(carRes.error || "ดึงข้อมูลยานพาหนะไม่สำเร็จ");
       }

@@ -63,7 +63,11 @@ export default function CarDetailMap({ car }: CarDetailMapProps) {
 
   return (
     <div
-      className="relative w-full h-full min-h-[380px] border border-slate-200"
+      className={`relative w-full h-full min-h-[380px] ${
+        isActive
+          ? " bg-gradient-to-r from-green-900 via-green-300 to-green-900 bg-clip-border shadow-[0_0_25px_rgba(34,197,94,0.7)]"
+          : ""
+      }`}
       style={{ borderRadius: 12, overflow: "clip" }}
     >
       <MapContainer
