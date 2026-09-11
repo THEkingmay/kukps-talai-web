@@ -5,7 +5,13 @@ import AdminInviteComponent from "./components/admin-invite.component";
 import CarsComponent from "./components/cars.component";
 import RoutesComponent from "./components/routes.component";
 import UserComponent from "./components/user.component";
-import { Users, UserPlus, Bus, Route as RouteIcon, ShieldAlert } from "lucide-react";
+import {
+  Users,
+  UserPlus,
+  Bus,
+  Route as RouteIcon,
+  ShieldAlert,
+} from "lucide-react";
 
 export function meta() {
   return [
@@ -63,7 +69,8 @@ export default function DashboardRoute() {
               แผงควบคุมระบบผู้ดูแลระบบ (Admin Dashboard)
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 max-w-2xl">
-              จัดการผู้ใช้งานระบบ รหัสเชิญเจ้าหน้าที่ ตรวจสอบสถานะรถตะไล และวางแผนเส้นทางเดินรถสวัสดิการ มก.กำแพงแสน
+              จัดการผู้ใช้งานระบบ รหัสเชิญเจ้าหน้าที่ ตรวจสอบสถานะรถตะไล
+              และวางแผนเส้นทางเดินรถสวัสดิการ มก.กำแพงแสน
             </p>
           </div>
         </div>
@@ -89,7 +96,7 @@ export default function DashboardRoute() {
             onClick={() => setActiveTab("invites")}
           />
           <StatCard
-            title="รถตะไลสวัสดิการ"
+            title="รถตะไล"
             subtitle="Active Fleet"
             value="จัดการรถตะไล"
             icon={<Bus className="w-5 h-5" />}
@@ -230,8 +237,8 @@ function StatCard({
             isActive
               ? "bg-emerald-600 text-white"
               : isLocked
-              ? "bg-amber-50 text-amber-700"
-              : "bg-emerald-50 text-emerald-800"
+                ? "bg-amber-50 text-amber-700"
+                : "bg-emerald-50 text-emerald-800"
           }`}
         >
           {icon}
@@ -250,8 +257,8 @@ function StatCard({
           {isActive
             ? "กำลังแสดงข้อมูล →"
             : isLocked
-            ? "จำกัดสิทธิ์เฉพาะ Super Admin"
-            : "กดดูรายละเอียด"}
+              ? "จำกัดสิทธิ์เฉพาะ Super Admin"
+              : "กดดูรายละเอียด"}
         </span>
       </div>
     </div>

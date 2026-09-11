@@ -1,5 +1,11 @@
 import type { User } from "~/types";
-import { Lock, CheckCircle2, AlertTriangle, XCircle, Trash2 } from "lucide-react";
+import {
+  Lock,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  Trash2,
+} from "lucide-react";
 
 interface UserTableProps {
   users: User[];
@@ -103,8 +109,8 @@ export default function UserTable({
                         item.role === "superadmin"
                           ? "bg-amber-50 text-amber-900 border-amber-200"
                           : item.role === "admin"
-                          ? "bg-sky-50 text-sky-800 border-sky-200"
-                          : "bg-slate-100 text-slate-700 border-slate-200"
+                            ? "bg-sky-50 text-sky-800 border-sky-200"
+                            : "bg-slate-100 text-slate-700 border-slate-200"
                       }`}
                     >
                       {item.role}
@@ -130,24 +136,23 @@ export default function UserTable({
                       </span>
                     ) : (
                       <div className="flex items-center justify-end gap-2">
-                        {/* Toggle Active <-> Suspended Button */}
-                        <button
-                          onClick={() => onToggleStatus(item)}
-                          disabled={isUpdatingThis}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all active:scale-[0.98] disabled:opacity-50 shadow-2xs ${
-                            item.status === "active"
-                              ? "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
-                              : "bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100"
-                          }`}
-                        >
-                          {isUpdatingThis ? (
-                            "กำลังบันทึก..."
-                          ) : item.status === "active" ? (
-                            "ระงับสิทธิ์"
-                          ) : (
-                            "เปิดใช้งาน"
-                          )}
-                        </button>
+                        {!isCurrent && (
+                          <button
+                            onClick={() => onToggleStatus(item)}
+                            disabled={isUpdatingThis}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all active:scale-[0.98] disabled:opacity-50 shadow-2xs ${
+                              item.status === "active"
+                                ? "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
+                                : "bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100"
+                            }`}
+                          >
+                            {isUpdatingThis
+                              ? "กำลังบันทึก..."
+                              : item.status === "active"
+                                ? "ระงับสิทธิ์"
+                                : "เปิดใช้งาน"}
+                          </button>
+                        )}
 
                         {/* Delete Button */}
                         {!isCurrent && (
@@ -182,12 +187,16 @@ export default function UserTable({
   );
 }
 
-function StatusBadge({ status }: { status: "active" | "suspended" | "deleted" }) {
+function StatusBadge({
+  status,
+}: {
+  status: "active" | "suspended" | "deleted";
+}) {
   if (status === "active") {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
         <CheckCircle2 className="w-3 h-3 text-emerald-600 animate-pulse" />
-        Active
+        ใช้งานอยู่
       </span>
     );
   }
@@ -195,14 +204,14 @@ function StatusBadge({ status }: { status: "active" | "suspended" | "deleted" })
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-amber-50 text-amber-800 border border-amber-200">
         <AlertTriangle className="w-3 h-3 text-amber-600" />
-        Suspended
+        ระงับการเข้าถึง
       </span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-slate-100 text-slate-500 border border-slate-200 opacity-80">
       <XCircle className="w-3 h-3 text-slate-400" />
-      Deleted
+      ลบแล้ว
     </span>
   );
 }
