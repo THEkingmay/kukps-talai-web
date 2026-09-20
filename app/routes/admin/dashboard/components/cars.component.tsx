@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import type { ResponseCarData, Route, CarStatus } from "~/types";
-import Swal from "sweetalert2";
+import { useDialog } from "~/components/providers/DialogProvider";
 import {
   getCars,
   getCarById,
@@ -21,6 +21,7 @@ import CredentialModal from "./cars/CredentialModal";
 type StatusFilter = "all" | CarStatus;
 
 export default function CarsComponent() {
+  const { alert, confirm } = useDialog();
   const [cars, setCars] = useState<ResponseCarData[]>([]);
   const [routes, setRoutes] = useState<Route[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -92,11 +93,9 @@ export default function CarsComponent() {
       }
 
       if (showToast && carRes.success) {
-        Swal.fire({
-          icon: "success",
+        alert({
           title: "อัปเดตข้อมูลรถตะไลสำเร็จ",
-          timer: 1200,
-          showConfirmButton: false,
+          description: "อัปเดตข้อมูลรถตะไลสำเร็จเรียบร้อยแล้ว",
         });
       }
     } catch {
@@ -156,18 +155,16 @@ export default function CarsComponent() {
       if (res.success) {
         setDetailCar(res.data.data);
       } else {
-        Swal.fire({
-          icon: "error",
+        alert({
           title: "โหลดข้อมูลไม่สำเร็จ",
-          text: res.error,
+          description: res.error,
         });
         setSelectedCarId(null);
       }
     } catch {
-      Swal.fire({
-        icon: "error",
+      alert({
         title: "เกิดข้อผิดพลาด",
-        text: "ไม่สามารถดึงข้อมูลรายละเอียดรถตะไลได้",
+        description: "ไม่สามารถดึงข้อมูลรายละเอียดรถตะไลได้",
       });
       setSelectedCarId(null);
     } finally {
@@ -188,29 +185,24 @@ export default function CarsComponent() {
       });
 
       if (res.success) {
-        Swal.fire({
-          icon: "success",
+        alert({
           title: "เพิ่มรถตะไลสำเร็จ",
-          text: `เพิ่ม "${newCarNumber.trim()}" เข้าสู่ระบบเรียบร้อยแล้ว`,
-          timer: 1500,
-          showConfirmButton: false,
+          description: `เพิ่ม "${newCarNumber.trim()}" เข้าสู่ระบบเรียบร้อยแล้ว`,
         });
         setNewCarNumber("");
         setNewRouteId("");
         setIsCreateModalOpen(false);
         fetchFleetData(false);
       } else {
-        Swal.fire({
-          icon: "error",
+        alert({
           title: "เพิ่มรถไม่สำเร็จ",
-          text: res.error,
+          description: res.error,
         });
       }
     } catch {
-      Swal.fire({
-        icon: "error",
+      alert({
         title: "เกิดข้อผิดพลาด",
-        text: "ไม่สามารถบันทึกข้อมูลรถตะไลได้",
+        description: "ไม่สามารถบันทึกข้อมูลรถตะไลได้",
       });
     } finally {
       setIsSubmitting(false);
@@ -243,27 +235,22 @@ export default function CarsComponent() {
       });
 
       if (res.success) {
-        Swal.fire({
-          icon: "success",
+        alert({
           title: "บันทึกการแก้ไขสำเร็จ",
-          text: `อัปเดตข้อมูล "${editCarNumber.trim()}" เรียบร้อยแล้ว`,
-          timer: 1500,
-          showConfirmButton: false,
+          description: `อัปเดตข้อมูล "${editCarNumber.trim()}" เรียบร้อยแล้ว`,
         });
         setEditingCar(null);
         fetchFleetData(false);
       } else {
-        Swal.fire({
-          icon: "error",
+        alert({
           title: "แก้ไขไม่สำเร็จ",
-          text: res.error,
+          description: res.error,
         });
       }
     } catch {
-      Swal.fire({
-        icon: "error",
+      alert({
         title: "เกิดข้อผิดพลาด",
-        text: "ไม่สามารถบันทึกการแก้ไขข้อมูลได้",
+        description: "ไม่สามารถบันทึกการแก้ไขข้อมูลได้",
       });
     } finally {
       setIsSubmitting(false);
@@ -272,46 +259,37 @@ export default function CarsComponent() {
 
   // Delete Car Handler
   const handleDeleteCar = async (carToDelete: ResponseCarData) => {
-    const confirm = await Swal.fire({
-      icon: "warning",
+    confirm({
       title: "ยืนยันการลบรถตะไล?",
-      html: `คุณต้องการลบ <b>${carToDelete.carNumber}</b> (ID: ${carToDelete.id}) ใช่หรือไม่?`,
-      showCancelButton: true,
-      confirmButtonText: "ยืนยันลบ",
-      cancelButtonText: "ยกเลิก",
-      confirmButtonColor: "#dc2626",
+      description: `คุณต้องการลบ ${carToDelete.carNumber} (ID: ${carToDelete.id}) ใช่หรือไม่?`,
+      confirmText: "ยืนยันลบ",
+      cancelText: "ยกเลิก",
+      onConfirm: async () => {
+        setDeletingId(carToDelete.id);
+        try {
+          const res = await deleteCar(carToDelete.id);
+          if (res.success) {
+            alert({
+              title: "ลบสำเร็จ",
+              description: "ลบรถตะไลออกจากระบบเรียบร้อยแล้ว",
+            });
+            fetchFleetData(false);
+          } else {
+            alert({
+              title: "ลบไม่สำเร็จ",
+              description: res.error,
+            });
+          }
+        } catch {
+          alert({
+            title: "เกิดข้อผิดพลาด",
+            description: "ไม่สามารถลบรถตะไลได้",
+          });
+        } finally {
+          setDeletingId(null);
+        }
+      },
     });
-
-    if (!confirm.isConfirmed) return;
-
-    setDeletingId(carToDelete.id);
-    try {
-      const res = await deleteCar(carToDelete.id);
-      if (res.success) {
-        Swal.fire({
-          icon: "success",
-          title: "ลบสำเร็จ",
-          text: "ลบรถตะไลออกจากระบบเรียบร้อยแล้ว",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-        fetchFleetData(false);
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "ลบไม่สำเร็จ",
-          text: res.error,
-        });
-      }
-    } catch {
-      Swal.fire({
-        icon: "error",
-        title: "เกิดข้อผิดพลาด",
-        text: "ไม่สามารถลบรถตะไลได้",
-      });
-    } finally {
-      setDeletingId(null);
-    }
   };
 
   // Format Helper
@@ -339,7 +317,7 @@ export default function CarsComponent() {
       />
 
       {/* 2. Main Control Container */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-md shadow-xs overflow-hidden">
         <CarSearchToolbar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -353,11 +331,11 @@ export default function CarsComponent() {
         {/* Fleet Grid Content */}
         <div className="p-5 sm:p-6">
           {error && (
-            <div className="mb-4 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between">
+            <div className="mb-4 p-4 rounded-md bg-gray-100 border border-gray-300 text-gray-900 text-xs flex items-center justify-between">
               <span>{error}</span>
               <button
                 onClick={() => fetchFleetData(false)}
-                className="underline font-semibold hover:text-rose-900"
+                className="underline font-semibold hover:text-gray-900"
               >
                 ลองอีกครั้ง
               </button>
@@ -369,17 +347,17 @@ export default function CarsComponent() {
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="p-5 border border-slate-100 rounded-2xl bg-slate-50/50 animate-pulse space-y-4"
+                  className="p-5 border border-gray-200 rounded-md bg-white/50 animate-pulse space-y-4"
                 >
-                  <div className="h-5 bg-slate-200 rounded w-1/2" />
-                  <div className="h-10 bg-slate-200 rounded w-full" />
-                  <div className="h-8 bg-slate-200 rounded w-1/3" />
+                  <div className="h-5 bg-gray-200 rounded w-1/2" />
+                  <div className="h-10 bg-gray-200 rounded w-full" />
+                  <div className="h-8 bg-gray-200 rounded w-1/3" />
                 </div>
               ))}
             </div>
           ) : filteredCars.length === 0 ? (
-            <div className="py-12 text-center border border-dashed border-slate-200 rounded-2xl bg-slate-50/30">
-              <p className="text-xs text-slate-500 font-medium">
+            <div className="py-12 text-center border border-dashed border-gray-200 rounded-md bg-white/30">
+              <p className="text-xs text-gray-500 font-medium">
                 {searchQuery
                   ? "ไม่พบข้อมูลรถตะไลที่ตรงกับเงื่อนไขการค้นหา"
                   : "ยังไม่มีข้อมูลรถตะไลในระบบ"}

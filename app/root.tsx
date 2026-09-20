@@ -10,6 +10,7 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import AuthProvider from "./components/providers/AuthProvider";
+import { DialogProvider } from "./components/providers/DialogProvider";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -20,7 +21,7 @@ export const links: Route.LinksFunction = () => [
   },
   {
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Public+Sans:ital,wght@0,100..900;1,100..900&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&display=swap",
   },
 ];
 
@@ -33,19 +34,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="bg-gray-50 text-gray-800 antialiased font-sans">
-        <span
-          dangerouslySetInnerHTML={{
-            __html: `<!--
-THESIS: A daytime control room that balances data density with a clean, light, accessible minimal UI.
-OWN-WORLD: #ffffff, #f3f4f6, #374151, #0ea5e9, matte surfaces, 1px subtle dividers, monospaced data fields.
-STORY: Students understand the shuttle tracking project and find the download button, while admins access their functional operational space securely.
-FIRST VIEWPORT: A clean white canvas with a sharp grid, displaying live transit stats alongside a clear download and admin entry.
-FORM: 6, seed key d22adbfb.
-FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
--->`,
-          }}
-        />
+      <body className="bg-gray-50 text-gray-900 antialiased font-sans">
         {children}
         <ScrollRestoration />
         <Scripts />
@@ -56,9 +45,11 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Outlet />
-    </AuthProvider>
+    <DialogProvider>
+      <AuthProvider>
+        <Outlet />
+      </AuthProvider>
+    </DialogProvider>
   );
 }
 

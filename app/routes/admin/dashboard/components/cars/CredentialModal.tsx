@@ -10,7 +10,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import apiClient from "~/configs/axios";
-import Swal from "sweetalert2";
+import { useDialog } from "~/components/providers/DialogProvider";
 
 interface CredentialModalProps {
   isOpen: boolean;
@@ -28,6 +28,7 @@ export default function CredentialModal({
   carId,
   onClose,
 }: CredentialModalProps) {
+  const { alert, confirm } = useDialog();
   const [showPassword, setShowPassword] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [credentials, setCredentials] = useState<CarCredentials | null>(null);
@@ -66,66 +67,57 @@ export default function CredentialModal({
   }
 
   async function handleReset() {
-    const result = await Swal.fire({
+    confirm({
       title: "รีเซ็ต Credentials",
-      text: "คุณแน่ใจหรือไม่ว่าต้องการรีเซ็ต MQTT Credentials สำหรับรถคันนี้? ข้อมูลเก่าจะใช้ไม่ได้อีกต่อไป",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "รีเซ็ตเลย",
-      cancelButtonText: "ยกเลิก",
-      confirmButtonColor: "#dc2626",
-    });
+      description: "คุณแน่ใจหรือไม่ว่าต้องการรีเซ็ต MQTT Credentials สำหรับรถคันนี้? ข้อมูลเก่าจะใช้ไม่ได้อีกต่อไป",
+      confirmText: "รีเซ็ตเลย",
+      cancelText: "ยกเลิก",
+      onConfirm: async () => {
+        try {
+          setIsLoading(true);
+          const res = await apiClient.post(
+            `/cars/mqtt-credentials/${carId}/reset`,
+          );
 
-    if (result.isConfirmed) {
-      try {
-        setIsLoading(true);
-        const res = await apiClient.post(
-          `/cars/mqtt-credentials/${carId}/reset`,
-        );
-
-        if (res.data.success) {
-          fetchCredentials();
-          Swal.fire({
-            toast: true,
-            position: "top-end",
-            icon: "success",
-            title: "รีเซ็ตข้อมูลสำเร็จ",
-            showConfirmButton: false,
-            timer: 1500,
+          if (res.data.success) {
+            fetchCredentials();
+            alert({
+              title: "รีเซ็ตข้อมูลสำเร็จ",
+              description: "รีเซ็ตข้อมูล Credentials เรียบร้อยแล้ว",
+            });
+          }
+        } catch (err: any) {
+          alert({
+            title: "เกิดข้อผิดพลาด",
+            description:
+              err.response?.data?.message || "ไม่สามารถรีเซ็ต Credentials ได้",
           });
+        } finally {
+          setIsLoading(false);
         }
-      } catch (err: any) {
-        Swal.fire({
-          icon: "error",
-          title: "เกิดข้อผิดพลาด",
-          text:
-            err.response?.data?.message || "ไม่สามารถรีเซ็ต Credentials ได้",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    }
+      },
+    });
   }
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center p-4 backdrop-blur-xs bg-slate-900/40 animate-fade-in"
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 backdrop-blur-xs bg-gray-900/40 animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+        className="bg-white border border-gray-200 rounded-md shadow-2xl w-full max-w-sm overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/90">
+        <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between bg-white/90">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100 shrink-0">
               <KeyRound className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-900 tracking-tight">
+              <h3 className="text-sm font-bold text-gray-900 tracking-tight">
                 MQTT Credentials
               </h3>
-              <p className="text-[10px] font-mono text-slate-400 tracking-wider">
+              <p className="text-[10px] font-mono text-gray-400 tracking-wider">
                 จัดการรหัสผ่านและข้อมูลเชื่อมต่อ
               </p>
             </div>
@@ -134,7 +126,7 @@ export default function CredentialModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors cursor-pointer"
+            className="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition-colors cursor-pointer"
             aria-label="ปิด"
           >
             <X className="w-3.5 h-3.5" />
@@ -144,14 +136,14 @@ export default function CredentialModal({
         <div className="p-5 space-y-3">
           {isLoading ? (
             <div className="py-8 flex flex-col items-center gap-2">
-              <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
-              <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider">
+              <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+              <span className="text-[11px] font-mono text-gray-400 uppercase tracking-wider">
                 กำลังโหลด…
               </span>
             </div>
           ) : error ? (
             <div className="py-6 text-center">
-              <p className="text-xs text-rose-600 font-medium">{error}</p>
+              <p className="text-xs text-black font-medium">{error}</p>
               <button
                 type="button"
                 onClick={() => {
@@ -195,7 +187,7 @@ export default function CredentialModal({
                   <button
                     type="button"
                     onClick={() => setShowPassword((p) => !p)}
-                    className="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 flex items-center justify-center transition-colors cursor-pointer"
+                    className="w-7 h-7 rounded-lg hover:bg-gray-200 text-gray-400 flex items-center justify-center transition-colors cursor-pointer"
                     aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
                   >
                     {showPassword ? (
@@ -210,12 +202,12 @@ export default function CredentialModal({
           )}
         </div>
 
-        <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/70 flex justify-between items-center">
+        <div className="px-5 py-3 border-t border-gray-200 bg-white/70 flex justify-between items-center">
           <button
             type="button"
             onClick={handleReset}
             disabled={isLoading || !credentials}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-600 hover:text-white hover:bg-rose-500 border border-transparent hover:border-rose-600 transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-black hover:text-white hover:bg-black border border-transparent hover:border-black transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <RefreshCw className="w-3 h-3" />
             รีเซ็ต
@@ -224,7 +216,7 @@ export default function CredentialModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 active:bg-slate-200 transition-all shadow-2xs cursor-pointer"
+            className="px-4 py-2 rounded-md text-xs font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-200 active:bg-gray-200 transition-all shadow-2xs cursor-pointer"
           >
             ปิด
           </button>
@@ -248,12 +240,12 @@ function CredentialField({
   trailing?: React.ReactNode;
 }) {
   return (
-    <div className="p-3 bg-slate-50/60 border border-slate-100 rounded-xl flex items-center gap-3">
+    <div className="p-3 bg-white/60 border border-gray-200 rounded-md flex items-center gap-3">
       <div className="flex-1 min-w-0">
-        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block mb-0.5">
+        <span className="text-[10px] font-mono text-gray-400 uppercase tracking-wider block mb-0.5">
           {label}
         </span>
-        <span className="text-sm font-mono font-semibold text-slate-800 block truncate select-all">
+        <span className="text-sm font-mono font-semibold text-gray-800 block truncate select-all">
           {value || "—"}
         </span>
       </div>
@@ -262,11 +254,11 @@ function CredentialField({
         <button
           type="button"
           onClick={onCopy}
-          className="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 flex items-center justify-center transition-colors cursor-pointer"
+          className="w-7 h-7 rounded-lg hover:bg-gray-200 text-gray-400 flex items-center justify-center transition-colors cursor-pointer"
           aria-label={`คัดลอก ${label}`}
         >
           {isCopied ? (
-            <Check className="w-3.5 h-3.5 text-emerald-500" />
+            <Check className="w-3.5 h-3.5 text-black" />
           ) : (
             <Copy className="w-3.5 h-3.5" />
           )}

@@ -6,7 +6,7 @@ import {
   registerAction,
   logoutAction,
 } from "~/actions/auth.action";
-import Swal from "sweetalert2";
+import { useDialog } from "./DialogProvider";
 
 interface AuthContextProps {
   isLoading: boolean;
@@ -37,6 +37,8 @@ export default function AuthProvider({
 }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { alert } = useDialog();
+
   useEffect(() => {
     const checkSession = async () => {
       setIsLoading(true);
@@ -55,10 +57,9 @@ export default function AuthProvider({
     setIsLoading(false);
 
     if (!result.success) {
-      Swal.fire({
-        icon: "error",
+      alert({
         title: "เข้าสู่ระบบไม่สำเร็จ",
-        text: result.error,
+        description: result.error,
       });
       return;
     }
@@ -76,16 +77,15 @@ export default function AuthProvider({
     setIsLoading(false);
 
     if (!result.success) {
-      Swal.fire({
-        icon: "error",
+      alert({
         title: "สมัครสมาชิกไม่สำเร็จ",
-        text: result.error,
+        description: result.error,
       });
       return;
     }
 
     setUser(result.data.user);
-    Swal.fire({ icon: "success", title: "สมัครสมาชิกสำเร็จ" });
+    alert({ title: "สมัครสมาชิกสำเร็จ" });
   };
 
   const logout = async () => {

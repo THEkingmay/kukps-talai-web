@@ -17,13 +17,13 @@ export default function UserMetrics({
         label="ผู้ใช้ทั้งหมด"
         value={total}
         subtext="Total Accounts"
-        badgeColor="bg-slate-100 text-slate-700 border-slate-200"
+        badgeColor="bg-gray-200 text-gray-700 border-gray-200"
       />
       <MetricCard
         label="ใช้งานปกติ"
         value={active}
         subtext="Active"
-        badgeColor="bg-emerald-50 text-emerald-800 border-emerald-200"
+        badgeColor="bg-gray-100 text-black border-gray-300"
         activeDot
       />
       <MetricCard
@@ -36,7 +36,7 @@ export default function UserMetrics({
         label="ถูกลบแล้ว"
         value={deleted}
         subtext="Deleted"
-        badgeColor="bg-rose-50 text-rose-800 border-rose-200"
+        badgeColor="bg-gray-100 text-gray-900 border-gray-300"
       />
     </div>
   );
@@ -56,19 +56,19 @@ function MetricCard({
   activeDot?: boolean;
 }) {
   return (
-    <div className="p-4 sm:p-5 border border-slate-200/80 rounded-2xl bg-white shadow-xs">
+    <div className="p-4 sm:p-5 border border-gray-200/80 rounded-md bg-white shadow-xs">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-slate-500">{label}</span>
+        <span className="text-xs font-medium text-gray-500">{label}</span>
         <span
           className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium border ${badgeColor}`}
         >
           {activeDot && (
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
           )}
           {subtext}
         </span>
       </div>
-      <div className="mt-2 text-2xl sm:text-3xl font-extrabold font-mono text-slate-900">
+      <div className="mt-2 text-2xl sm:text-3xl font-extrabold font-mono text-gray-900">
         {value}
       </div>
     </div>

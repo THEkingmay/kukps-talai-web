@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Swal from "sweetalert2";
+import { useDialog } from "~/components/providers/DialogProvider";
 import {
   getAdminInvites,
   addAdminInvite,
@@ -15,6 +15,7 @@ import InviteCreateForm from "./invites/InviteCreateForm";
 import InviteTable from "./invites/InviteTable";
 
 export default function AdminInviteComponent() {
+  const { alert, confirm } = useDialog();
   const { user, isLoading: isAuthLoading } = useAuth();
   const [adminInvites, setAdminInvites] = useState<AdminInvite[]>([]);
   const [addEmail, setAddEmail] = useState<string>("");
@@ -125,29 +126,17 @@ export default function AdminInviteComponent() {
       return;
     }
 
-    const confirmResult = await Swal.fire({
+    confirm({
       title: "ยืนยันการลบรหัสเชิญ?",
-      text: `คุณต้องการลบรหัสเชิญสำหรับ ${invite.email} ใช่หรือไม่?`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#64748b",
-      confirmButtonText: "ลบรหัสเชิญ",
-      cancelButtonText: "ยกเลิก",
-      customClass: {
-        popup: "rounded-2xl font-sans",
-        confirmButton: "rounded-xl px-4 py-2 text-sm font-semibold",
-        cancelButton: "rounded-xl px-4 py-2 text-sm font-semibold",
-      },
-    });
+      description: `คุณต้องการลบรหัสเชิญสำหรับ ${invite.email} ใช่หรือไม่?`,
+      confirmText: "ลบรหัสเชิญ",
+      cancelText: "ยกเลิก",
+      onConfirm: async () => {
+        setDeletingEmail(invite.email);
+        setAlertState(null);
 
-    if (!confirmResult.isConfirmed) return;
-
-    setDeletingEmail(invite.email);
-    setAlertState(null);
-
-    const result = await deleteAdminInvite(invite.email);
-    if (result.success) {
+        const result = await deleteAdminInvite(invite.email);
+        if (result.success) {
       setAdminInvites((prev) =>
         prev.filter((item) => item.email !== invite.email)
       );
@@ -163,7 +152,9 @@ export default function AdminInviteComponent() {
         message: result.error,
       });
     }
-    setDeletingEmail(null);
+        setDeletingEmail(null);
+      }
+    });
   };
 
   /* Permission Guard for Regular Admin */
@@ -186,18 +177,18 @@ export default function AdminInviteComponent() {
   ).length;
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
-      <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50">
+    <div className="bg-white border border-gray-200 rounded-md shadow-xs overflow-hidden">
+      <div className="p-6 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/50">
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-amber-100 text-amber-900 border border-amber-200">
               Super Admin Level
             </span>
-            <h3 className="text-lg font-bold text-slate-900 tracking-tight">
+            <h3 className="text-lg font-bold text-gray-900 tracking-tight">
               จัดการรหัสเชิญผู้ดูแลระบบ (Admin Invites)
             </h3>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-gray-500 mt-1">
             สร้างและบริหารจัดการสิทธิ์รหัสเชิญสำหรับเจ้าหน้าที่ผู้ดูแลระบบรายใหม่
             (@ku.th)
           </p>
@@ -208,18 +199,18 @@ export default function AdminInviteComponent() {
             <span className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200">
               รออนุมัติ: <strong className="font-bold">{pendingCount}</strong>
             </span>
-            <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200">
+            <span className="px-2.5 py-1 rounded-lg bg-gray-100 text-black border border-gray-300">
               ยืนยันแล้ว: <strong className="font-bold">{acceptedCount}</strong>
             </span>
           </div>
           <button
             onClick={fetchAdminInvites}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-60 shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-white transition-colors disabled:opacity-60 shadow-2xs"
           >
             <RefreshCw
-              className={`w-3.5 h-3.5 text-slate-500 ${
-                isLoading ? "animate-spin text-emerald-600" : ""
+              className={`w-3.5 h-3.5 text-gray-500 ${
+                isLoading ? "animate-spin text-black" : ""
               }`}
             />
             รีเฟรชข้อมูล
@@ -246,24 +237,24 @@ export default function AdminInviteComponent() {
         onSubmit={handleAddInvite}
       />
 
-      <div className="px-6 py-3 bg-slate-50 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="px-6 py-3 bg-white border-b border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="relative w-full sm:w-72">
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="ค้นหาตามอีเมลผู้รับ หรือผู้สร้าง..."
-            className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            className="w-full pl-9 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-black"
           />
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2 pointer-events-none" />
+          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2 pointer-events-none" />
         </div>
-        <div className="text-xs text-slate-500 font-mono self-end sm:self-center">
+        <div className="text-xs text-gray-500 font-mono self-end sm:self-center">
           แสดง{" "}
-          <span className="font-bold text-slate-900">
+          <span className="font-bold text-gray-900">
             {filteredInvites.length}
           </span>{" "}
           จากทั้งหมด{" "}
-          <span className="font-bold text-slate-900">
+          <span className="font-bold text-gray-900">
             {adminInvites.length}
           </span>{" "}
           รายการ

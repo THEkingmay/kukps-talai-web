@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import Swal from "sweetalert2";
+import { useDialog } from "~/components/providers/DialogProvider";
 import { useAuth } from "~/components/providers/AuthProvider";
 import { getAll, updateUserStatus, deleteUser } from "~/actions/user.action";
 import type { User, UserRole } from "~/types";
@@ -13,6 +13,7 @@ type StatusFilter = "all" | "active" | "suspended" | "deleted";
 type RoleFilter = "all" | UserRole;
 
 export default function UserComponent() {
+  const { alert, confirm } = useDialog();
   const { user: currentUser } = useAuth();
   const isSuperAdmin = currentUser?.role === "superadmin";
 
@@ -82,10 +83,9 @@ export default function UserComponent() {
   // Toggle Status Handler (Active <-> Suspended)
   const handleToggleStatus = async (userToUpdate: User) => {
     if (userToUpdate.status === "deleted") {
-      Swal.fire({
-        icon: "warning",
+      alert({
         title: "ไม่สามารถแก้ไขได้",
-        text: "ผู้ใช้งานถูกลบแล้ว ไม่สามารถปรับเปลี่ยนสถานะได้อีก",
+        description: "ผู้ใช้งานถูกลบแล้ว ไม่สามารถปรับเปลี่ยนสถานะได้อีก",
       });
       return;
     }
@@ -95,100 +95,82 @@ export default function UserComponent() {
     const statusTextTH =
       nextStatus === "active" ? "เปิดใช้งาน" : "ระงับสิทธิ์";
 
-    const confirmResult = await Swal.fire({
-      icon: "question",
+    confirm({
       title: `ยืนยันการ${statusTextTH}?`,
-      html: `คุณต้องการปรับสถานะบัญชี <b>${userToUpdate.email}</b> เป็น <span class="font-bold">${statusTextTH}</span> หรือไม่?`,
-      showCancelButton: true,
-      confirmButtonText: `ยืนยัน${statusTextTH}`,
-      cancelButtonText: "ยกเลิก",
-      confirmButtonColor: nextStatus === "active" ? "#059669" : "#d97706",
+      description: `คุณต้องการปรับสถานะบัญชี ${userToUpdate.email} เป็น ${statusTextTH} หรือไม่?`,
+      confirmText: `ยืนยัน${statusTextTH}`,
+      cancelText: "ยกเลิก",
+      onConfirm: async () => {
+        setUpdatingId(userToUpdate.id);
+        try {
+          const res = await updateUserStatus(userToUpdate.id, nextStatus);
+          if (res.success) {
+            alert({
+              title: "อัปเดตสำเร็จ",
+              description: `เปลี่ยนสถานะเป็น ${statusTextTH} เรียบร้อยแล้ว`,
+            });
+            setUsers((prev) =>
+              prev.map((u) =>
+                u.id === userToUpdate.id ? { ...u, status: nextStatus } : u
+              )
+            );
+          } else {
+            alert({
+              title: "อัปเดตไม่สำเร็จ",
+              description: res.error,
+            });
+          }
+        } catch {
+          alert({
+            title: "เกิดข้อผิดพลาด",
+            description: "ไม่สามารถทำรายการได้ โปรดลองอีกครั้ง",
+          });
+        } finally {
+          setUpdatingId(null);
+        }
+      },
     });
-
-    if (!confirmResult.isConfirmed) return;
-
-    setUpdatingId(userToUpdate.id);
-    try {
-      const res = await updateUserStatus(userToUpdate.id, nextStatus);
-      if (res.success) {
-        Swal.fire({
-          icon: "success",
-          title: "อัปเดตสำเร็จ",
-          text: `เปลี่ยนสถานะเป็น ${statusTextTH} เรียบร้อยแล้ว`,
-          timer: 1500,
-          showConfirmButton: false,
-        });
-        setUsers((prev) =>
-          prev.map((u) =>
-            u.id === userToUpdate.id ? { ...u, status: nextStatus } : u
-          )
-        );
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "อัปเดตไม่สำเร็จ",
-          text: res.error,
-        });
-      }
-    } catch {
-      Swal.fire({
-        icon: "error",
-        title: "เกิดข้อผิดพลาด",
-        text: "ไม่สามารถทำรายการได้ โปรดลองอีกครั้ง",
-      });
-    } finally {
-      setUpdatingId(null);
-    }
   };
 
   // Soft Delete User Handler
   const handleDeleteUser = async (userToDelete: User) => {
     if (userToDelete.status === "deleted") return;
 
-    const confirmResult = await Swal.fire({
-      icon: "warning",
+    confirm({
       title: "ยืนยันการลบบัญชี?",
-      html: `คุณต้องการลบบัญชีผู้ใช้ <b>${userToDelete.email}</b> หรือไม่?<br/><span class="text-xs text-rose-600">เมื่อลบแล้ว สถานะจะเปลี่ยนเป็น Deleted และไม่สามารถแก้ไขได้อีก</span>`,
-      showCancelButton: true,
-      confirmButtonText: "ยืนยันลบบัญชี",
-      cancelButtonText: "ยกเลิก",
-      confirmButtonColor: "#dc2626",
+      description: `คุณต้องการลบบัญชีผู้ใช้ ${userToDelete.email} หรือไม่? เมื่อลบแล้ว สถานะจะเปลี่ยนเป็น Deleted และไม่สามารถแก้ไขได้อีก`,
+      confirmText: "ยืนยันลบบัญชี",
+      cancelText: "ยกเลิก",
+      onConfirm: async () => {
+        setUpdatingId(userToDelete.id);
+        try {
+          const res = await deleteUser(userToDelete.id);
+          if (res.success) {
+            alert({
+              title: "ลบผู้ใช้สำเร็จ",
+              description: "เปลี่ยนสถานะผู้ใช้เป็น Deleted เรียบร้อยแล้ว",
+            });
+            setUsers((prev) =>
+              prev.map((u) =>
+                u.id === userToDelete.id ? { ...u, status: "deleted" } : u
+              )
+            );
+          } else {
+            alert({
+              title: "ลบไม่สำเร็จ",
+              description: res.error,
+            });
+          }
+        } catch {
+          alert({
+            title: "เกิดข้อผิดพลาด",
+            description: "ไม่สามารถลบผู้ใช้งานได้",
+          });
+        } finally {
+          setUpdatingId(null);
+        }
+      },
     });
-
-    if (!confirmResult.isConfirmed) return;
-
-    setUpdatingId(userToDelete.id);
-    try {
-      const res = await deleteUser(userToDelete.id);
-      if (res.success) {
-        Swal.fire({
-          icon: "success",
-          title: "ลบผู้ใช้สำเร็จ",
-          text: "เปลี่ยนสถานะผู้ใช้เป็น Deleted เรียบร้อยแล้ว",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-        setUsers((prev) =>
-          prev.map((u) =>
-            u.id === userToDelete.id ? { ...u, status: "deleted" } : u
-          )
-        );
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "ลบไม่สำเร็จ",
-          text: res.error,
-        });
-      }
-    } catch {
-      Swal.fire({
-        icon: "error",
-        title: "เกิดข้อผิดพลาด",
-        text: "ไม่สามารถลบผู้ใช้งานได้",
-      });
-    } finally {
-      setUpdatingId(null);
-    }
   };
 
   const formatDate = (dateStr: string): string => {
@@ -223,7 +205,7 @@ export default function UserComponent() {
       />
 
       {/* Main Table Container */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-md shadow-xs overflow-hidden">
         <UserSearchToolbar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}

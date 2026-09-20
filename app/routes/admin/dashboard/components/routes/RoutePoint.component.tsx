@@ -28,10 +28,10 @@ export default function RoutePointModal(props: RoutePointModalProps) {
 
   if (!MapComponent) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 backdrop-blur-xs bg-slate-900/40 animate-fade-in">
-        <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl p-10 flex flex-col items-center gap-3">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 backdrop-blur-xs bg-gray-900/40 animate-fade-in">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-2xl p-10 flex flex-col items-center gap-3">
           <Loader2 className="w-8 h-8 animate-spin text-sky-600" />
-          <p className="text-slate-600 font-medium">กำลังโหลดแผนที่...</p>
+          <p className="text-gray-500 font-medium">กำลังโหลดแผนที่...</p>
         </div>
       </div>
     );

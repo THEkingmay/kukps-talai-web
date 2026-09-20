@@ -135,7 +135,7 @@ export default function CarDetailMap({ car }: CarDetailMapProps) {
   }, [car?.id, car?.routeId]);
 
   return (
-    <div className="relative w-full h-full min-h-[380px] rounded-xl overflow-hidden border border-slate-200">
+    <div className="relative w-full h-full min-h-[380px] rounded-md overflow-hidden border border-gray-200">
       {/* Map */}
       <MapContainer
         center={KUKPS_CENTER}
@@ -156,15 +156,15 @@ export default function CarDetailMap({ car }: CarDetailMapProps) {
           <>
             <Marker position={position} icon={markerIcon}>
               <Popup>
-                <div className="font-mono text-xs text-slate-700 space-y-1 min-w-[160px]">
-                  <p className="font-semibold text-slate-900 text-[11px] uppercase tracking-wider">
+                <div className="font-mono text-xs text-gray-700 space-y-1 min-w-[160px]">
+                  <p className="font-semibold text-gray-900 text-[11px] uppercase tracking-wider">
                     ตำแหน่งรถล่าสุด
                   </p>
-                  <p className="text-slate-500">
+                  <p className="text-gray-500">
                     {position[0]}, {position[1]}
                   </p>
                   {lastSeen && (
-                    <p className="text-slate-400 text-[10px]">
+                    <p className="text-gray-400 text-[10px]">
                       {formatTime(lastSeen)}
                     </p>
                   )}
@@ -189,11 +189,11 @@ export default function CarDetailMap({ car }: CarDetailMapProps) {
           filteredRoutePoints.map((p, i) => (
             <Marker key={i} position={[p.lat, p.lng]} icon={stopIcon}>
               <Popup>
-                <div className="font-mono text-xs text-slate-700 min-w-[120px]">
-                  <p className="font-semibold text-slate-900 text-[11px] uppercase tracking-wider mb-0.5">
+                <div className="font-mono text-xs text-gray-700 min-w-[120px]">
+                  <p className="font-semibold text-gray-900 text-[11px] uppercase tracking-wider mb-0.5">
                     ป้ายจอด
                   </p>
-                  <p className="text-slate-600">{p.text}</p>
+                  <p className="text-gray-500">{p.text}</p>
                 </div>
               </Popup>
             </Marker>
@@ -203,7 +203,7 @@ export default function CarDetailMap({ car }: CarDetailMapProps) {
       {/* No-signal overlay */}
       {!position && (
         <div className="absolute inset-0 z-[999] pointer-events-none flex flex-col items-center justify-center gap-2">
-          <div className="bg-white/90 border border-slate-200 rounded-xl px-5 py-3.5 shadow-sm flex flex-col items-center gap-1.5">
+          <div className="bg-white/90 border border-gray-200 rounded-md px-5 py-3.5 shadow-sm flex flex-col items-center gap-1.5">
             {/* Signal icon — drawn SVG, no emoji */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -223,7 +223,7 @@ export default function CarDetailMap({ car }: CarDetailMapProps) {
               <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
               <line x1="12" y1="20" x2="12.01" y2="20" />
             </svg>
-            <span className="text-[11px] font-mono text-slate-500 uppercase tracking-wider">
+            <span className="text-[11px] font-mono text-gray-500 uppercase tracking-wider">
               ไม่พบสัญญาณ GPS
             </span>
           </div>
@@ -231,57 +231,57 @@ export default function CarDetailMap({ car }: CarDetailMapProps) {
       )}
 
       {/* Status bar */}
-      <div className="absolute bottom-0 left-0 right-0 z-[1000] border-t border-slate-200 bg-white/95 backdrop-blur-sm px-3 py-2 flex items-center gap-3">
+      <div className="absolute bottom-0 left-0 right-0 z-[1000] border-t border-gray-200 bg-white/95 backdrop-blur-sm px-3 py-2 flex items-center gap-3">
         {loc ? (
           <>
             {/* Status badge */}
             <span
               className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold uppercase tracking-wider border shrink-0 ${
                 isActive
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : "bg-slate-50 text-slate-500 border-slate-200"
+                  ? "bg-gray-100 text-gray-600 border-gray-300"
+                  : "bg-white text-gray-500 border-gray-200"
               }`}
             >
               <span
                 className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                  isActive ? "bg-emerald-500 animate-pulse" : "bg-slate-400"
+                  isActive ? "bg-black animate-pulse" : "bg-gray-400"
                 }`}
               />
               {isActive ? "Active" : "Inactive"}
             </span>
 
             {/* Divider */}
-            <span className="w-px h-3 bg-slate-200 shrink-0" />
+            <span className="w-px h-3 bg-gray-200 shrink-0" />
 
             {/* Coordinates */}
             {position && (
               <>
-                <span className="text-[10px] font-mono text-slate-400 tabular-nums hidden sm:block">
+                <span className="text-[10px] font-mono text-gray-400 tabular-nums hidden sm:block">
                   {position[0]}, {position[1]}
                 </span>
-                <span className="w-px h-3 bg-slate-200 shrink-0 hidden sm:block" />
+                <span className="w-px h-3 bg-gray-200 shrink-0 hidden sm:block" />
               </>
             )}
 
             {/* Last update time */}
             {lastSeen && (
-              <span className="text-[10px] font-mono text-slate-400 flex items-center gap-1">
+              <span className="text-[10px] font-mono text-gray-400 flex items-center gap-1">
                 อัปเดต{" "}
-                <span className="font-semibold text-slate-700">
+                <span className="font-semibold text-gray-700">
                   {formatTime(lastSeen)}
                 </span>
               </span>
             )}
           </>
         ) : (
-          <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
+          <span className="text-[10px] font-mono text-gray-400 uppercase tracking-wider">
             ไม่พบสัญญาณ GPS
           </span>
         )}
 
         {/* Route indicator — right side */}
         {routePoints.length > 0 && (
-          <span className="ml-auto inline-flex items-center gap-1 text-[10px] font-mono text-slate-400">
+          <span className="ml-auto inline-flex items-center gap-1 text-[10px] font-mono text-gray-400">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
