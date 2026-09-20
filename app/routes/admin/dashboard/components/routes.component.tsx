@@ -9,6 +9,8 @@ import {
   deleteRoute,
 } from "~/actions/route.action";
 import { RefreshCw, Plus, Search, X } from "lucide-react";
+import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
 
 import RouteDetailModal from "./routes/RouteDetailModal";
 import CreateRouteModal from "./routes/CreateRouteModal";
@@ -43,7 +45,10 @@ export default function RoutesComponent() {
 
   // Prevent background scrolling when any modal is active
   const isAnyModalOpen =
-    isCreateModalOpen || Boolean(editingRoute) || Boolean(selectedRouteId) || Boolean(pointsRoute);
+    isCreateModalOpen ||
+    Boolean(editingRoute) ||
+    Boolean(selectedRouteId) ||
+    Boolean(pointsRoute);
 
   useEffect(() => {
     if (isAnyModalOpen) {
@@ -66,9 +71,9 @@ export default function RoutesComponent() {
         setRoutes(res.data.data || []);
         if (showToast) {
           alert({
-        title: "อัปเดตข้อมูลเรียบร้อย",
-        description: "อัปเดตข้อมูลเส้นทางเรียบร้อยแล้ว",
-      });
+            title: "อัปเดตข้อมูลเรียบร้อย",
+            description: "อัปเดตข้อมูลเส้นทางเรียบร้อยแล้ว",
+          });
         }
       } else {
         setError(res.error || "ดึงข้อมูลเส้นทางไม่สำเร็จ");
@@ -95,9 +100,9 @@ export default function RoutesComponent() {
         setDetailRoute(res.data.data);
       } else {
         alert({
-        title: "โหลดข้อมูลไม่สำเร็จ",
-        description: res.error,
-      });
+          title: "โหลดข้อมูลไม่สำเร็จ",
+          description: res.error,
+        });
         setSelectedRouteId(null);
       }
     } catch {
@@ -118,7 +123,7 @@ export default function RoutesComponent() {
     return routes.filter(
       (r) =>
         r.name.toLowerCase().includes(query) ||
-        r.id.toLowerCase().includes(query)
+        r.id.toLowerCase().includes(query),
     );
   }, [routes, searchQuery]);
 
@@ -129,7 +134,7 @@ export default function RoutesComponent() {
 
     if (
       routes.find(
-        (r) => r.name.toLowerCase() === newRouteName.trim().toLowerCase()
+        (r) => r.name.toLowerCase() === newRouteName.trim().toLowerCase(),
       )
     ) {
       alert({
@@ -144,17 +149,17 @@ export default function RoutesComponent() {
       const res = await createRoute(newRouteName.trim());
       if (res.success) {
         alert({
-        title: "เพิ่มเส้นทางสำเร็จ",
-        description: `สร้างเส้นทาง "${res.data.data.name || newRouteName.trim()}" เรียบร้อยแล้ว`,
-      });
+          title: "เพิ่มเส้นทางสำเร็จ",
+          description: `สร้างเส้นทาง "${res.data.data.name || newRouteName.trim()}" เรียบร้อยแล้ว`,
+        });
         setNewRouteName("");
         setIsCreateModalOpen(false);
         fetchRoutesData(false);
       } else {
         alert({
-        title: "เพิ่มเส้นทางไม่สำเร็จ",
-        description: res.error,
-      });
+          title: "เพิ่มเส้นทางไม่สำเร็จ",
+          description: res.error,
+        });
       }
     } catch {
       alert({
@@ -173,7 +178,7 @@ export default function RoutesComponent() {
 
     if (
       routes.find(
-        (r) => r.name.toLowerCase() === editRouteName.trim().toLowerCase()
+        (r) => r.name.toLowerCase() === editRouteName.trim().toLowerCase(),
       )
     ) {
       alert({
@@ -187,17 +192,17 @@ export default function RoutesComponent() {
       const res = await updateRoute(editingRoute.id, editRouteName.trim());
       if (res.success) {
         alert({
-        title: "บันทึกการแก้ไขสำเร็จ",
-        description: `อัปเดตชื่อเส้นทางเป็น "${editRouteName.trim()}" เรียบร้อย`,
-      });
+          title: "บันทึกการแก้ไขสำเร็จ",
+          description: `อัปเดตชื่อเส้นทางเป็น "${editRouteName.trim()}" เรียบร้อย`,
+        });
         setEditingRoute(null);
         setEditRouteName("");
         fetchRoutesData(false);
       } else {
         alert({
-        title: "แก้ไขไม่สำเร็จ",
-        description: res.error,
-      });
+          title: "แก้ไขไม่สำเร็จ",
+          description: res.error,
+        });
       }
     } catch {
       alert({
@@ -219,28 +224,28 @@ export default function RoutesComponent() {
       onConfirm: async () => {
         setDeletingId(routeToDelete.id);
         try {
-      const res = await deleteRoute(routeToDelete.id);
-      if (res.success) {
-        alert({
-        title: "ลบสำเร็จ",
-        description: "ลบเส้นทางออกจากระบบเรียบร้อยแล้ว",
-      });
-        fetchRoutesData(false);
-      } else {
-        alert({
-        title: "ลบไม่สำเร็จ",
-        description: res.error,
-      });
-      }
-    } catch {
-      alert({
-        title: "เกิดข้อผิดพลาด",
-        description: "ไม่สามารถลบเส้นทางได้",
-      });
-    } finally {
-      setDeletingId(null);
-    }
-      }
+          const res = await deleteRoute(routeToDelete.id);
+          if (res.success) {
+            alert({
+              title: "ลบสำเร็จ",
+              description: "ลบเส้นทางออกจากระบบเรียบร้อยแล้ว",
+            });
+            fetchRoutesData(false);
+          } else {
+            alert({
+              title: "ลบไม่สำเร็จ",
+              description: res.error,
+            });
+          }
+        } catch {
+          alert({
+            title: "เกิดข้อผิดพลาด",
+            description: "ไม่สามารถลบเส้นทางได้",
+          });
+        } finally {
+          setDeletingId(null);
+        }
+      },
     });
   };
 
@@ -259,68 +264,54 @@ export default function RoutesComponent() {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-md shadow-xs overflow-hidden">
+    <div className="bg-background border rounded-md shadow-sm overflow-hidden">
       {/* Header Bar */}
-      <div className="p-5 sm:p-6 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/50">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-black" />
-            <h3 className="text-lg font-bold text-gray-900 tracking-tight">
-              จัดการเส้นทางเดินรถตะไล (Transit Routes)
-            </h3>
-          </div>
-          <p className="text-xs text-gray-500 mt-0.5">
-            บริหารจัดการเส้นทางเดินรถสวัสดิการ มก.กำแพงแสน
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2.5">
-          <span className="px-3 py-1.5 rounded-lg text-xs font-mono font-medium bg-gray-100 text-black border border-gray-300/80">
-            ทั้งหมด: {routes.length} สาย
-          </span>
-
-          <button
-            onClick={() => fetchRoutesData(true)}
-            disabled={isLoading}
-            className="p-2 rounded-lg text-gray-500 bg-white border border-gray-200 hover:bg-white hover:text-gray-900 transition-all disabled:opacity-50"
-            title="รีเฟรชข้อมูล"
-          >
-            <RefreshCw
-              className={`w-4 h-4 ${
-                isLoading ? "animate-spin text-black" : ""
-              }`}
-            />
-          </button>
-
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-black hover:bg-gray-600 active:bg-black transition-all shadow-xs flex items-center gap-1.5"
-          >
-            <Plus className="w-4 h-4" />
-            <span>เพิ่มเส้นทาง</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Search Toolbar */}
-      <div className="p-4 sm:p-5 border-b border-gray-200 bg-white">
-        <div className="relative max-w-md">
-          <input
+      <div className="p-4 sm:p-5 border-b bg-background flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="relative w-full sm:max-w-sm">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="ค้นหาชื่อเส้นทาง หรือ ID..."
-            className="w-full pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-md text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-black transition-all"
+            className="pl-9 pr-9"
           />
-          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5 pointer-events-none" />
           {searchQuery && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-0 top-0 h-9 w-9 text-muted-foreground"
               onClick={() => setSearchQuery("")}
-              className="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-500"
             >
-              <X className="w-3.5 h-3.5" />
-            </button>
+              <X className="h-4 w-4" />
+            </Button>
           )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1.5 rounded-md text-xs font-mono font-medium bg-muted text-muted-foreground border">
+            ทั้งหมด: {routes.length} สาย
+          </span>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fetchRoutesData(false)}
+            disabled={isLoading}
+            className="h-9"
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            รีเฟรช
+          </Button>
+
+          <Button
+            size="sm"
+            onClick={() => setIsCreateModalOpen(true)}
+            className="h-9"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            เพิ่มเส้นทาง
+          </Button>
         </div>
       </div>
 

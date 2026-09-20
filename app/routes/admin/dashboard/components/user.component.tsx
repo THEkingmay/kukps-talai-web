@@ -205,7 +205,7 @@ export default function UserComponent() {
       />
 
       {/* Main Table Container */}
-      <div className="bg-white border border-gray-200 rounded-md shadow-xs overflow-hidden">
+      <div className="bg-background border rounded-md shadow-sm overflow-hidden">
         <UserSearchToolbar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}

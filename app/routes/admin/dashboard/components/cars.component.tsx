@@ -316,15 +316,15 @@ export default function CarsComponent() {
         inactive={metrics.inactive}
       />
 
-      {/* 2. Main Control Container */}
-      <div className="bg-white border border-gray-200 rounded-md shadow-xs overflow-hidden">
+      {/* Main Container */}
+      <div className="bg-background border rounded-md shadow-sm overflow-hidden">
         <CarSearchToolbar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           statusFilter={statusFilter}
           onStatusFilterChange={setStatusFilter}
           isLoading={isLoading}
-          onRefresh={() => fetchFleetData(true)}
+          onRefresh={() => fetchFleetData(false)}
           onOpenCreateModal={() => setIsCreateModalOpen(true)}
         />
 

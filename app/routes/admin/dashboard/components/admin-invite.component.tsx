@@ -177,49 +177,44 @@ export default function AdminInviteComponent() {
   ).length;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-md shadow-xs overflow-hidden">
-      <div className="p-6 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/50">
+    <div className="bg-background border rounded-md shadow-sm overflow-hidden">
+      <div className="p-4 sm:p-5 border-b bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-amber-100 text-amber-900 border border-amber-200">
               Super Admin Level
             </span>
-            <h3 className="text-lg font-bold text-gray-900 tracking-tight">
+            <h3 className="text-lg font-bold tracking-tight">
               จัดการรหัสเชิญผู้ดูแลระบบ (Admin Invites)
             </h3>
           </div>
-          <p className="text-xs text-gray-500 mt-1">
-            สร้างและบริหารจัดการสิทธิ์รหัสเชิญสำหรับเจ้าหน้าที่ผู้ดูแลระบบรายใหม่
-            (@ku.th)
+          <p className="text-xs text-muted-foreground mt-1">
+            สร้างและบริหารจัดการสิทธิ์รหัสเชิญสำหรับเจ้าหน้าที่ผู้ดูแลระบบรายใหม่ (@ku.th)
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="hidden md:flex items-center gap-2 text-xs font-mono">
-            <span className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200">
+            <span className="px-2.5 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-200">
               รออนุมัติ: <strong className="font-bold">{pendingCount}</strong>
             </span>
-            <span className="px-2.5 py-1 rounded-lg bg-gray-100 text-black border border-gray-300">
+            <span className="px-2.5 py-1 rounded-md bg-muted text-muted-foreground border">
               ยืนยันแล้ว: <strong className="font-bold">{acceptedCount}</strong>
             </span>
           </div>
           <button
             onClick={fetchAdminInvites}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-white transition-colors disabled:opacity-60 shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border rounded-md hover:bg-muted transition-colors disabled:opacity-50"
           >
-            <RefreshCw
-              className={`w-3.5 h-3.5 text-gray-500 ${
-                isLoading ? "animate-spin text-black" : ""
-              }`}
-            />
-            รีเฟรชข้อมูล
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+            รีเฟรช
           </button>
         </div>
       </div>
 
       {alertState && (
-        <div className="p-6 pb-0">
+        <div className="p-4 sm:p-5 pb-0">
           <Alert
             type={alertState.type}
             title={alertState.title}
@@ -237,27 +232,19 @@ export default function AdminInviteComponent() {
         onSubmit={handleAddInvite}
       />
 
-      <div className="px-6 py-3 bg-white border-b border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="px-4 sm:px-5 py-3 border-b flex flex-col sm:flex-row items-center justify-between gap-3 bg-background">
         <div className="relative w-full sm:w-72">
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="ค้นหาตามอีเมลผู้รับ หรือผู้สร้าง..."
-            className="w-full pl-9 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-black"
+            className="w-full pl-9 pr-3 py-1.5 text-xs border rounded-md bg-transparent placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           />
-          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2 pointer-events-none" />
+          <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-2 pointer-events-none" />
         </div>
-        <div className="text-xs text-gray-500 font-mono self-end sm:self-center">
-          แสดง{" "}
-          <span className="font-bold text-gray-900">
-            {filteredInvites.length}
-          </span>{" "}
-          จากทั้งหมด{" "}
-          <span className="font-bold text-gray-900">
-            {adminInvites.length}
-          </span>{" "}
-          รายการ
+        <div className="text-xs text-muted-foreground font-mono self-end sm:self-center">
+          แสดง <span className="font-medium text-foreground">{filteredInvites.length}</span> จากทั้งหมด <span className="font-medium text-foreground">{adminInvites.length}</span> รายการ
         </div>
       </div>
 
