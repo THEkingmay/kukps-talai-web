@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import type { Route } from "~/types";
 import { Loader2 } from "lucide-react";
+import { Sheet, SheetContent } from "~/components/ui/sheet";
 
 interface RoutePointModalProps {
   isOpen: boolean;
@@ -24,16 +25,18 @@ export default function RoutePointModal(props: RoutePointModalProps) {
     }
   }, [props.isOpen, MapComponent]);
 
-  if (!props.isOpen || !props.route) return null;
+  if (!props.route) return null;
 
   if (!MapComponent) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 backdrop-blur-xs bg-gray-900/40 animate-fade-in">
-        <div className="bg-white border border-gray-200 rounded-lg shadow-2xl p-10 flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 animate-spin text-sky-600" />
-          <p className="text-gray-500 font-medium">กำลังโหลดแผนที่...</p>
-        </div>
-      </div>
+      <Sheet open={props.isOpen} onOpenChange={(open) => !open && props.onClose()}>
+        <SheetContent className="w-full !max-w-[95vw] sm:!max-w-[95vw] xl:!max-w-[95vw] h-full flex flex-col items-center justify-center bg-background">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <p className="text-muted-foreground font-medium">กำลังโหลดแผนที่...</p>
+          </div>
+        </SheetContent>
+      </Sheet>
     );
   }
 

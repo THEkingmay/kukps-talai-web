@@ -6,6 +6,13 @@ import {
   updatePoint,
   deletePoint,
 } from "~/actions/route-poimts.action";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "~/components/ui/sheet";
 import { useDialog } from "~/components/providers/DialogProvider";
 import {
   X,
@@ -53,7 +60,11 @@ L.Icon.Default.mergeOptions({
 });
 
 // Custom Icon builder to show sequence numbers
-const createSequenceIcon = (seqText: string | number, isPending: boolean = false, isStop: boolean = false) => {
+const createSequenceIcon = (
+  seqText: string | number,
+  isPending: boolean = false,
+  isStop: boolean = false,
+) => {
   const text = String(seqText);
 
   if (isPending) {
@@ -68,7 +79,7 @@ const createSequenceIcon = (seqText: string | number, isPending: boolean = false
   if (isStop) {
     return L.divIcon({
       className: "custom-leaflet-icon",
-      html: `<div style="transform: translate(-50%, -50%);" class="flex items-center justify-center min-w-[32px] h-8 px-1.5 rounded-full border-2 border-white shadow-sm font-mono text-[11px] font-bold leading-none transition-all bg-sky-500 text-white whitespace-nowrap">${text}</div>`,
+      html: `<div style="transform: translate(-50%, -50%);" class="flex items-center justify-center min-w-[32px] h-8 px-1.5 rounded-full border-2  shadow-sm font-mono text-[11px] font-bold leading-none transition-all bg-primary text-primary-foreground  whitespace-nowrap">${text}</div>`,
       iconSize: [0, 0],
       iconAnchor: [0, 0],
     });
@@ -76,7 +87,7 @@ const createSequenceIcon = (seqText: string | number, isPending: boolean = false
 
   return L.divIcon({
     className: "custom-leaflet-icon",
-    html: `<div style="transform: translate(-50%, -50%);" class="flex items-center justify-center min-w-[20px] h-5 px-1 rounded-full border-[1.5px] border-gray-300 bg-white shadow-sm font-mono text-[9px] font-bold leading-none transition-all text-gray-500 whitespace-nowrap">${text}</div>`,
+    html: `<div style="transform: translate(-50%, -50%);" class="flex items-center justify-center min-w-[20px] h-5 px-1 rounded-full border-[1.5px] border-muted-foreground/30 bg-background shadow-sm font-mono text-[9px] font-bold leading-none transition-all text-muted-foreground whitespace-nowrap">${text}</div>`,
     iconSize: [0, 0],
     iconAnchor: [0, 0],
   });
@@ -244,15 +255,15 @@ export default function RoutePointModal({
           await fetchPoints();
         } else {
           alert({
-        title: "เพิ่มไม่สำเร็จ",
-        description: res.error,
-      });
+            title: "เพิ่มไม่สำเร็จ",
+            description: res.error,
+          });
         }
       } catch (e) {
         alert({
-        title: "ข้อผิดพลาด",
-        description: "ไม่สามารถเพิ่มจุดใหม่ได้",
-      });
+          title: "ข้อผิดพลาด",
+          description: "ไม่สามารถเพิ่มจุดใหม่ได้",
+        });
       } finally {
         setIsSaving(false);
         setMode("view");
@@ -277,15 +288,15 @@ export default function RoutePointModal({
       const res = await createPoints(payload);
       if (res.success) {
         alert({
-        title: "บันทึกสำเร็จ",
-        description: "สร้างเส้นทางสำเร็จ",
-      });
+          title: "บันทึกสำเร็จ",
+          description: "สร้างเส้นทางสำเร็จ",
+        });
         await fetchPoints();
       } else {
         alert({
-        title: "บันทึกไม่สำเร็จ",
-        description: res.error,
-      });
+          title: "บันทึกไม่สำเร็จ",
+          description: res.error,
+        });
       }
     } catch {
       alert({
@@ -316,14 +327,14 @@ export default function RoutePointModal({
           prev.map((p) => (p.id === pointId ? { ...p, ...payload } : p)),
         );
         alert({
-        title: "บันทึกข้อมูลจุดสำเร็จ",
-        description: "บันทึกข้อมูลสำเร็จ",
-      });
+          title: "บันทึกข้อมูลจุดสำเร็จ",
+          description: "บันทึกข้อมูลสำเร็จ",
+        });
       } else {
         alert({
-        title: "แก้ไขไม่สำเร็จ",
-        description: res.error,
-      });
+          title: "แก้ไขไม่สำเร็จ",
+          description: res.error,
+        });
       }
     } catch {
       alert({
@@ -361,7 +372,7 @@ export default function RoutePointModal({
         } finally {
           setDeletingId(null);
         }
-      }
+      },
     });
   };
 
@@ -389,11 +400,26 @@ export default function RoutePointModal({
   // Group points for Map rendering
   const groupedPoints = (() => {
     if (points.length > 0) {
-      const groups = new Map<string, { lat: number; lng: number; indices: number[]; isStop: boolean; names: string[] }>();
+      const groups = new Map<
+        string,
+        {
+          lat: number;
+          lng: number;
+          indices: number[];
+          isStop: boolean;
+          names: string[];
+        }
+      >();
       points.forEach((p, idx) => {
         const key = `${p.lat},${p.lng}`;
         if (!groups.has(key)) {
-          groups.set(key, { lat: p.lat, lng: p.lng, indices: [], isStop: false, names: [] });
+          groups.set(key, {
+            lat: p.lat,
+            lng: p.lng,
+            indices: [],
+            isStop: false,
+            names: [],
+          });
         }
         const g = groups.get(key)!;
         g.indices.push(idx + 1);
@@ -409,7 +435,10 @@ export default function RoutePointModal({
 
   const groupedPendingPoints = (() => {
     if (points.length === 0 && pendingPoints.length > 0) {
-      const groups = new Map<string, { lat: number; lng: number; indices: number[] }>();
+      const groups = new Map<
+        string,
+        { lat: number; lng: number; indices: number[] }
+      >();
       pendingPoints.forEach((p, idx) => {
         const key = `${p.lat},${p.lng}`;
         if (!groups.has(key)) {
@@ -432,37 +461,31 @@ export default function RoutePointModal({
   const defaultCenter: L.LatLngTuple = [14.025, 99.975];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 backdrop-blur-xs bg-gray-900/40 animate-fade-in">
-      <div className="bg-white border border-gray-200 rounded-lg shadow-2xl w-[98vw] max-w-[1600px] overflow-hidden flex flex-col h-[95vh]">
+    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent className="w-full !max-w-[95vw] sm:!max-w-[95vw] xl:!max-w-[95vw] p-0 flex flex-col h-full bg-background border-border" showCloseButton={false}>
         {/* Header */}
-        <div className="p-5 sm:p-6 border-b border-gray-200 flex items-center justify-between bg-white/80 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-md bg-sky-50 text-sky-700 flex items-center justify-center border border-sky-100 shrink-0">
-              <MapPin className="w-5 h-5" />
+        <div className="p-5 sm:p-6 border-b border-border flex items-center justify-between bg-background shrink-0">
+          <SheetHeader className="flex flex-row items-center gap-4 space-y-0 text-left">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shrink-0">
+              <MapPin className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900 tracking-tight leading-tight">
+              <SheetTitle className="text-xl font-bold text-foreground tracking-tight leading-tight">
                 จัดการเส้นทาง: {route.name}
-              </h3>
-              <p className="text-xs text-gray-500 font-mono mt-0.5">
-                ID: {route.id}
-              </p>
+              </SheetTitle>
+              <SheetDescription className="font-mono mt-0.5 text-sm">
+                Route ID: {route.id}
+              </SheetDescription>
             </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-9 h-9 rounded-full bg-gray-200 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition-colors shadow-2xs"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          </SheetHeader>
         </div>
 
         {/* Content Body */}
-        <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+        <div className="flex flex-col col-span-3 lg:flex-row flex-1 overflow-hidden">
           {/* Left: Map Area */}
-          <div className="flex-1 relative bg-gray-200 min-h-[300px] lg:min-h-0 border-b lg:border-b-0 lg:border-r border-gray-200">
+          <div className="flex-1 col-span-1 relative bg-muted/50 min-h-[300px] lg:min-h-0 border-b lg:border-b-0 lg:border-r border-border">
             {mode === "insert" && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-gray-900/90 text-white px-4 py-2 rounded-full shadow-lg text-sm font-semibold flex items-center gap-2 animate-pulse">
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg text-sm font-semibold flex items-center gap-2 animate-pulse">
                 <Crosshair className="w-4 h-4" />
                 คลิกบนแผนที่เพื่อแทรกจุดจอด
                 <button
@@ -470,7 +493,7 @@ export default function RoutePointModal({
                     e.stopPropagation();
                     setMode("view");
                   }}
-                  className="ml-2 text-gray-300 hover:text-white"
+                  className="ml-2 text-primary-foreground/70 hover:text-primary-foreground"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -548,7 +571,7 @@ export default function RoutePointModal({
               {mapPoints.length > 1 && (
                 <Polyline
                   positions={mapPoints}
-                  color="#0ea5e9"
+                  color="var(--primary)"
                   weight={4}
                   opacity={0.8}
                 />
@@ -560,12 +583,12 @@ export default function RoutePointModal({
           </div>
 
           {/* Right: Sidebar Panel */}
-          <div className="w-full lg:w-[400px] xl:w-[450px] bg-white flex flex-col shrink-0">
-            <div className="p-4 border-b border-gray-200 bg-white/50 flex justify-between items-center shrink-0">
-              <span className="text-sm font-bold text-gray-800 flex items-center gap-1.5">
-                <RouteIcon className="w-4 h-4 text-sky-600" /> รายการจุดจอด
+          <div className="w-full lg:w-[400px] xl:w-[450px] bg-background flex flex-col shrink-0">
+            <div className="p-4 border-b border-border bg-background/50 flex justify-between items-center shrink-0">
+              <span className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                <RouteIcon className="w-4 h-4 text-primary" /> รายการจุดจอด
               </span>
-              <span className="text-xs font-mono font-medium text-gray-500 bg-gray-200 px-2.5 py-1 rounded-md border border-gray-200">
+              <span className="text-xs font-mono font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-md border border-border">
                 {points.length > 0
                   ? `${points.length} จุด`
                   : pendingPoints.length > 0
@@ -576,19 +599,19 @@ export default function RoutePointModal({
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {isLoading ? (
-                <div className="py-12 text-center text-gray-500 font-mono">
-                  <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-gray-400" />
+                <div className="py-12 text-center text-muted-foreground font-mono">
+                  <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-muted-foreground" />
                   กำลังโหลดข้อมูล...
                 </div>
               ) : points.length === 0 && pendingPoints.length === 0 ? (
-                <div className="py-12 text-center border-2 border-dashed border-gray-200 rounded-md bg-white/30">
-                  <div className="w-12 h-12 rounded-full bg-sky-50 text-sky-500 mx-auto mb-3 flex items-center justify-center">
+                <div className="py-12 text-center border-2 border-dashed border-border rounded-md bg-background/30">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 text-primary mx-auto mb-3 flex items-center justify-center">
                     <MapPin className="w-6 h-6" />
                   </div>
-                  <h4 className="text-sm font-bold text-gray-800 mb-1">
+                  <h4 className="text-sm font-bold text-foreground mb-1">
                     ยังไม่มีจุดจอดในเส้นทางนี้
                   </h4>
-                  <p className="text-xs text-gray-500 px-4">
+                  <p className="text-xs text-muted-foreground px-4">
                     คลิกบนแผนที่เพื่อเริ่มสร้างเส้นทาง จุดแรกจะถูกสร้างทันที
                   </p>
                 </div>
@@ -602,18 +625,18 @@ export default function RoutePointModal({
                         <div
                           className={`p-3 rounded-md border transition-all ${
                             updatingId === p.id
-                              ? "bg-sky-50 border-sky-200"
+                              ? "bg-primary/10 border-primary/30"
                               : isStop
-                                ? "bg-white border-sky-100 shadow-sm hover:border-sky-300"
-                                : "bg-white border-gray-200 shadow-2xs hover:border-gray-300 opacity-80 hover:opacity-100"
+                                ? "bg-background border-primary/20 shadow-sm hover:border-primary/40"
+                                : "bg-background border-border shadow-2xs hover:border-muted-foreground/30 opacity-80 hover:opacity-100"
                           }`}
                         >
                           <div className="flex items-start gap-3">
                             <div
                               className={`w-7 h-7 rounded-full font-mono text-xs font-bold flex items-center justify-center shrink-0 border ${
                                 isStop
-                                  ? "bg-sky-500 text-white border-sky-600 shadow-sm"
-                                  : "bg-white text-gray-500 border-gray-200"
+                                  ? "bg-primary text-primary-foreground  border-primary shadow-sm"
+                                  : "bg-background text-muted-foreground border-border"
                               }`}
                             >
                               {idx + 1}
@@ -621,7 +644,7 @@ export default function RoutePointModal({
                             <div className="flex-1 space-y-2.5 min-w-0">
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <div>
-                                  <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                                  <label className="block text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
                                     ชื่อจุด / ป้าย
                                   </label>
                                   <input
@@ -637,11 +660,11 @@ export default function RoutePointModal({
                                       }))
                                     }
                                     placeholder="เช่น หน้า มก."
-                                    className="w-full px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                                    className="w-full px-2.5 py-1.5 bg-background border border-border rounded-lg text-sm text-foreground placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                                  <label className="block text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
                                     เวลาไปจุดถัดไป (วิ)
                                   </label>
                                   <input
@@ -659,13 +682,13 @@ export default function RoutePointModal({
                                       }))
                                     }
                                     placeholder="เช่น 120"
-                                    className="w-full px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all font-mono"
+                                    className="w-full px-2.5 py-1.5 bg-background border border-border rounded-lg text-sm text-foreground placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-mono"
                                   />
                                 </div>
                               </div>
 
                               <div className="flex items-center justify-between pt-1">
-                                <span className="text-[10px] font-mono text-gray-400">
+                                <span className="text-[10px] font-mono text-muted-foreground">
                                   SEQ: {p.sequence}
                                 </span>
                                 <div className="flex items-center gap-1.5">
@@ -675,7 +698,7 @@ export default function RoutePointModal({
                                         handleUpdateExistingPoint(p.id)
                                       }
                                       disabled={updatingId === p.id}
-                                      className="px-2.5 py-1 rounded-md text-[11px] font-semibold text-white bg-sky-600 hover:bg-sky-700 transition-all shadow-xs disabled:opacity-50 flex items-center gap-1"
+                                      className="px-2.5 py-1 rounded-md text-[11px] font-semibold  bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-xs disabled:opacity-50 flex items-center gap-1"
                                     >
                                       {updatingId === p.id ? (
                                         <Loader2 className="w-3 h-3 animate-spin" />
@@ -688,7 +711,7 @@ export default function RoutePointModal({
                                   <button
                                     onClick={() => handleDeletePoint(p.id)}
                                     disabled={deletingId === p.id}
-                                    className="p-1.5 rounded-md text-gray-400 hover:text-black transition-colors disabled:opacity-50"
+                                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
                                     title="ลบจุดนี้"
                                   >
                                     {deletingId === p.id ? (
@@ -707,7 +730,7 @@ export default function RoutePointModal({
                         {idx < points.length - 1 && (
                           <div className="flex justify-center my-1 relative group">
                             <div className="absolute inset-0 flex items-center">
-                              <div className="w-full border-t border-gray-200 group-hover:border-sky-200 transition-colors border-dashed" />
+                              <div className="w-full border-t border-border group-hover:border-primary/30 transition-colors border-dashed" />
                             </div>
                             <button
                               onClick={() => {
@@ -715,7 +738,7 @@ export default function RoutePointModal({
                                 setInsertAfterSeq(p.sequence);
                                 setInsertBeforeSeq(points[idx + 1].sequence);
                               }}
-                              className="relative bg-white px-2 py-0.5 rounded-full text-[10px] font-semibold text-gray-400 group-hover:text-sky-600 border border-gray-200 group-hover:border-sky-300 transition-all flex items-center gap-1 opacity-0 group-hover:opacity-100 focus:opacity-100 shadow-2xs"
+                              className="relative bg-background px-2 py-0.5 rounded-full text-[10px] font-semibold text-muted-foreground group-hover:text-primary border border-border group-hover:border-primary/40 transition-all flex items-center gap-1 opacity-0 group-hover:opacity-100 focus:opacity-100 shadow-2xs"
                             >
                               <Plus className="w-3 h-3" /> แทรกจุด
                             </button>
@@ -734,7 +757,7 @@ export default function RoutePointModal({
                           setInsertAfterSeq(points[points.length - 1].sequence);
                           setInsertBeforeSeq(null);
                         }}
-                        className="w-full py-2.5 rounded-md border border-dashed border-gray-300 hover:border-gray-400 bg-white hover:bg-white text-gray-500 hover:text-gray-800 text-xs font-semibold transition-all flex items-center justify-center gap-1.5"
+                        className="w-full py-2.5 rounded-md border border-dashed border-muted-foreground/30 hover:border-muted-foreground/50 bg-background hover:bg-background text-muted-foreground hover:text-foreground text-xs font-semibold transition-all flex items-center justify-center gap-1.5"
                       >
                         <Plus className="w-4 h-4" /> เพิ่มจุดต่อท้าย
                       </button>
@@ -756,7 +779,7 @@ export default function RoutePointModal({
                             <div className="flex-1 space-y-2.5 min-w-0">
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <div>
-                                  <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                                  <label className="block text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
                                     ชื่อจุด
                                   </label>
                                   <input
@@ -770,11 +793,11 @@ export default function RoutePointModal({
                                       })
                                     }
                                     placeholder="ยังไม่มีชื่อ"
-                                    className="w-full px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                                    className="w-full px-2.5 py-1.5 bg-background border border-border rounded-lg text-sm text-foreground placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                                  <label className="block text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
                                     เวลาถึงจุดถัดไป(วิ)
                                   </label>
                                   <input
@@ -788,7 +811,7 @@ export default function RoutePointModal({
                                       })
                                     }
                                     placeholder="เช่น 120"
-                                    className="w-full px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-mono"
+                                    className="w-full px-2.5 py-1.5 bg-background border border-border rounded-lg text-sm text-foreground placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-mono"
                                   />
                                 </div>
                               </div>
@@ -802,7 +825,7 @@ export default function RoutePointModal({
                                       prev.filter((_, i) => i !== idx),
                                     )
                                   }
-                                  className="text-[10px] font-semibold text-black hover:underline"
+                                  className="text-[10px] font-semibold text-foreground hover:underline"
                                 >
                                   ลบจุดนี้
                                 </button>
@@ -819,11 +842,11 @@ export default function RoutePointModal({
 
             {/* Footer Action for Pending Points */}
             {points.length === 0 && pendingPoints.length > 0 && (
-              <div className="p-4 border-t border-gray-200 bg-white shrink-0">
+              <div className="p-4 border-t border-border bg-background shrink-0">
                 <button
                   onClick={handleSaveInitialPoints}
                   disabled={isSaving}
-                  className="w-full py-2.5 rounded-md text-sm font-semibold text-white bg-black hover:bg-gray-600 active:bg-black transition-all shadow-xs disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-2.5 rounded-md text-sm font-semibold  bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-xs disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isSaving ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -836,7 +859,7 @@ export default function RoutePointModal({
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 }

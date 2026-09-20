@@ -8,7 +8,8 @@ import {
   User,
   Route,
   Activity,
-  Hash, MapPin,
+  Hash,
+  MapPin,
   Loader2,
 } from "lucide-react";
 import CarHistoryLogList from "./CarHistoryLogList";
@@ -56,7 +57,9 @@ export default function CarDetailModal({
                 {car ? `รถตะไล หมายเลข ${car.carNumber}` : "รายละเอียดรถตะไล"}
               </SheetTitle>
               <SheetDescription className="font-mono text-sm mt-1">
-                {car ? `System ID: ${car.id}` : "Vehicle Details & GPS History Log"}
+                {car
+                  ? `System ID: ${car.id}`
+                  : "Vehicle Details & GPS History Log"}
               </SheetDescription>
             </div>
           </div>
@@ -65,7 +68,9 @@ export default function CarDetailModal({
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-32 text-muted-foreground">
             <Loader2 className="h-10 w-10 animate-spin mb-4 text-primary/60" />
-            <p className="font-medium tracking-tight">กำลังโหลดข้อมูลรายละเอียดรถตะไล...</p>
+            <p className="font-medium tracking-tight">
+              กำลังโหลดข้อมูลรายละเอียดรถตะไล...
+            </p>
           </div>
         ) : car ? (
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
@@ -90,7 +95,9 @@ export default function CarDetailModal({
                     </span>
                     <div className="flex items-center gap-2 font-semibold text-card-foreground text-lg mt-0.5 truncate">
                       <Route className="h-5 w-5 text-primary shrink-0" />
-                      <span className="truncate" title={routeName}>{routeName}</span>
+                      <span className="truncate" title={routeName}>
+                        {routeName}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -98,20 +105,36 @@ export default function CarDetailModal({
                 {/* Key-Value Metadata List */}
                 <div className="space-y-3 rounded-xl border bg-card/50 p-4 text-sm font-mono shadow-sm">
                   <div className="flex items-center justify-between pb-3 border-b border-border/50">
-                    <span className="flex items-center gap-2 text-muted-foreground"><Hash className="h-4 w-4" /> รหัสระบบ (ID)</span>
-                    <span className="font-semibold text-foreground truncate pl-4">{car.id}</span>
+                    <span className="flex items-center gap-2 text-muted-foreground">
+                      <Hash className="h-4 w-4" /> รหัสระบบ (ID)
+                    </span>
+                    <span className="font-semibold text-foreground truncate pl-4">
+                      {car.id}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between pb-3 border-b border-border/50">
-                    <span className="flex items-center gap-2 text-muted-foreground"><User className="h-4 w-4" /> ผู้แก้ไขล่าสุด</span>
-                    <span className="font-semibold text-foreground">{car.updatedBy || "System Admin"}</span>
+                    <span className="flex items-center gap-2 text-muted-foreground">
+                      <User className="h-4 w-4" /> ผู้แก้ไขล่าสุด
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      {car.updatedBy || "System Admin"}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between pb-3 border-b border-border/50">
-                    <span className="flex items-center gap-2 text-muted-foreground"><Calendar className="h-4 w-4" /> สร้างเมื่อ</span>
-                    <span className="font-semibold text-foreground">{formatDate(car.createdAt)}</span>
+                    <span className="flex items-center gap-2 text-muted-foreground">
+                      <Calendar className="h-4 w-4" /> สร้างเมื่อ
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      {formatDate(car.createdAt)}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-muted-foreground"><Clock className="h-4 w-4" /> อัปเดตล่าสุด</span>
-                    <span className="font-semibold text-foreground">{formatDate(car.updatedAt)}</span>
+                    <span className="flex items-center gap-2 text-muted-foreground">
+                      <Clock className="h-4 w-4" /> อัปเดตล่าสุด
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      {formatDate(car.updatedAt)}
+                    </span>
                   </div>
                 </div>
               </div>
