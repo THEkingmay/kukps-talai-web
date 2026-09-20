@@ -15,44 +15,28 @@ import { getRoutePointsByRouteId } from "~/actions/route-poimts.action";
 const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:3000";
 const KUKPS_CENTER: [number, number] = [14.02372, 99.97487];
 
-// Active vehicle marker — animated sonar ring + solid pin
+// Active vehicle marker — Pulsing dot using Tailwind classes
 const markerIcon = L.divIcon({
-  html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 48" width="32" height="48">
-    <circle cx="16" cy="14" r="12" fill="#0ea5e9" opacity="0.12">
-      <animate attributeName="r" values="12;20;12" dur="2.6s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.12;0;0.12" dur="2.6s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="16" cy="14" r="7" fill="#0ea5e9" opacity="0.22">
-      <animate attributeName="r" values="7;14;7" dur="2.6s" begin="0.4s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.22;0;0.22" dur="2.6s" begin="0.4s" repeatCount="indefinite"/>
-    </circle>
-    <path d="M16 2C10.477 2 6 6.477 6 12c0 7.5 10 20 10 20S26 19.5 26 12C26 6.477 21.523 2 16 2z"
-      fill="#0ea5e9" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
-    <circle cx="16" cy="12" r="4" fill="white"/>
-    <circle cx="16" cy="12" r="2" fill="#0284c7"/>
-  </svg>`,
-  iconSize: [32, 48],
-  iconAnchor: [16, 48],
-  popupAnchor: [0, -50],
-  className: "",
+  html: `<div class="relative flex h-6 w-6 items-center justify-center">
+    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60"></span>
+    <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-primary border-2 border-background shadow-[0_0_8px_rgba(0,0,0,0.3)]"></span>
+  </div>`,
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+  popupAnchor: [0, -12],
+  className: "!bg-transparent border-none",
 });
 
-// Route stop marker — compact numbered circle
-function makeStopIcon(label: string) {
-  return L.divIcon({
-    html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22">
-      <circle cx="12" cy="12" r="10" fill="white" stroke="#64748b" stroke-width="1.5"/>
-      <circle cx="12" cy="12" r="4" fill="#64748b"/>
-    </svg>`,
-    iconSize: [22, 22],
-    iconAnchor: [11, 11],
-    popupAnchor: [0, -14],
-    className: "",
-    tooltipAnchor: [0, -14],
-  });
-}
-
-const stopIcon = makeStopIcon("");
+// Route stop marker — compact circle
+const stopIcon = L.divIcon({
+  html: `<div class="flex h-5 w-5 items-center justify-center">
+    <div class="h-3.5 w-3.5 rounded-full bg-background border-[2.5px] border-primary/80 shadow-sm"></div>
+  </div>`,
+  iconSize: [20, 20],
+  iconAnchor: [10, 10],
+  popupAnchor: [0, -10],
+  className: "!bg-transparent border-none",
+});
 
 function FlyTo({ position }: { position: [number, number] }) {
   const map = useMap();
@@ -178,10 +162,9 @@ export default function CarDetailMap({ car }: CarDetailMapProps) {
           <Polyline
             positions={routePoints.map((p) => [p.lat, p.lng])}
             pathOptions={{
-              color: "#0ea5e9",
-              weight: 3,
-              opacity: 0.55,
-              dashArray: "6 4",
+              color: "var(--primary)",
+              weight: 4,
+              opacity: 0.8,
             }}
           />
         )}
@@ -203,17 +186,16 @@ export default function CarDetailMap({ car }: CarDetailMapProps) {
       {/* No-signal overlay */}
       {!position && (
         <div className="absolute inset-0 z-[999] pointer-events-none flex flex-col items-center justify-center gap-2">
-          <div className="bg-white/90 border border-gray-200 rounded-md px-5 py-3.5 shadow-sm flex flex-col items-center gap-1.5">
-            {/* Signal icon — drawn SVG, no emoji */}
+          <div className="bg-background/90 border border-border rounded-md px-5 py-3.5 shadow-sm flex flex-col items-center gap-1.5">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#94a3b8"
+              stroke="currentColor"
               strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="w-6 h-6"
+              className="w-6 h-6 text-muted-foreground"
             >
               <line x1="1" y1="1" x2="23" y2="23" />
               <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55" />
@@ -223,7 +205,7 @@ export default function CarDetailMap({ car }: CarDetailMapProps) {
               <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
               <line x1="12" y1="20" x2="12.01" y2="20" />
             </svg>
-            <span className="text-[11px] font-mono text-gray-500 uppercase tracking-wider">
+            <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider">
               ไม่พบสัญญาณ GPS
             </span>
           </div>
@@ -231,70 +213,70 @@ export default function CarDetailMap({ car }: CarDetailMapProps) {
       )}
 
       {/* Status bar */}
-      <div className="absolute bottom-0 left-0 right-0 z-[1000] border-t border-gray-200 bg-white/95 backdrop-blur-sm px-3 py-2 flex items-center gap-3">
+      <div className="absolute bottom-0 left-0 right-0 z-[1000] border-t border-border bg-background/95 backdrop-blur-sm px-3 py-2 flex items-center gap-3">
         {loc ? (
           <>
             {/* Status badge */}
             <span
               className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold uppercase tracking-wider border shrink-0 ${
                 isActive
-                  ? "bg-gray-100 text-gray-600 border-gray-300"
-                  : "bg-white text-gray-500 border-gray-200"
+                  ? "bg-primary/10 text-primary border-primary/20"
+                  : "bg-muted text-muted-foreground border-border"
               }`}
             >
               <span
                 className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                  isActive ? "bg-black animate-pulse" : "bg-gray-400"
+                  isActive ? "bg-primary animate-pulse" : "bg-muted-foreground"
                 }`}
               />
               {isActive ? "Active" : "Inactive"}
             </span>
 
             {/* Divider */}
-            <span className="w-px h-3 bg-gray-200 shrink-0" />
+            <span className="w-px h-3 bg-border shrink-0" />
 
             {/* Coordinates */}
             {position && (
               <>
-                <span className="text-[10px] font-mono text-gray-400 tabular-nums hidden sm:block">
+                <span className="text-[10px] font-mono text-muted-foreground tabular-nums hidden sm:block">
                   {position[0]}, {position[1]}
                 </span>
-                <span className="w-px h-3 bg-gray-200 shrink-0 hidden sm:block" />
+                <span className="w-px h-3 bg-border shrink-0 hidden sm:block" />
               </>
             )}
 
             {/* Last update time */}
             {lastSeen && (
-              <span className="text-[10px] font-mono text-gray-400 flex items-center gap-1">
+              <span className="text-[10px] font-mono text-muted-foreground flex items-center gap-1">
                 อัปเดต{" "}
-                <span className="font-semibold text-gray-700">
+                <span className="font-semibold text-foreground">
                   {formatTime(lastSeen)}
                 </span>
               </span>
             )}
           </>
         ) : (
-          <span className="text-[10px] font-mono text-gray-400 uppercase tracking-wider">
+          <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
             ไม่พบสัญญาณ GPS
           </span>
         )}
 
         {/* Route indicator — right side */}
         {routePoints.length > 0 && (
-          <span className="ml-auto inline-flex items-center gap-1 text-[10px] font-mono text-gray-400">
+          <span className="ml-auto inline-flex items-center gap-1 text-[10px] font-mono text-muted-foreground">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#0ea5e9"
+              stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="w-3 h-3 shrink-0"
+              className="w-3 h-3 shrink-0 text-primary"
             >
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
             </svg>
-            <span className="text-sky-600 font-semibold">
+            <span className="text-primary font-semibold">
               {routePoints.length}
             </span>{" "}
             จุด

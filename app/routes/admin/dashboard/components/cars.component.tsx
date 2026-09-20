@@ -12,7 +12,7 @@ import { getRoutes } from "~/actions/route.action";
 
 import CarMetrics from "./cars/CarMetrics";
 import CarSearchToolbar from "./cars/CarSearchToolbar";
-import CarItemCard from "./cars/CarItemCard";
+import CarTable from "./cars/CarTable";
 import CarDetailModal from "./cars/CarDetailModal";
 import CreateCarModal from "./cars/CreateCarModal";
 import EditCarModal from "./cars/EditCarModal";
@@ -30,6 +30,7 @@ export default function CarsComponent() {
   // Search & Filter
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [routeFilter, setRouteFilter] = useState<string>("all");
 
   // Modal States
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
@@ -120,53 +121,24 @@ export default function CarsComponent() {
 
   // Compute Metrics Summary
   const metrics = useMemo(() => {
-    const total = cars.length;
-    const active = cars.filter((c) => c.status === "active").length;
-    const inactive = cars.filter((c) => c.status === "inactive").length;
-    return { total, active, inactive };
+    return {
+      total: cars.length,
+      active: cars.filter((c) => c.status === "active").length,
+      inactive: cars.filter((c) => c.status !== "active").length,
+    };
   }, [cars]);
 
-  // Filtered Cars
-  const filteredCars = useMemo(() => {
-    return cars.filter((c) => {
-      const query = searchQuery.trim().toLowerCase();
-      const routeName = c.routeId
-        ? (routeNameMap[c.routeId] || "").toLowerCase()
-        : "";
-      const matchesSearch =
-        query === "" ||
-        c.carNumber.toLowerCase().includes(query) ||
-        c.id.toLowerCase().includes(query) ||
-        routeName.includes(query);
-
-      const matchesStatus = statusFilter === "all" || c.status === statusFilter;
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [cars, searchQuery, statusFilter, routeNameMap]);
-
-  // Fetch Car Details by ID
+  // Handle Detail Modal Load
   const handleOpenDetailModal = async (id: string) => {
     setSelectedCarId(id);
-    setDetailCar(null);
     setIsDetailLoading(true);
     try {
-      const res = await getCarById(id);
-      if (res.success) {
-        setDetailCar(res.data.data);
-      } else {
-        alert({
-          title: "โหลดข้อมูลไม่สำเร็จ",
-          description: res.error,
-        });
-        setSelectedCarId(null);
+      const detail = await getCarById(id);
+      if (detail.success) {
+        setDetailCar(detail.data.data);
       }
-    } catch {
-      alert({
-        title: "เกิดข้อผิดพลาด",
-        description: "ไม่สามารถดึงข้อมูลรายละเอียดรถตะไลได้",
-      });
-      setSelectedCarId(null);
+    } catch (err) {
+      console.error("Failed to load car details:", err);
     } finally {
       setIsDetailLoading(false);
     }
@@ -180,14 +152,14 @@ export default function CarsComponent() {
     setIsSubmitting(true);
     try {
       const res = await createCar({
-        carNumber: newCarNumber.trim(),
         routeId: newRouteId,
+        carNumber: newCarNumber.trim(),
       });
 
       if (res.success) {
         alert({
           title: "เพิ่มรถตะไลสำเร็จ",
-          description: `เพิ่ม "${newCarNumber.trim()}" เข้าสู่ระบบเรียบร้อยแล้ว`,
+          description: `สร้างรถหมายเลข "${newCarNumber.trim()}" เรียบร้อยแล้ว`,
         });
         setNewCarNumber("");
         setNewRouteId("");
@@ -307,6 +279,20 @@ export default function CarsComponent() {
     }
   };
 
+  const filteredCars = useMemo(() => {
+    return cars.filter((car) => {
+      if (
+        searchQuery !== "" &&
+        !car.carNumber.includes(searchQuery) &&
+        !car.id.includes(searchQuery)
+      )
+        return false;
+      if (routeFilter !== "all" && car.routeId !== routeFilter) return false;
+      if (statusFilter !== "all" && car.status !== statusFilter) return false;
+      return true;
+    });
+  }, [cars, searchQuery, statusFilter, routeFilter]);
+
   return (
     <div className="space-y-6">
       {/* 1. Metrics Overview */}
@@ -323,62 +309,39 @@ export default function CarsComponent() {
           onSearchChange={setSearchQuery}
           statusFilter={statusFilter}
           onStatusFilterChange={setStatusFilter}
+          routeFilter={routeFilter}
+          onRouteFilterChange={setRouteFilter}
+          routes={routes}
           isLoading={isLoading}
           onRefresh={() => fetchFleetData(false)}
           onOpenCreateModal={() => setIsCreateModalOpen(true)}
         />
 
-        {/* Fleet Grid Content */}
-        <div className="p-5 sm:p-6">
+        {/* Fleet Content */}
+        <div className="p-0">
           {error && (
-            <div className="mb-4 p-4 rounded-md bg-gray-100 border border-gray-300 text-gray-900 text-xs flex items-center justify-between">
+            <div className="m-4 p-4 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center justify-between">
               <span>{error}</span>
               <button
                 onClick={() => fetchFleetData(false)}
-                className="underline font-semibold hover:text-gray-900"
+                className="underline font-semibold hover:text-destructive/80"
               >
                 ลองอีกครั้ง
               </button>
             </div>
           )}
 
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="p-5 border border-gray-200 rounded-md bg-white/50 animate-pulse space-y-4"
-                >
-                  <div className="h-5 bg-gray-200 rounded w-1/2" />
-                  <div className="h-10 bg-gray-200 rounded w-full" />
-                  <div className="h-8 bg-gray-200 rounded w-1/3" />
-                </div>
-              ))}
-            </div>
-          ) : filteredCars.length === 0 ? (
-            <div className="py-12 text-center border border-dashed border-gray-200 rounded-md bg-white/30">
-              <p className="text-xs text-gray-500 font-medium">
-                {searchQuery
-                  ? "ไม่พบข้อมูลรถตะไลที่ตรงกับเงื่อนไขการค้นหา"
-                  : "ยังไม่มีข้อมูลรถตะไลในระบบ"}
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredCars.map((car) => (
-                <CarItemCard
-                  key={car.id}
-                  car={car}
-                  routeNameMap={routeNameMap}
-                  deletingId={deletingId}
-                  onOpenDetail={handleOpenDetailModal}
-                  onOpenEdit={handleOpenEdit}
-                  onDelete={handleDeleteCar}
-                  onOpenCredential={setCredentialCarId}
-                />
-              ))}
-            </div>
-          )}
+          <CarTable
+            cars={cars}
+            filteredCars={filteredCars}
+            routeNameMap={routeNameMap}
+            isLoading={isLoading}
+            deletingId={deletingId}
+            onOpenDetail={handleOpenDetailModal}
+            onOpenEdit={handleOpenEdit}
+            onDelete={handleDeleteCar}
+            onOpenCredential={setCredentialCarId}
+          />
         </div>
       </div>
       <CredentialModal

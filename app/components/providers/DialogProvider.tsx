@@ -41,14 +41,17 @@ export function DialogProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [type, setType] = useState<"alert" | "confirm">("alert");
   const [options, setOptions] = useState<ConfirmOptions | DialogOptions | null>(null);
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const alert = (opts: DialogOptions) => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setType("alert");
     setOptions(opts);
     setIsOpen(true);
   };
 
   const confirm = (opts: ConfirmOptions) => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setType("confirm");
     setOptions(opts);
     setIsOpen(true);
@@ -56,7 +59,8 @@ export function DialogProvider({ children }: { children: ReactNode }) {
 
   const handleClose = () => {
     setIsOpen(false);
-    setTimeout(() => setOptions(null), 300); // clear after animation
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => setOptions(null), 300); // clear after animation
   };
 
   const handleConfirm = () => {

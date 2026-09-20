@@ -13,9 +13,9 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 
 import RouteDetailModal from "./routes/RouteDetailModal";
+import RouteTable from "./routes/RouteTable";
 import CreateRouteModal from "./routes/CreateRouteModal";
 import EditRouteModal from "./routes/EditRouteModal";
-import RouteItemCard from "./routes/RouteItemCard";
 import RoutePointModal from "./routes/RoutePoint.component";
 
 export default function RoutesComponent() {
@@ -316,66 +316,34 @@ export default function RoutesComponent() {
       </div>
 
       {/* Content Area */}
-      <div className="p-4 sm:p-6">
+      <div className="p-0">
         {/* Error Banner */}
         {error && (
-          <div className="mb-4 p-4 rounded-md bg-gray-100 border border-gray-300 text-gray-900 text-xs flex items-center justify-between">
+          <div className="m-4 p-4 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center justify-between">
             <span>{error}</span>
             <button
               onClick={() => fetchRoutesData(false)}
-              className="underline font-semibold hover:text-gray-900"
+              className="underline font-semibold hover:text-destructive/80"
             >
               ลองอีกครั้ง
             </button>
           </div>
         )}
 
-        {/* Loading Skeleton */}
-        {isLoading ? (
-          <div className="space-y-3 py-4">
-            {[1, 2].map((i) => (
-              <div
-                key={i}
-                className="p-4 border border-gray-200 rounded-md bg-white/50 animate-pulse flex items-center justify-between"
-              >
-                <div className="space-y-2 flex-1">
-                  <div className="h-4 bg-gray-200 rounded w-1/3" />
-                  <div className="h-3 bg-gray-200 rounded w-1/4" />
-                </div>
-                <div className="h-8 bg-gray-200 rounded w-20" />
-              </div>
-            ))}
-          </div>
-        ) : filteredRoutes.length === 0 ? (
-          /* Empty State */
-          <div className="py-12 text-center border border-dashed border-gray-200 rounded-md bg-white/30">
-            <p className="text-xs text-gray-500 font-medium">
-              {searchQuery
-                ? "ไม่พบเส้นทางที่ตรงกับการค้นหา"
-                : "ยังไม่มีข้อมูลเส้นทางเดินรถในระบบ"}
-            </p>
-          </div>
-        ) : (
-          /* Routes List */
-          <div className="space-y-3">
-            {filteredRoutes.map((route, idx) => (
-              <RouteItemCard
-                key={route.id}
-                route={route}
-                index={idx}
-                deletingId={deletingId}
-                onOpenDetail={handleOpenDetailModal}
-                onOpenEdit={(r) => {
-                  setEditingRoute(r);
-                  setEditRouteName(r.name);
-                }}
-                onOpenPoints={(r) => setPointsRoute(r)}
-                onDelete={handleDelete}
-                formatDate={formatDate}
-              />
-            ))}
-          </div>
-        )}
+        <RouteTable
+          routes={routes}
+          filteredRoutes={filteredRoutes}
+          isLoading={isLoading}
+          deletingId={deletingId}
+          onOpenDetail={handleOpenDetailModal}
+          onOpenEdit={(r) => {
+            setEditingRoute(r);
+            setEditRouteName(r.name);
+          }}
+          onOpenPoints={(r) => setPointsRoute(r)}
+          onDelete={handleDelete}
+          formatDate={formatDate}
+        />
       </div>
 
       {/* Detail Modal */}

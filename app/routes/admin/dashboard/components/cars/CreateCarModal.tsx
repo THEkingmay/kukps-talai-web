@@ -12,7 +12,13 @@ import {
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 interface CreateCarModalProps {
   isOpen: boolean;
@@ -75,14 +81,19 @@ export default function CreateCarModal({
               <RouteIcon className="h-4 w-4 text-muted-foreground" />
               สายการเดินรถ (Route) <span className="text-destructive">*</span>
             </Label>
-            <Select required value={routeId} onValueChange={onChangeRouteId} disabled={isSubmitting}>
+            <Select
+              required
+              value={routeId}
+              onValueChange={onChangeRouteId}
+              disabled={isSubmitting}
+            >
               <SelectTrigger id="route-id">
                 <SelectValue placeholder="-- กรุณาเลือกสายการเดินรถ --" />
               </SelectTrigger>
               <SelectContent>
                 {routes.map((r) => (
                   <SelectItem key={r.id} value={r.id}>
-                    {r.name} ({r.id})
+                    {r.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -90,11 +101,21 @@ export default function CreateCarModal({
           </div>
 
           <DialogFooter className="border-t pt-4">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
               ยกเลิก
             </Button>
-            <Button type="submit" disabled={isSubmitting || !carNumber.trim() || !routeId}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button
+              type="submit"
+              disabled={isSubmitting || !carNumber.trim() || !routeId}
+            >
+              {isSubmitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               {isSubmitting ? "กำลังบันทึก..." : "ยืนยันเพิ่มรถตะไล"}
             </Button>
           </DialogFooter>

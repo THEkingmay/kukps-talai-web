@@ -1,11 +1,15 @@
 import type { User } from "~/types";
+import { Lock, Trash2, CheckCircle2, AlertTriangle, XCircle, Loader2 } from "lucide-react";
 import {
-  Lock,
-  CheckCircle2,
-  AlertTriangle,
-  XCircle,
-  Trash2,
-} from "lucide-react";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import { Button } from "~/components/ui/button";
+import { Badge } from "~/components/ui/badge";
 
 interface UserTableProps {
   users: User[];
@@ -33,47 +37,44 @@ export default function UserTable({
   formatDate,
 }: UserTableProps) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left border-collapse">
-        <thead>
-          <tr className="bg-white border-b border-gray-200/80 text-[11px] font-mono text-gray-500 uppercase tracking-wider">
-            <th className="px-6 py-3 font-medium">ข้อมูลผู้ใช้</th>
-            <th className="px-6 py-3 font-medium">บทบาท (Role)</th>
-            <th className="px-6 py-3 font-medium">สถานะ (Status)</th>
-            <th className="px-6 py-3 font-medium">วันที่สร้าง</th>
-            <th className="px-6 py-3 font-medium text-right">การจัดการ</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-200 text-xs">
+    <div className="w-full">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>บัญชีผู้ใช้ (Email & ID)</TableHead>
+            <TableHead>บทบาท (Role)</TableHead>
+            <TableHead>สถานะ (Status)</TableHead>
+            <TableHead>วันที่สร้าง</TableHead>
+            <TableHead className="text-right">การจัดการ</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {isLoading ? (
-            <tr>
-              <td colSpan={5} className="px-6 py-12 text-center">
-                <div className="inline-flex items-center gap-2 text-gray-500">
-                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                  <span className="font-mono text-xs">กำลังโหลดข้อมูล...</span>
+            <TableRow>
+              <TableCell colSpan={5} className="h-24 text-center">
+                <div className="flex flex-col items-center justify-center text-muted-foreground">
+                  <Loader2 className="mb-2 h-6 w-6 animate-spin" />
+                  <span>กำลังโหลดข้อมูล...</span>
                 </div>
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ) : error ? (
-            <tr>
-              <td colSpan={5} className="px-6 py-12 text-center">
-                <div className="text-black font-medium space-y-1">
-                  <p>{error}</p>
-                  <button
-                    onClick={onRefresh}
-                    className="text-xs underline hover:text-gray-900 font-semibold"
-                  >
+            <TableRow>
+              <TableCell colSpan={5} className="h-24 text-center">
+                <div className="flex flex-col items-center justify-center text-destructive">
+                  <p className="mb-2">{error}</p>
+                  <Button variant="outline" size="sm" onClick={onRefresh}>
                     ลองใหม่อีกครั้ง
-                  </button>
+                  </Button>
                 </div>
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ) : filteredUsers.length === 0 ? (
-            <tr>
-              <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+            <TableRow>
+              <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                 ไม่พบข้อมูลผู้ใช้งานที่ตรงกับเงื่อนไข
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ) : (
             filteredUsers.map((item) => {
               const isDeleted = item.status === "deleted";
@@ -81,103 +82,74 @@ export default function UserTable({
               const isUpdatingThis = updatingId === item.id;
 
               return (
-                <tr
-                  key={item.id}
-                  className={`hover:bg-white/70 transition-colors ${
-                    isDeleted ? "bg-white/40 text-gray-400" : ""
-                  }`}
-                >
-                  {/* Email & ID */}
-                  <td className="px-6 py-4">
-                    <div className="font-semibold text-gray-900 flex items-center gap-2">
-                      <span>{item.email}</span>
+                <TableRow key={item.id} className={isDeleted ? "opacity-60 grayscale" : ""}>
+                  <TableCell>
+                    <div className="font-medium flex items-center gap-2">
+                      {item.email}
                       {isCurrent && (
-                        <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-gray-100 text-black border border-gray-300">
-                          บัญชีของคุณ
-                        </span>
+                        <Badge variant="secondary" className="text-[10px] uppercase font-mono">
+                          You
+                        </Badge>
                       )}
                     </div>
-                    <div className="text-[11px] font-mono text-gray-400 mt-0.5 select-all">
-                      ID: {item.id}
+                    <div className="text-xs text-muted-foreground font-mono mt-1">
+                      {item.id}
                     </div>
-                  </td>
-
-                  {/* Role */}
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-mono font-medium border ${
-                        item.role === "superadmin"
-                          ? "bg-amber-50 text-amber-900 border-amber-200"
-                          : item.role === "admin"
-                            ? "bg-sky-50 text-sky-800 border-sky-200"
-                            : "bg-gray-200 text-gray-700 border-gray-200"
-                      }`}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={item.role === "superadmin" ? "default" : item.role === "admin" ? "secondary" : "outline"}
+                      className="font-mono text-[10px] uppercase"
                     >
                       {item.role}
-                    </span>
-                  </td>
-
-                  {/* Status */}
-                  <td className="px-6 py-4">
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
                     <StatusBadge status={item.status} />
-                  </td>
-
-                  {/* Created At */}
-                  <td className="px-6 py-4 font-mono text-gray-500 text-[11px]">
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground font-mono">
                     {formatDate(item.createdAt)}
-                  </td>
-
-                  {/* Actions */}
-                  <td className="px-6 py-4 text-right">
+                  </TableCell>
+                  <TableCell className="text-right">
                     {isDeleted ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-mono text-gray-400 bg-gray-200 px-2.5 py-1 rounded-md border border-gray-200/60 select-none">
-                        <Lock className="w-3 h-3 text-gray-400" />
-                        ถูกลบแล้ว (แก้ไขไม่ได้)
-                      </span>
+                      <Badge variant="outline" className="text-muted-foreground gap-1">
+                        <Lock className="w-3 h-3" />
+                        ถูกลบแล้ว
+                      </Badge>
                     ) : (
                       <div className="flex items-center justify-end gap-2">
                         {!isCurrent && (
-                          <button
+                          <Button
+                            variant={item.status === "active" ? "secondary" : "outline"}
+                            size="sm"
+                            disabled={isUpdatingThis}
                             onClick={() => onToggleStatus(item)}
-                            disabled={isUpdatingThis}
-                            className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-all active:scale-[0.98] disabled:opacity-50 shadow-2xs ${
-                              item.status === "active"
-                                ? "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
-                                : "bg-gray-100 text-black border-gray-300 hover:bg-gray-200"
-                            }`}
                           >
-                            {isUpdatingThis
-                              ? "กำลังบันทึก..."
-                              : item.status === "active"
-                                ? "ระงับสิทธิ์"
-                                : "เปิดใช้งาน"}
-                          </button>
+                            {isUpdatingThis ? <Loader2 className="w-4 h-4 animate-spin" /> : item.status === "active" ? "ระงับสิทธิ์" : "เปิดใช้งาน"}
+                          </Button>
                         )}
-
-                        {/* Delete Button */}
                         {!isCurrent && (
-                          <button
-                            onClick={() => onDeleteUser(item)}
+                          <Button
+                            variant="destructive"
+                            size="icon"
                             disabled={isUpdatingThis}
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold border border-gray-300 text-gray-900 bg-gray-100 hover:bg-gray-200 active:scale-[0.98] transition-all disabled:opacity-50 shadow-2xs"
+                            onClick={() => onDeleteUser(item)}
                             title="ลบบัญชีผู้ใช้"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            <span>ลบ</span>
-                          </button>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         )}
                       </div>
                     )}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               );
             })
           )}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
 
-      {/* Footer Summary */}
-      <div className="px-6 py-3 bg-white border-t border-gray-200 flex items-center justify-between text-xs text-gray-500 font-mono">
+      <div className="border-t bg-muted/20 px-4 py-3 text-xs text-muted-foreground font-mono flex items-center justify-between">
         <span>
           แสดง {filteredUsers.length} จาก {users.length} รายการ
         </span>
@@ -187,31 +159,27 @@ export default function UserTable({
   );
 }
 
-function StatusBadge({
-  status,
-}: {
-  status: "active" | "suspended" | "deleted";
-}) {
+function StatusBadge({ status }: { status: "active" | "suspended" | "deleted" }) {
   if (status === "active") {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-gray-100 text-black border border-gray-300">
-        <CheckCircle2 className="w-3 h-3 text-black animate-pulse" />
+      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/30">
+        <CheckCircle2 className="w-3 h-3 animate-pulse" />
         ใช้งานอยู่
-      </span>
+      </Badge>
     );
   }
   if (status === "suspended") {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-amber-50 text-amber-800 border border-amber-200">
-        <AlertTriangle className="w-3 h-3 text-amber-600" />
-        ระงับการเข้าถึง
-      </span>
+      <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 gap-1 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30">
+        <AlertTriangle className="w-3 h-3" />
+        ระงับสิทธิ์
+      </Badge>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-gray-200 text-gray-500 border border-gray-200 opacity-80">
-      <XCircle className="w-3 h-3 text-gray-400" />
+    <Badge variant="outline" className="text-muted-foreground gap-1">
+      <XCircle className="w-3 h-3" />
       ลบแล้ว
-    </span>
+    </Badge>
   );
 }

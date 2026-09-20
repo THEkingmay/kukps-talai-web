@@ -1,5 +1,14 @@
 import { useState, useEffect } from "react";
-import { KeyRound, X, Copy, Check, Eye, EyeOff, Loader2, RefreshCw } from "lucide-react";
+import {
+  KeyRound,
+  X,
+  Copy,
+  Check,
+  Eye,
+  EyeOff,
+  Loader2,
+  RefreshCw,
+} from "lucide-react";
 import apiClient from "~/configs/axios";
 import { useDialog } from "~/components/providers/DialogProvider";
 
@@ -25,9 +34,8 @@ export default function CredentialModal({
   onClose,
 }: CredentialModalProps) {
   const [credentials, setCredentials] = useState<{
-    clientId: string;
-    username: string;
-    passwordHash: string;
+    carMqttUsername: string;
+    decryptedMqttPassword: string;
   } | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -41,7 +49,7 @@ export default function CredentialModal({
     try {
       setIsLoading(true);
       setError(null);
-      const res = await apiClient.get(`/cars/credentials/${carId}`);
+      const res = await apiClient.get(`/cars/mqtt-credentials/${carId}`);
       if (res.data.success) {
         setCredentials(res.data.data);
       } else {
@@ -49,7 +57,7 @@ export default function CredentialModal({
       }
     } catch (err: any) {
       setError(
-        err.response?.data?.message || "ไม่สามารถโหลดข้อมูล Credentials ได้"
+        err.response?.data?.message || "ไม่สามารถโหลดข้อมูล Credentials ได้",
       );
     } finally {
       setIsLoading(false);
@@ -67,8 +75,8 @@ export default function CredentialModal({
     }
   }, [isOpen, carId]);
 
-  const username = credentials?.username || "";
-  const password = credentials?.passwordHash || "";
+  const username = credentials?.carMqttUsername || "";
+  const password = credentials?.decryptedMqttPassword || "";
 
   function handleCopy(value: string, field: string) {
     if (!value) return;
@@ -80,14 +88,17 @@ export default function CredentialModal({
   async function handleReset() {
     confirm({
       title: "รีเซ็ต Credentials",
-      description: "คุณแน่ใจหรือไม่ว่าต้องการรีเซ็ต MQTT Credentials สำหรับรถคันนี้? ข้อมูลเก่าจะใช้ไม่ได้อีกต่อไป",
+      description:
+        "คุณแน่ใจหรือไม่ว่าต้องการรีเซ็ต MQTT Credentials สำหรับรถคันนี้? ข้อมูลเก่าจะใช้ไม่ได้อีกต่อไป",
       confirmText: "รีเซ็ตเลย",
       cancelText: "ยกเลิก",
       variant: "destructive",
       onConfirm: async () => {
         try {
           setIsLoading(true);
-          const res = await apiClient.post(`/cars/mqtt-credentials/${carId}/reset`);
+          const res = await apiClient.post(
+            `/cars/mqtt-credentials/${carId}/reset`,
+          );
           if (res.data.success) {
             fetchCredentials();
             alert({
@@ -98,7 +109,8 @@ export default function CredentialModal({
         } catch (err: any) {
           alert({
             title: "เกิดข้อผิดพลาด",
-            description: err.response?.data?.message || "ไม่สามารถรีเซ็ต Credentials ได้",
+            description:
+              err.response?.data?.message || "ไม่สามารถรีเซ็ต Credentials ได้",
           });
         } finally {
           setIsLoading(false);
@@ -128,12 +140,18 @@ export default function CredentialModal({
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
               <Loader2 className="mb-2 h-6 w-6 animate-spin" />
-              <span className="text-xs font-medium uppercase tracking-wider">กำลังโหลด...</span>
+              <span className="text-xs font-medium uppercase tracking-wider">
+                กำลังโหลด...
+              </span>
             </div>
           ) : error ? (
             <div className="py-6 text-center">
               <p className="text-sm font-medium">{error}</p>
-              <Button variant="link" onClick={fetchCredentials} className="mt-2">
+              <Button
+                variant="link"
+                onClick={fetchCredentials}
+                className="mt-2"
+              >
                 ลองอีกครั้ง
               </Button>
             </div>

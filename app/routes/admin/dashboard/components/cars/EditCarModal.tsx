@@ -1,5 +1,13 @@
 import type { ResponseCarData, Route as RouteType } from "~/types";
-import { Pencil, Bus, Route as RouteIcon, Lock, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import {
+  Pencil,
+  Bus,
+  Route as RouteIcon,
+  Lock,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+} from "lucide-react";
 
 import {
   Dialog,
@@ -12,7 +20,13 @@ import {
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import { Badge } from "~/components/ui/badge";
 
 interface EditCarModalProps {
@@ -65,13 +79,20 @@ export default function EditCarModal({
                 <Lock className="h-4 w-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-semibold">สถานะ (Server Managed)</span>
-                <span className="text-xs text-muted-foreground">ควบคุมอัตโนมัติ</span>
+                <span className="text-sm font-semibold">
+                  สถานะ (Server Managed)
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  ควบคุมอัตโนมัติ
+                </span>
               </div>
             </div>
 
             {car.status === "active" ? (
-              <Badge variant="outline" className="gap-1 border-green-200 bg-green-50 text-green-700">
+              <Badge
+                variant="outline"
+                className="gap-1 border-green-200 bg-green-50 text-green-700"
+              >
                 <CheckCircle2 className="h-3 w-3 animate-pulse" />
                 พร้อมใช้งาน
               </Badge>
@@ -84,7 +105,10 @@ export default function EditCarModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="edit-car-number" className="flex items-center gap-2">
+            <Label
+              htmlFor="edit-car-number"
+              className="flex items-center gap-2"
+            >
               <Bus className="h-4 w-4 text-muted-foreground" />
               หมายเลข/ชื่อรถตะไล
             </Label>
@@ -103,14 +127,19 @@ export default function EditCarModal({
               <RouteIcon className="h-4 w-4 text-muted-foreground" />
               สายการเดินรถ (Route)
             </Label>
-            <Select required value={routeId} onValueChange={onChangeRouteId} disabled={isSubmitting}>
+            <Select
+              required
+              value={routeId}
+              onValueChange={onChangeRouteId}
+              disabled={isSubmitting}
+            >
               <SelectTrigger id="edit-route-id">
                 <SelectValue placeholder="-- กรุณาเลือกสายการเดินรถ --" />
               </SelectTrigger>
               <SelectContent>
                 {routes.map((r) => (
                   <SelectItem key={r.id} value={r.id}>
-                    {r.name} ({r.id})
+                    {r.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -118,11 +147,21 @@ export default function EditCarModal({
           </div>
 
           <DialogFooter className="border-t pt-4">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
               ยกเลิก
             </Button>
-            <Button type="submit" disabled={isSubmitting || !carNumber.trim() || !routeId}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button
+              type="submit"
+              disabled={isSubmitting || !carNumber.trim() || !routeId}
+            >
+              {isSubmitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               {isSubmitting ? "กำลังบันทึก..." : "บันทึกการแก้ไข"}
             </Button>
           </DialogFooter>

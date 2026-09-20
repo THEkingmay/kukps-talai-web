@@ -1,7 +1,17 @@
 import { useEffect, useState, useCallback } from "react";
 import type { CarHistoryLog } from "~/types";
 import { getCarLogsByCarId } from "~/actions/car-history-log.action";
-import { History, RefreshCw, AlertCircle, MapPin, Clock } from "lucide-react";
+import { RefreshCw, AlertCircle, MapPin, Clock, Loader2 } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 
 interface CarHistoryLogListProps {
   carId: string;
@@ -40,144 +50,125 @@ export default function CarHistoryLogList({
   }, [carId, fetchLogs]);
 
   return (
-    <div className="flex flex-col h-full space-y-3">
+    <div className="flex flex-col h-full">
       {/* Header Bar with Refresh Button */}
-      <div className="flex items-center justify-between pb-2 border-b border-gray-200">
+      <div className="flex items-center justify-between p-3 bg-muted/50 border-b">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center border border-sky-100">
-            <History className="w-3.5 h-3.5" />
-          </div>
-          <div>
-            <h4 className="text-sm font-bold text-gray-800 tracking-tight flex items-center gap-2">
-              ประวัติการเดินทาง
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-gray-200 text-gray-500 border border-gray-200">
-                {logs.length} รายการล่าสุด (100 ล่าสุด)
-              </span>
-            </h4>
-          </div>
+          <Badge variant="secondary" className="font-mono">
+            {logs.length} รายการล่าสุด (100 ล่าสุด)
+          </Badge>
         </div>
 
-        <button
-          type="button"
+        <Button
+          variant="outline"
+          size="sm"
           onClick={fetchLogs}
           disabled={isLoading}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono font-medium text-gray-700 hover:text-gray-900 bg-white hover:bg-white border border-gray-200 rounded-lg transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
-          title="รีเฟรชประวัติการเดินทาง"
+          className="h-8"
         >
-          <RefreshCw
-            className={`w-3.5 h-3.5 text-gray-500 ${
-              isLoading ? "animate-spin" : ""
-            }`}
-          />
-          <span>รีเฟรช</span>
-        </button>
+          <RefreshCw className={`w-3.5 h-3.5 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+          รีเฟรช
+        </Button>
       </div>
 
       {/* Table Container */}
-      <div className="border border-gray-200 rounded-md overflow-hidden bg-white shadow-2xs">
-        <div className="overflow-x-auto max-h-[280px] lg:max-h-[340px] overflow-y-auto">
-          <table className="w-full text-left text-xs font-mono border-collapse">
-            {/* Sticky Table Header */}
-            <thead className="bg-white text-gray-500 font-semibold border-b border-gray-200 sticky top-0 z-10 select-none">
-              <tr>
-                <th className="py-2.5 px-3 w-12 text-center">#</th>
-                <th className="py-2.5 px-3">
+      <div className="bg-background">
+        <div className="max-h-[280px] lg:max-h-[340px] overflow-y-auto relative">
+          <Table className="text-xs font-mono">
+            <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
+              <TableRow>
+                <TableHead className="w-12 text-center">#</TableHead>
+                <TableHead>
                   <div className="flex items-center gap-1">
-                    <Clock className="w-3 h-3 text-gray-400" />
+                    <Clock className="w-3.5 h-3.5 text-muted-foreground" />
                     <span>เวลาบันทึก</span>
                   </div>
-                </th>
-                <th className="py-2.5 px-3">ละติจูด (Lat)</th>
-                <th className="py-2.5 px-3">ลองจิจูด (Lng)</th>
-              </tr>
-            </thead>
+                </TableHead>
+                <TableHead>ละติจูด (Lat)</TableHead>
+                <TableHead>ลองจิจูด (Lng)</TableHead>
+              </TableRow>
+            </TableHeader>
 
-            <tbody className="divide-y divide-gray-200 text-gray-700">
+            <TableBody>
               {isLoading ? (
-                <tr>
-                  <td colSpan={4} className="py-10 text-center text-gray-400">
-                    <div className="w-5 h-5 border-2 border-gray-200 border-t-sky-600 rounded-full animate-spin mx-auto mb-2" />
+                <TableRow>
+                  <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary/60" />
                     <span>กำลังโหลดประวัติ...</span>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : error ? (
-                <tr>
-                  <td colSpan={4} className="py-8 px-4 text-center">
-                    <div className="inline-flex items-center gap-2 p-3 rounded-md bg-amber-50 text-amber-800 text-xs border border-amber-200">
-                      <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                <TableRow>
+                  <TableCell colSpan={4} className="h-32 text-center">
+                    <div className="inline-flex items-center gap-2 p-3 rounded-md bg-destructive/10 text-destructive border border-destructive/20">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
                       <span>{error}</span>
                       <button
                         type="button"
                         onClick={fetchLogs}
-                        className="ml-2 font-bold underline hover:text-amber-900"
+                        className="ml-2 font-bold underline hover:text-destructive/80"
                       >
                         ลองอีกครั้ง
                       </button>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : logs.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="py-10 text-center text-gray-400">
-                    <MapPin className="w-6 h-6 text-gray-300 mx-auto mb-2" />
-                    <p className="font-sans text-xs font-semibold text-gray-500">
+                <TableRow>
+                  <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
+                    <MapPin className="w-8 h-8 opacity-20 mx-auto mb-3" />
+                    <p className="font-sans text-sm font-medium">
                       ไม่พบประวัติการเดินทาง
                     </p>
-                    <p className="font-sans text-[11px] text-gray-400 mt-0.5">
+                    <p className="font-sans mt-1 text-xs opacity-70">
                       ยังไม่มีการบันทึกพิกัด GPS
                     </p>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 logs.map((log, index) => {
                   const isLatest = index === 0;
 
                   return (
-                    <tr
+                    <TableRow
                       key={log.id}
-                      className={`transition-colors ${
-                        isLatest
-                          ? "bg-gray-100/40 hover:bg-gray-100/80"
-                          : "hover:bg-white"
-                      }`}
+                      className={isLatest ? "bg-primary/5 hover:bg-primary/10" : ""}
                     >
-                      {/* Index Column */}
-                      <td className="py-2 px-3 text-center text-gray-400 text-[11px]">
+                      <TableCell className="text-center text-muted-foreground">
                         {isLatest ? (
                           <span
-                            className="inline-block w-2 h-2 rounded-full bg-black animate-pulse"
+                            className="inline-block w-2.5 h-2.5 rounded-full bg-primary animate-pulse"
                             title="ล่าสุด"
                           />
                         ) : (
                           index + 1
                         )}
-                      </td>
+                      </TableCell>
 
-                      {/* Timestamp Column */}
-                      <td className="py-2 px-3 whitespace-nowrap text-gray-800">
-                        {formatDate(log.createdAt)}
-                        {isLatest && (
-                          <span className="ml-1.5 px-1.5 py-0.2 text-[9px] font-sans font-bold bg-gray-200 text-black rounded border border-gray-300">
-                            ล่าสุด
-                          </span>
-                        )}
-                      </td>
+                      <TableCell className="whitespace-nowrap font-medium text-foreground">
+                        <div className="flex items-center gap-2">
+                          {formatDate(log.createdAt)}
+                          {isLatest && (
+                            <Badge variant="default" className="h-4 px-1.5 text-[10px] leading-none py-0 uppercase">
+                              ล่าสุด
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
 
-                      {/* Lat Column */}
-                      <td className="py-2 px-3 font-semibold text-gray-900">
+                      <TableCell className="font-medium">
                         {log.lat.toFixed(5)}
-                      </td>
+                      </TableCell>
 
-                      {/* Lng Column */}
-                      <td className="py-2 px-3 font-semibold text-gray-900">
+                      <TableCell className="font-medium">
                         {log.lng.toFixed(5)}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
     </div>
