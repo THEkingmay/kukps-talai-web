@@ -10,6 +10,16 @@ import {
   Smartphone,
 } from "lucide-react";
 
+import { Button } from "~/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "~/components/ui/card";
+import { ModeToggle } from "~/components/mode-toggle";
+
 export function meta() {
   return [
     { title: "KUKPS smart talai — ระบบติดตามรถตะไล มก.กำแพงแสน" },
@@ -37,103 +47,109 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans flex flex-col antialiased">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       {/* Top Header Bar */}
-      <header className="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-30 transition-all">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-black text-white rounded-lg flex items-center justify-center shrink-0 shadow-sm shadow-black/20">
-              <Bus className="w-5 h-5 text-white" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
+              <Bus className="h-4 w-4" />
             </div>
-            <div>
-              <span className="text-base font-bold text-gray-900 tracking-tight block leading-none">
+            <div className="flex flex-col">
+              <span className="text-sm font-bold leading-none tracking-tight">
                 TalaiETA
               </span>
-              <span className="text-[11px] font-mono uppercase tracking-wider text-black font-medium mt-0.5 block">
+              <span className="mt-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                 มหาวิทยาลัยเกษตรศาสตร์
               </span>
             </div>
           </div>
-          <Link
-            to="/auth"
-            id="nav-admin-login"
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold text-black bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-all duration-200"
-          >
-            <span>เข้าสู่ระบบผู้ดูแล</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          <div className="flex items-center gap-4">
+            <ModeToggle />
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="hidden sm:flex"
+            >
+              <Link to="/auth" id="nav-admin-login">
+                เข้าสู่ระบบผู้ดูแล
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="icon" className="sm:hidden">
+              <Link to="/auth">
+                <UserCheck className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </header>
 
       {/* Main Content Surface */}
-      <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-10 lg:py-14 flex flex-col gap-12">
+      <main className="container mx-auto flex max-w-6xl flex-1 flex-col gap-16 px-6 py-12 md:py-24">
         {/* Minimal Hero Section */}
-        <section className="bg-white border border-gray-200 rounded-2xl p-8 sm:p-12 shadow-sm relative overflow-hidden">
-          <div className="max-w-3xl space-y-6 relative z-10">
-            {/* Campus Tag */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-gray-50 text-black border border-gray-200/80">
-              <span className="w-2 h-2 rounded-full bg-gray-500" />
-              มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตกำแพงแสน
-            </div>
+        <section className="relative flex flex-col items-center text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border bg-muted/50 px-3 py-1 text-xs font-medium text-muted-foreground mb-8">
+            <span className="h-2 w-2 rounded-full bg-primary" />
+            มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตกำแพงแสน
+          </div>
 
-            {/* Main Headline */}
-            <div className="space-y-3">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight leading-[1.2]">
-                ระบบติดตามบริการรถตะไล
-                <br />
-                <span className="text-black">
-                  สะดวกรวดเร็ว แม่นยำทุกการเดินทาง
-                </span>
-              </h1>
-              <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-2xl">
-                แอปพลิเคชันติดตามตำแหน่งและตรวจสอบตารางเวลาการเดินรถสวัสดิการตะไล
-                ครอบคลุมทุกจุดบริการภายใน มก.กำแพงแสน
-              </p>
-            </div>
+          <h1 className="text-balance text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+            ระบบติดตามบริการรถตะไล
+            <br />
+            <span className="text-muted-foreground">
+              สะดวกรวดเร็ว แม่นยำทุกการเดินทาง
+            </span>
+          </h1>
 
-            {/* Primary Action Buttons */}
-            <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <button
-                id="home-download-btn"
-                onClick={handleDownload}
-                className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-lg text-sm font-semibold text-white bg-black text-white hover:bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-all shadow-sm active:scale-[0.99]"
-              >
-                <Download className="w-5 h-5 text-white" />
-                <span>ดาวน์โหลดแอป Android (.APK)</span>
-              </button>
+          <p className="mt-6 max-w-[42rem] text-balance leading-normal text-muted-foreground sm:text-xl sm:leading-8">
+            แอปพลิเคชันติดตามตำแหน่งและตรวจสอบตารางเวลาการเดินรถสวัสดิการตะไล
+            ครอบคลุมทุกจุดบริการภายใน มก.กำแพงแสน
+          </p>
 
-              <Link
-                to="/auth"
-                id="home-admin-btn"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg text-sm font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-all"
-              >
-                <UserCheck className="w-4 h-4 text-gray-500" />
-                <span>เข้าสู่ระบบผู้ดูแลระบบ</span>
+          {/* Primary Action Buttons */}
+          <div className="mt-8 flex w-full flex-col justify-center gap-4 sm:flex-row sm:w-auto">
+            <Button
+              size="lg"
+              onClick={handleDownload}
+              className="gap-2 w-full sm:w-auto"
+            >
+              <Download className="h-4 w-4" />
+              ดาวน์โหลดแอป Android (.APK)
+            </Button>
+
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="gap-2 w-full sm:w-auto"
+            >
+              <Link to="/auth">
+                <UserCheck className="h-4 w-4" />
+                เข้าสู่ระบบผู้ดูแลระบบ
               </Link>
-            </div>
+            </Button>
+          </div>
 
-            {/* Platform Note */}
-            <div className="flex items-center gap-2 text-xs text-gray-500 font-mono pt-1">
-              <span className="inline-block w-2 h-2 rounded-full bg-gray-500" />
-              <span>
-                รองรับเฉพาะระบบปฏิบัติการ Android เท่านั้น (Android 8.0 ขึ้นไป)
-              </span>
-            </div>
+          <div className="mt-6 flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground" />
+            รองรับเฉพาะระบบปฏิบัติการ Android เท่านั้น (Android 8.0 ขึ้นไป)
           </div>
         </section>
 
         {/* System Highlights & Features Grid */}
-        <section className="space-y-6">
-          <div className="border-b border-gray-200 pb-4">
-            <span className="text-xs font-mono uppercase tracking-wider text-black font-semibold block mb-1">
+        <section className="space-y-8">
+          <div className="flex flex-col items-center text-center">
+            <span className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               System Highlights
             </span>
-            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
-              ฟังก์ชันหลักของระบบ KUKPS smart talai
+            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              ฟังก์ชันหลักของระบบ
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <FeatureCard
               Icon={MapPin}
               title="เช็กตำแหน่งเรียลไทม์"
@@ -158,50 +174,44 @@ export default function Home() {
         </section>
 
         {/* 3 Step Quick Start Guide */}
-        <section className="bg-white border border-gray-200 rounded-2xl p-8 sm:p-10 shadow-sm space-y-6">
-          <div className="space-y-1">
-            <span className="text-xs font-mono uppercase tracking-wider text-black font-semibold block">
+        <section className="space-y-8 rounded-3xl border bg-card p-8 shadow-sm sm:p-12">
+          <div className="flex flex-col items-center text-center">
+            <span className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Easy Steps
             </span>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
-              3 ขั้นตอนง่ายๆ ในการเริ่มใช้งานบนมือถือ Android
+            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              3 ขั้นตอนง่ายๆ ในการเริ่มใช้งาน
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-gray-50 border border-gray-200/80 rounded-xl p-6 flex flex-col space-y-3">
-              <div className="w-9 h-9 rounded-lg bg-black text-white font-bold font-mono flex items-center justify-center text-base shadow-sm">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-xl font-bold text-primary">
                 1
               </div>
-              <h3 className="font-bold text-gray-900 text-base">
-                กดดาวน์โหลดไฟล์ APK
-              </h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
+              <h3 className="font-bold">กดดาวน์โหลดไฟล์ APK</h3>
+              <p className="text-sm text-muted-foreground">
                 กดปุ่มดาวน์โหลดบนหน้าเว็บเพื่อรับไฟล์ติดตั้งสำหรับมือถือ Android
               </p>
             </div>
 
-            <div className="bg-gray-50 border border-gray-200/80 rounded-xl p-6 flex flex-col space-y-3">
-              <div className="w-9 h-9 rounded-lg bg-black text-white font-bold font-mono flex items-center justify-center text-base shadow-sm">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-xl font-bold text-primary">
                 2
               </div>
-              <h3 className="font-bold text-gray-900 text-base">
-                เปิดแอปและเลือกสายรถ
-              </h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
+              <h3 className="font-bold">เปิดแอปและเลือกสายรถ</h3>
+              <p className="text-sm text-muted-foreground">
                 กดติดตั้งแอปพลิเคชันและเปิดใช้งาน
                 เลือกสายรถตะไลที่ต้องการเดินทาง
               </p>
             </div>
 
-            <div className="bg-gray-50 border border-gray-200/80 rounded-xl p-6 flex flex-col space-y-3">
-              <div className="w-9 h-9 rounded-lg bg-black text-white font-bold font-mono flex items-center justify-center text-base shadow-sm">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-xl font-bold text-primary">
                 3
               </div>
-              <h3 className="font-bold text-gray-900 text-base">
-                เดินทางได้ทันที
-              </h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
+              <h3 className="font-bold">เดินทางได้ทันที</h3>
+              <p className="text-sm text-muted-foreground">
                 ติดตามพิกัดรถบนแผนที่และออกมารอรถตะไลได้ตรงตามเวลา
               </p>
             </div>
@@ -210,17 +220,15 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 bg-white mt-auto">
-        <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 bg-black text-white rounded flex items-center justify-center text-white text-xs font-bold font-mono">
+      <footer className="mt-auto border-t bg-background">
+        <div className="container mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 py-6 md:h-20 md:flex-row md:py-0 px-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-6 w-6 items-center justify-center rounded bg-primary text-[10px] font-bold text-primary-foreground">
               KU
             </div>
-            <span className="text-xs font-semibold text-gray-800">
-              KUKPS smart talai System
-            </span>
+            <span className="text-sm font-semibold">KUKPS TALAI ETA</span>
           </div>
-          <span className="text-xs font-mono text-gray-400">
+          <span className="text-xs text-muted-foreground">
             © 2567 มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตกำแพงแสน
           </span>
         </div>
@@ -240,14 +248,16 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 hover:border-gray-300 hover:shadow-sm transition-all group flex flex-col justify-between">
-      <div className="space-y-3">
-        <div className="w-10 h-10 bg-gray-50 border border-gray-100 rounded-lg flex items-center justify-center text-black group-hover:bg-gray-900 text-white group-hover:text-white transition-colors">
-          <Icon className="w-5 h-5" />
+    <Card className="transition-all hover:border-foreground/20 hover:shadow-md">
+      <CardHeader>
+        <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <Icon className="h-5 w-5" />
         </div>
-        <h3 className="text-base font-bold text-gray-900">{title}</h3>
-        <p className="text-xs text-gray-600 leading-relaxed">{description}</p>
-      </div>
-    </div>
+        <CardTitle className="text-lg">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <CardDescription>{description}</CardDescription>
+      </CardContent>
+    </Card>
   );
 }

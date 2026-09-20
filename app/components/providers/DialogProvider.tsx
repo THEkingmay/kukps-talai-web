@@ -1,9 +1,19 @@
 import React, { createContext, useContext, useState, type ReactNode } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
 
 interface DialogOptions {
   title: string;
   description?: string;
   confirmText?: string;
+  variant?: "default" | "destructive";
 }
 
 interface ConfirmOptions extends DialogOptions {
@@ -46,7 +56,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
 
   const handleClose = () => {
     setIsOpen(false);
-    setOptions(null);
+    setTimeout(() => setOptions(null), 300); // clear after animation
   };
 
   const handleConfirm = () => {
@@ -66,32 +76,31 @@ export function DialogProvider({ children }: { children: ReactNode }) {
   return (
     <DialogContext.Provider value={{ alert, confirm }}>
       {children}
-      {isOpen && options && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md bg-white border border-gray-200 shadow-sm text-center p-6">
-            <h2 className="text-lg font-bold text-black mb-2">{options.title}</h2>
-            {options.description && (
-              <p className="text-sm text-gray-600 mb-6">{options.description}</p>
+      <Dialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{options?.title}</DialogTitle>
+            {options?.description && (
+              <DialogDescription>
+                {options.description}
+              </DialogDescription>
             )}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
-              {type === "confirm" && (
-                <button
-                  onClick={handleCancel}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-black bg-white border border-gray-200 hover:bg-gray-50 transition-colors focus:outline-none"
-                >
-                  {(options as ConfirmOptions).cancelText || "ยกเลิก"}
-                </button>
-              )}
-              <button
-                onClick={handleConfirm}
-                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-black border border-black hover:bg-gray-900 transition-colors focus:outline-none"
-              >
-                {options.confirmText || "ตกลง"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            {type === "confirm" && (
+              <Button variant="outline" onClick={handleCancel}>
+                {(options as ConfirmOptions)?.cancelText || "ยกเลิก"}
+              </Button>
+            )}
+            <Button
+              variant={options?.variant === "destructive" ? "destructive" : "default"}
+              onClick={handleConfirm}
+            >
+              {options?.confirmText || "ตกลง"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DialogContext.Provider>
   );
 }

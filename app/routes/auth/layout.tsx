@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router";
 import { useAuth } from "~/components/providers/AuthProvider";
-import Loading from "~/components/ui/Loading";
+import Loading, { FullPageLoading } from "~/components/ui/Loading";
 
 export default function AuthLayout() {
   const { user, isLoading } = useAuth();
@@ -14,7 +14,7 @@ export default function AuthLayout() {
   }, [user, navigate, isLoading]);
 
   if (isLoading) {
-    return <Loading />;
+    return <FullPageLoading />;
   }
   if (!user) {
     return <Outlet />;

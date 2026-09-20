@@ -1,5 +1,18 @@
 import type { Route as RouteType } from "~/types";
-import { Plus, X, Bus, Route as RouteIcon } from "lucide-react";
+import { PlusCircle, Bus, Route as RouteIcon, Loader2 } from "lucide-react";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 
 interface CreateCarModalProps {
   isOpen: boolean;
@@ -24,83 +37,69 @@ export default function CreateCarModal({
   onSubmit,
   onClose,
 }: CreateCarModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 backdrop-blur-xs bg-gray-900/40 animate-fade-in">
-      <div className="bg-white border border-gray-200 rounded-lg shadow-2xl w-full max-w-xl overflow-hidden">
-        {/* Header */}
-        <div className="p-6 sm:p-7 border-b border-gray-200 flex items-center justify-between bg-white/80">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-md bg-gray-100 text-gray-600 flex items-center justify-center border border-gray-200">
-              <Plus className="w-4 h-4" />
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <PlusCircle className="h-5 w-5" />
             </div>
-            <h3 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">
-              เพิ่มรถตะไลใหม่ (Add Vehicle)
-            </h3>
+            <div>
+              <DialogTitle>เพิ่มรถตะไลคันใหม่</DialogTitle>
+              <DialogDescription>
+                ลงทะเบียนรถตะไลเข้าสู่ระบบและกำหนดสายการเดินรถ
+              </DialogDescription>
+            </div>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition-colors text-sm font-semibold"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        </DialogHeader>
 
-        <form onSubmit={onSubmit} className="p-6 sm:p-7 space-y-5">
-          <div>
-            <label className="block text-xs sm:text-sm font-semibold text-gray-800 mb-2 flex items-center gap-1.5">
-              <Bus className="w-4 h-4 text-gray-500" />
-              หมายเลข/ชื่อรถตะไล <span className="text-black">*</span>
-            </label>
-            <input
-              type="text"
+        <form onSubmit={onSubmit} className="space-y-6 pt-4">
+          <div className="space-y-2">
+            <Label htmlFor="car-number" className="flex items-center gap-2">
+              <Bus className="h-4 w-4 text-muted-foreground" />
+              หมายเลข/ชื่อรถตะไล <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="car-number"
               required
               value={carNumber}
               onChange={(e) => onChangeCarNumber(e.target.value)}
-              placeholder="เช่น ตะไล 01, ตะไล 02"
-              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-md text-xs sm:text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-black transition-all"
+              placeholder="เช่น: รถตะไล 1, ตะไลสาย ก"
+              disabled={isSubmitting}
             />
           </div>
 
-          <div>
-            <label className="block text-xs sm:text-sm font-semibold text-gray-800 mb-2 flex items-center gap-1.5">
-              <RouteIcon className="w-4 h-4 text-gray-500" />
-              เลือกสายการเดินรถ (Route) <span className="text-black">*</span>
-            </label>
-            <select
-              required
-              value={routeId}
-              onChange={(e) => onChangeRouteId(e.target.value)}
-              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-md text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-black transition-all"
-            >
-              <option value="">-- กรุณาเลือกสายการเดินรถ --</option>
-              {routes.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name} ({r.id})
-                </option>
-              ))}
-            </select>
+          <div className="space-y-2">
+            <Label htmlFor="route-id" className="flex items-center gap-2">
+              <RouteIcon className="h-4 w-4 text-muted-foreground" />
+              สายการเดินรถ (Route) <span className="text-destructive">*</span>
+            </Label>
+            <Select required value={routeId} onValueChange={onChangeRouteId} disabled={isSubmitting}>
+              <SelectTrigger id="route-id">
+                <SelectValue placeholder="-- กรุณาเลือกสายการเดินรถ --" />
+              </SelectTrigger>
+              <SelectContent>
+                {routes.map((r) => (
+                  <SelectItem key={r.id} value={r.id}>
+                    {r.name} ({r.id})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="pt-4 border-t border-gray-200 flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 rounded-md text-xs sm:text-sm font-semibold text-gray-500 bg-white border border-gray-200 hover:bg-white active:bg-gray-200 transition-all"
-            >
+          <DialogFooter className="border-t pt-4">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               ยกเลิก
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting || !carNumber.trim() || !routeId}
-              className="px-6 py-2.5 rounded-md text-xs sm:text-sm font-semibold text-white bg-black hover:bg-gray-600 active:bg-black disabled:opacity-50 transition-all shadow-xs"
-            >
+            </Button>
+            <Button type="submit" disabled={isSubmitting || !carNumber.trim() || !routeId}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isSubmitting ? "กำลังบันทึก..." : "ยืนยันเพิ่มรถตะไล"}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

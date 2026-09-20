@@ -2,8 +2,13 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { useAuth } from "~/components/providers/AuthProvider";
 import { requestResetPasswordAction } from "~/actions/auth.action";
-import { Loader2 } from "lucide-react";
+import { Loader2, Bus } from "lucide-react";
 import { useDialog } from "~/components/providers/DialogProvider";
+
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "~/components/ui/card";
 
 type AuthMode = "login" | "register" | "forgot_password";
 
@@ -28,9 +33,7 @@ export default function AuthPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [isResetSubmitting, setIsResetSubmitting] = useState(false);
-  const [resetSuccessEmail, setResetSuccessEmail] = useState<string | null>(
-    null,
-  );
+  const [resetSuccessEmail, setResetSuccessEmail] = useState<string | null>(null);
 
   const isLoading = isAuthLoading || isResetSubmitting;
 
@@ -88,182 +91,145 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 font-sans text-black antialiased p-4">
-      <div className="w-full max-w-sm">
-        <div className="bg-white border border-gray-200 shadow-sm p-8 text-center rounded-lg">
-          <h1 className="text-xl font-semibold text-black tracking-tight mb-2">
-            {mode === "register"
-              ? "ลงทะเบียน"
-              : mode === "forgot_password"
-                ? "ตั้งรหัสผ่านใหม่"
-                : "เข้าสู่ระบบ"}
-          </h1>
-          <p className="text-sm text-gray-600 mb-6">
-            {mode === "register"
-              ? "สร้างบัญชีผู้ดูแลระบบ KUKPS"
-              : mode === "forgot_password"
-                ? "รับลิงก์สำหรับรีเซ็ตรหัสผ่าน"
-                : "ระบบควบคุมและบริหารจัดการ KUKPS"}
-          </p>
-
-          {mode === "forgot_password" && resetSuccessEmail ? (
-            <div className="space-y-4">
-              <p className="text-sm text-gray-600 leading-relaxed text-left">
-                ระบบได้ส่งลิงก์รีเซ็ตรหัสผ่านไปที่{" "}
-                <span className="font-semibold text-black">
-                  {resetSuccessEmail}
-                </span>{" "}
-                แล้ว กรุณาตรวจสอบกล่องจดหมายของคุณ
-              </p>
-              <button
-                type="button"
-                onClick={() => switchMode("login")}
-                className="w-full py-2 px-4 text-sm font-medium text-black bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-md"
-              >
-                กลับไปหน้าเข้าสู่ระบบ
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4 text-left">
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="auth-email"
-                  className="block text-sm font-medium text-black"
-                >
-                  อีเมล
-                </label>
-                <input
-                  id="auth-email"
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={isLoading}
-                  placeholder="admin@ku.th"
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md bg-white text-black placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-black focus:border-black disabled:bg-gray-50 disabled:text-gray-400 transition-colors"
-                />
-              </div>
-
-              {mode !== "forgot_password" && (
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label
-                      htmlFor="auth-password"
-                      className="block text-sm font-medium text-black"
-                    >
-                      รหัสผ่าน
-                    </label>
-                  </div>
-                  <input
-                    id="auth-password"
-                    type="password"
-                    autoComplete={
-                      mode === "register" ? "new-password" : "current-password"
-                    }
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={8}
-                    disabled={isLoading}
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md bg-white text-black placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-black focus:border-black disabled:bg-gray-50 disabled:text-gray-400 transition-colors"
-                  />
-                </div>
-              )}
-
-              {mode === "register" && (
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="auth-confirm-password"
-                    className="block text-sm font-medium text-black"
-                  >
-                    ยืนยันรหัสผ่าน
-                  </label>
-                  <input
-                    id="auth-confirm-password"
-                    type="password"
-                    autoComplete="new-password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    minLength={8}
-                    disabled={isLoading}
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md bg-white text-black placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-black focus:border-black disabled:bg-gray-50 disabled:text-gray-400 transition-colors"
-                  />
-                </div>
-              )}
-
-              {mode === "register" && (
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="auth-invite-code"
-                    className="block text-sm font-medium text-black flex items-center justify-between"
-                  >
-                    <span>รหัสเชิญ</span>
-                  </label>
-                  <input
-                    id="auth-invite-code"
-                    type="text"
-                    autoComplete="off"
-                    value={inviteCode}
-                    onChange={(e) => setInviteCode(e.target.value)}
-                    required
-                    disabled={isLoading}
-                    className="w-full px-3 py-2 text-sm font-mono tracking-widest uppercase border border-gray-200 rounded-md bg-white text-black placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-black focus:border-black disabled:bg-gray-50 disabled:text-gray-400 transition-colors"
-                  />
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full mt-2 flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm font-medium text-white bg-black border border-black hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
-              >
-                {isLoading && <Loader2 className="w-4 h-4 text-white animate-spin" />}
+    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-6 md:p-10">
+      <div className="flex w-full max-w-sm flex-col gap-6">
+        <Link to="/" className="flex items-center gap-2 self-center font-medium">
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <Bus className="h-4 w-4" />
+          </div>
+          TalaiETA
+        </Link>
+        <div className="flex flex-col gap-6">
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle className="text-xl">
                 {mode === "register"
                   ? "ลงทะเบียน"
                   : mode === "forgot_password"
-                    ? "ส่งคำขอ"
+                    ? "ตั้งรหัสผ่านใหม่"
                     : "เข้าสู่ระบบ"}
-              </button>
-            </form>
-          )}
-        </div>
+              </CardTitle>
+              <CardDescription>
+                {mode === "register"
+                  ? "สร้างบัญชีผู้ดูแลระบบ KUKPS"
+                  : mode === "forgot_password"
+                    ? "รับลิงก์สำหรับรีเซ็ตรหัสผ่าน"
+                    : "ระบบควบคุมและบริหารจัดการ KUKPS"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {mode === "forgot_password" && resetSuccessEmail ? (
+                <div className="grid gap-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed text-center">
+                    ระบบได้ส่งลิงก์รีเซ็ตรหัสผ่านไปที่{" "}
+                    <span className="font-semibold text-foreground">
+                      {resetSuccessEmail}
+                    </span>{" "}
+                    แล้ว กรุณาตรวจสอบกล่องจดหมาย
+                  </p>
+                  <Button variant="outline" className="w-full" onClick={() => switchMode("login")}>
+                    กลับไปหน้าเข้าสู่ระบบ
+                  </Button>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="grid gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="auth-email">อีเมล</Label>
+                    <Input
+                      id="auth-email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="admin@ku.th"
+                      required
+                      disabled={isLoading}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
 
-        <div className="mt-6 text-center space-y-2">
-          {mode === "forgot_password" ? (
-            <button
-              onClick={() => switchMode("login")}
-              className="text-sm text-gray-500 hover:text-black transition-colors"
-            >
-              กลับสู่หน้าเข้าสู่ระบบ
-            </button>
-          ) : (
-            <>
-              {mode === "login" && (
-                <div>
+                  {mode !== "forgot_password" && (
+                    <div className="grid gap-2">
+                      <div className="flex items-center">
+                        <Label htmlFor="auth-password">รหัสผ่าน</Label>
+                        {mode === "login" && (
+                          <button
+                            type="button"
+                            onClick={() => switchMode("forgot_password")}
+                            className="ml-auto text-sm text-muted-foreground underline-offset-4 hover:underline"
+                          >
+                            ลืมรหัสผ่าน?
+                          </button>
+                        )}
+                      </div>
+                      <Input
+                        id="auth-password"
+                        type="password"
+                        autoComplete={mode === "register" ? "new-password" : "current-password"}
+                        required
+                        minLength={8}
+                        disabled={isLoading}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                    </div>
+                  )}
+
+                  {mode === "register" && (
+                    <>
+                      <div className="grid gap-2">
+                        <Label htmlFor="auth-confirm-password">ยืนยันรหัสผ่าน</Label>
+                        <Input
+                          id="auth-confirm-password"
+                          type="password"
+                          autoComplete="new-password"
+                          required
+                          minLength={8}
+                          disabled={isLoading}
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="auth-invite-code">รหัสเชิญ</Label>
+                        <Input
+                          id="auth-invite-code"
+                          type="text"
+                          autoComplete="off"
+                          className="font-mono uppercase tracking-widest"
+                          required
+                          disabled={isLoading}
+                          value={inviteCode}
+                          onChange={(e) => setInviteCode(e.target.value)}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  <Button type="submit" className="w-full mt-2" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {mode === "register"
+                      ? "ลงทะเบียน"
+                      : mode === "forgot_password"
+                        ? "ส่งคำขอ"
+                        : "เข้าสู่ระบบ"}
+                  </Button>
+                </form>
+              )}
+            </CardContent>
+            {mode !== "forgot_password" && (
+              <CardFooter>
+                <div className="text-center w-full text-sm">
+                  {mode === "register" ? "มีบัญชีอยู่แล้ว? " : "ยังไม่มีบัญชี? "}
                   <button
-                    onClick={() => switchMode("forgot_password")}
-                    className="text-sm text-gray-500 hover:text-black transition-colors"
+                    onClick={() => switchMode(mode === "register" ? "login" : "register")}
+                    className="underline underline-offset-4 hover:text-primary"
                   >
-                    ลืมรหัสผ่าน?
+                    {mode === "register" ? "เข้าสู่ระบบ" : "สมัครสมาชิก"}
                   </button>
                 </div>
-              )}
-              <div>
-                <button
-                  onClick={() =>
-                    switchMode(mode === "register" ? "login" : "register")
-                  }
-                  className="text-sm text-gray-500 hover:text-black transition-colors"
-                >
-                  {mode === "register"
-                    ? "มีบัญชีอยู่แล้ว? เข้าสู่ระบบ"
-                    : "สมัครสมาชิก"}
-                </button>
-              </div>
-            </>
-          )}
+              </CardFooter>
+            )}
+          </Card>
         </div>
       </div>
     </div>

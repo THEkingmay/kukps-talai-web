@@ -1,7 +1,7 @@
 import { Outlet, useNavigate } from "react-router";
 import { useAuth } from "../../components/providers/AuthProvider";
 import { useEffect } from "react";
-import Loading from "~/components/ui/Loading";
+import Loading, { FullPageLoading } from "~/components/ui/Loading";
 export default function ProtectedRoute() {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
@@ -13,7 +13,7 @@ export default function ProtectedRoute() {
   }, [isLoading, user, navigate]);
 
   if (isLoading) {
-    return <Loading />;
+    return <FullPageLoading />;
   }
 
   if (user) {

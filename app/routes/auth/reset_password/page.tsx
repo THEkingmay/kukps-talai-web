@@ -1,8 +1,13 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router";
 import { resetPasswordAction } from "~/actions/auth.action";
-import { Loader2 } from "lucide-react";
+import { Loader2, Bus } from "lucide-react";
 import { useDialog } from "~/components/providers/DialogProvider";
+
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "~/components/ui/card";
 
 function useResetToken() {
   const [token, setToken] = useState<string | null>(null);
@@ -83,113 +88,98 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 font-sans text-black antialiased p-4">
-      <div className="w-full max-w-sm">
-        <div className="bg-white border border-gray-200 shadow-sm p-8 text-center rounded-lg">
-          {isInitializing ? (
-            <div className="py-12">
-              <Loader2 className="w-5 h-5 text-black animate-spin mx-auto mb-3" />
-            </div>
-          ) : !token ? (
-            <div>
-              <h2 className="text-lg font-semibold text-black mb-2">
-                ไม่พบโทเคน
-              </h2>
-              <p className="text-sm text-gray-600 mb-6">
-                ลิงก์อาจไม่ถูกต้อง หมดอายุ หรือใช้ไปแล้ว
-              </p>
-              <Link
-                to="/auth"
-                className="w-full py-2 px-4 inline-block text-sm font-medium text-black bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-md"
-              >
-                กลับไปหน้าเข้าสู่ระบบ
-              </Link>
-            </div>
-          ) : isSuccess ? (
-            <div>
-              <h2 className="text-lg font-semibold text-black mb-2">
-                สำเร็จ
-              </h2>
-              <p className="text-sm text-gray-600 mb-6">
-                รหัสผ่านของคุณได้รับการอัปเดตเรียบร้อยแล้ว
-              </p>
-              <button
-                onClick={() => navigate("/auth")}
-                className="w-full py-2 px-4 text-sm font-medium text-white bg-black hover:bg-gray-900 transition-colors border border-black rounded-md"
-              >
-                ไปที่หน้าเข้าสู่ระบบ
-              </button>
-            </div>
-          ) : (
-            <>
-              <h1 className="text-xl font-semibold text-black tracking-tight mb-2">
-                ตั้งรหัสผ่านใหม่
-              </h1>
-              <p className="text-sm text-gray-600 mb-6">
-                กำหนดรหัสผ่านใหม่สำหรับเข้าใช้งานระบบ
-              </p>
-
-              <form onSubmit={handleSubmit} className="space-y-4 text-left">
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="reset-new-password"
-                    className="block text-sm font-medium text-black"
-                  >
-                    รหัสผ่านใหม่
-                  </label>
-                  <input
-                    id="reset-new-password"
-                    type="password"
-                    autoComplete="new-password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    required
-                    minLength={8}
-                    disabled={isLoading}
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md bg-white text-black placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-black focus:border-black disabled:bg-gray-50 transition-colors"
-                  />
+    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-6 md:p-10">
+      <div className="flex w-full max-w-sm flex-col gap-6">
+        <Link to="/" className="flex items-center gap-2 self-center font-medium">
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <Bus className="h-4 w-4" />
+          </div>
+          TalaiETA
+        </Link>
+        <div className="flex flex-col gap-6">
+          <Card>
+            <CardHeader className="text-center">
+              {isInitializing ? null : !token ? (
+                <>
+                  <CardTitle className="text-xl text-destructive">ไม่พบโทเคน</CardTitle>
+                  <CardDescription>ลิงก์อาจไม่ถูกต้อง หมดอายุ หรือใช้ไปแล้ว</CardDescription>
+                </>
+              ) : isSuccess ? (
+                <>
+                  <CardTitle className="text-xl text-green-600">สำเร็จ</CardTitle>
+                  <CardDescription>รหัสผ่านของคุณได้รับการอัปเดตเรียบร้อยแล้ว</CardDescription>
+                </>
+              ) : (
+                <>
+                  <CardTitle className="text-xl">ตั้งรหัสผ่านใหม่</CardTitle>
+                  <CardDescription>กำหนดรหัสผ่านใหม่สำหรับเข้าใช้งานระบบ</CardDescription>
+                </>
+              )}
+            </CardHeader>
+            <CardContent>
+              {isInitializing ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
-
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="reset-confirm-password"
-                    className="block text-sm font-medium text-black"
-                  >
-                    ยืนยันรหัสผ่านใหม่
-                  </label>
-                  <input
-                    id="reset-confirm-password"
-                    type="password"
-                    autoComplete="new-password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    minLength={8}
-                    disabled={isLoading}
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md bg-white text-black placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-black focus:border-black disabled:bg-gray-50 transition-colors"
-                  />
+              ) : !token ? (
+                <div className="grid gap-4">
+                  <Button asChild variant="outline" className="w-full">
+                    <Link to="/auth">กลับไปหน้าเข้าสู่ระบบ</Link>
+                  </Button>
                 </div>
+              ) : isSuccess ? (
+                <div className="grid gap-4">
+                  <Button className="w-full" onClick={() => navigate("/auth")}>
+                    ไปที่หน้าเข้าสู่ระบบ
+                  </Button>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="grid gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="reset-new-password">รหัสผ่านใหม่</Label>
+                    <Input
+                      id="reset-new-password"
+                      type="password"
+                      autoComplete="new-password"
+                      required
+                      minLength={8}
+                      disabled={isLoading}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
+                  </div>
 
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full mt-2 flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm font-medium text-white bg-black border border-black hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
-                >
-                  {isLoading && <Loader2 className="w-4 h-4 text-white animate-spin" />}
-                  บันทึกรหัสผ่านใหม่
-                </button>
-              </form>
-            </>
-          )}
-        </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="reset-confirm-password">ยืนยันรหัสผ่านใหม่</Label>
+                    <Input
+                      id="reset-confirm-password"
+                      type="password"
+                      autoComplete="new-password"
+                      required
+                      minLength={8}
+                      disabled={isLoading}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+                  </div>
 
-        <div className="mt-6 text-center">
-          <Link
-            to="/auth"
-            className="text-sm text-gray-500 hover:text-black transition-colors"
-          >
-            กลับไปยังหน้าเข้าสู่ระบบ
-          </Link>
+                  <Button type="submit" className="w-full mt-2" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    บันทึกรหัสผ่านใหม่
+                  </Button>
+                </form>
+              )}
+            </CardContent>
+            {(!isInitializing && token && !isSuccess) && (
+              <CardFooter>
+                <div className="text-center w-full text-sm">
+                  <Link to="/auth" className="underline underline-offset-4 hover:text-primary">
+                    กลับไปยังหน้าเข้าสู่ระบบ
+                  </Link>
+                </div>
+              </CardFooter>
+            )}
+          </Card>
         </div>
       </div>
     </div>

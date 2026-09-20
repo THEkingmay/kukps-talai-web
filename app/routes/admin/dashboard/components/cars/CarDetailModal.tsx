@@ -2,19 +2,25 @@ import { lazy, Suspense } from "react";
 import type { ResponseCarData } from "~/types";
 import {
   Info,
-  X,
   Bus,
-  CheckCircle2,
-  XCircle,
   Calendar,
   Clock,
   User,
   Route,
   Activity,
   Hash,
+  Loader2,
 } from "lucide-react";
 import CarHistoryLogList from "./CarHistoryLogList";
 const CarDetailMap = lazy(() => import("./CarDetailMap"));
+
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "~/components/ui/sheet";
 
 interface CarDetailModalProps {
   isOpen: boolean;
@@ -33,145 +39,127 @@ export default function CarDetailModal({
   onClose,
   formatDate,
 }: CarDetailModalProps) {
-  if (!isOpen) return null;
-
   const routeName = car?.routeId
     ? routeNameMap[car.routeId] || `สาย: ${car.routeId}`
     : "ยังไม่ได้ระบุสายการเดินรถ";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 lg:p-6 backdrop-blur-xs bg-gray-900/40 animate-fade-in">
-      <div className="bg-white border border-gray-200 rounded-lg shadow-2xl w-full max-w-7xl overflow-hidden flex flex-col max-h-[92vh] transition-all">
-        {/* Modal Header */}
-        <div className="px-6 py-4.5 sm:px-7 border-b border-gray-200 flex items-center justify-between bg-white/90">
+    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent className="w-full !max-w-[95vw] overflow-y-auto p-6 sm:p-8">
+        <SheetHeader className="border-b pb-4 mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-md bg-sky-50 text-sky-600 flex items-center justify-center border border-sky-100 shrink-0">
-              <Bus className="w-5 h-5" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Bus className="h-5 w-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">
-                  {car ? `รถตะไล หมายเลข ${car.carNumber}` : "รายละเอียดรถตะไล"}
-                </h3>
-                {/*{car && <StatusBadge status={car.status} />}*/}
-              </div>
-              <p className="text-xs text-gray-500 font-mono">
+              <SheetTitle className="text-xl">
+                {car ? `รถตะไล หมายเลข ${car.carNumber}` : "รายละเอียดรถตะไล"}
+              </SheetTitle>
+              <SheetDescription className="font-mono text-xs">
                 {car ? `ID: ${car.id}` : "Vehicle Details & GPS History Log"}
-              </p>
+              </SheetDescription>
             </div>
           </div>
+        </SheetHeader>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition-colors text-sm font-semibold"
-            aria-label="Close modal"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Modal Content - Split Left/Right Layout */}
-        <div className="p-5 sm:p-6 lg:p-7 overflow-y-auto flex-1 bg-white [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          {isLoading ? (
-            <div className="py-16 text-center text-gray-500 font-mono text-sm space-y-3">
-              <div className="w-7 h-7 border-2 border-gray-300 border-t-sky-600 rounded-full animate-spin mx-auto" />
-              <p>กำลังโหลดข้อมูลรายละเอียดรถตะไล...</p>
-            </div>
-          ) : car ? (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-              {/* Left Side: Car Info & History Logs */}
-              <div className="lg:col-span-5 flex flex-col space-y-5">
-                {/* Section Title */}
-                <div className="flex items-center justify-between pb-1 border-b border-gray-200">
-                  <span className="text-xs font-mono uppercase tracking-wider font-bold text-gray-400 flex items-center gap-1.5">
-                    <Info className="w-3.5 h-3.5 text-sky-500" />
-                    ข้อมูลทั่วไปของรถ (Vehicle Overview)
-                  </span>
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+            <Loader2 className="h-8 w-8 animate-spin mb-4" />
+            <p>กำลังโหลดข้อมูลรายละเอียดรถตะไล...</p>
+          </div>
+        ) : car ? (
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            {/* Left Side: Car Info & History Logs */}
+            <div className="flex flex-col space-y-6 lg:col-span-5">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 border-b pb-2">
+                  <Info className="h-4 w-4 text-primary" />
+                  <h3 className="font-semibold tracking-tight">
+                    ข้อมูลทั่วไปของรถ
+                  </h3>
                 </div>
 
                 {/* Car Main Summary Banner */}
-                <div className="p-4 bg-white/80 rounded-md border border-gray-200 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-md bg-gray-900 text-white flex items-center justify-center font-extrabold text-sm font-mono shadow-xs">
-                      {car.carNumber}
-                    </div>
-                    <div>
-                      <span className="text-xs text-gray-400 font-mono block">
-                        สายการเดินรถปัจจุบัน
-                      </span>
-                      <span className="font-bold text-gray-900 text-sm sm:text-base flex items-center gap-1.5">
-                        <Route className="w-4 h-4 text-sky-600 shrink-0" />
-                        {routeName}
-                      </span>
+                <div className="flex items-center gap-4 rounded-lg border bg-muted/50 p-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-md bg-foreground text-lg font-bold text-background font-mono shadow-sm">
+                    {car.carNumber}
+                  </div>
+                  <div>
+                    <span className="text-xs text-muted-foreground">
+                      สายการเดินรถปัจจุบัน
+                    </span>
+                    <div className="flex items-center gap-2 font-semibold">
+                      <Route className="h-4 w-4 text-primary" />
+                      {routeName}
                     </div>
                   </div>
-
-                  {/*<StatusBadge status={car.status} />*/}
                 </div>
 
                 {/* Grid Metadata Cards */}
-                <div className="grid grid-cols-2 gap-3 font-mono text-xs">
-                  <div className="p-3 bg-white/60 border border-gray-200 rounded-md space-y-1">
-                    <span className="text-gray-400 flex items-center gap-1 text-[11px]">
-                      <Hash className="w-3 h-3 text-gray-400" /> รหัสระบบ (ID)
+                <div className="grid grid-cols-2 gap-4 text-sm font-mono">
+                  <div className="space-y-1 rounded-md border p-3">
+                    <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Hash className="h-3 w-3" /> รหัสระบบ (ID)
                     </span>
-                    <span className="font-semibold text-gray-800 break-all block text-[11px]">
+                    <span className="block truncate font-semibold">
                       {car.id}
                     </span>
                   </div>
-
-                  <div className="p-3 bg-white/60 border border-gray-200 rounded-md space-y-1">
-                    <span className="text-gray-400 flex items-center gap-1 text-[11px]">
-                      <User className="w-3 h-3 text-gray-400" /> ผู้แก้ไขล่าสุด
+                  <div className="space-y-1 rounded-md border p-3">
+                    <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <User className="h-3 w-3" /> ผู้แก้ไขล่าสุด
                     </span>
-                    <span className="font-semibold text-gray-800 block text-[11px] truncate">
+                    <span className="block truncate font-semibold">
                       {car.updatedBy || "System Admin"}
                     </span>
                   </div>
-
-                  <div className="p-3 bg-white/60 border border-gray-200 rounded-md space-y-1">
-                    <span className="text-gray-400 flex items-center gap-1 text-[11px]">
-                      <Calendar className="w-3 h-3 text-gray-400" />{" "}
-                      สร้างในระบบ
+                  <div className="space-y-1 rounded-md border p-3">
+                    <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Calendar className="h-3 w-3" /> สร้างในระบบ
                     </span>
-                    <span className="font-semibold text-gray-800 block text-[11px]">
+                    <span className="block font-semibold">
                       {formatDate(car.createdAt)}
                     </span>
                   </div>
-
-                  <div className="p-3 bg-white/60 border border-gray-200 rounded-md space-y-1">
-                    <span className="text-gray-400 flex items-center gap-1 text-[11px]">
-                      <Clock className="w-3 h-3 text-gray-400" /> อัปเดตล่าสุด
+                  <div className="space-y-1 rounded-md border p-3">
+                    <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3" /> อัปเดตล่าสุด
                     </span>
-                    <span className="font-semibold text-gray-800 block text-[11px]">
+                    <span className="block font-semibold">
                       {formatDate(car.updatedAt)}
                     </span>
                   </div>
                 </div>
-
-                {/* History Log Table Component */}
-                <div className="pt-2">
-                  <CarHistoryLogList carId={car.id} formatDate={formatDate} />
-                </div>
               </div>
 
-              {/* Right Side: Leaflet Map View */}
-              <div className="lg:col-span-7 flex flex-col h-full min-h-[380px] lg:min-h-[500px]">
-                <div className="flex items-center justify-between pb-1 mb-3 border-b border-gray-200">
-                  <span className="text-xs font-mono uppercase tracking-wider font-bold text-gray-400 flex items-center gap-1.5">
-                    <Activity className="w-3.5 h-3.5 text-black" />
-                    แผนที่ตำแหน่งจริง (Leaflet Map View)
-                  </span>
+              {/* History Log Table Component */}
+              <div className="space-y-4 flex-1">
+                <div className="flex items-center gap-2 border-b pb-2">
+                  <Activity className="h-4 w-4 text-primary" />
+                  <h3 className="font-semibold tracking-tight">
+                    ประวัติการเดินทาง
+                  </h3>
                 </div>
+                <CarHistoryLogList carId={car.id} formatDate={formatDate} />
+              </div>
+            </div>
 
-                {/* Leaflet Map Component Shell — client-only via lazy */}
+            {/* Right Side: Leaflet Map View */}
+            <div className="flex flex-col space-y-4 lg:col-span-7 h-[50vh] lg:h-auto min-h-[500px]">
+              <div className="flex items-center gap-2 border-b pb-2">
+                <Activity className="h-4 w-4 text-primary" />
+                <h3 className="font-semibold tracking-tight">
+                  แผนที่ตำแหน่งจริง
+                </h3>
+              </div>
+
+              <div className="flex-1 overflow-hidden rounded-lg border bg-muted/20 relative">
                 <Suspense
                   fallback={
-                    <div className="flex-1 min-h-[380px] lg:min-h-[500px] rounded-md border border-gray-200 bg-white flex flex-col items-center justify-center gap-2">
-                      <div className="w-6 h-6 border-2 border-gray-300 border-t-sky-500 rounded-full animate-spin" />
-                      <span className="text-[11px] font-mono text-gray-400 uppercase tracking-wider">
-                        Loading map...
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/50 backdrop-blur-sm">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                      <span className="text-sm font-medium text-muted-foreground">
+                        กำลังโหลดแผนที่...
                       </span>
                     </div>
                   }
@@ -180,51 +168,13 @@ export default function CarDetailModal({
                 </Suspense>
               </div>
             </div>
-          ) : (
-            <div className="py-12 text-center text-gray-500 font-mono">
-              ไม่พบข้อมูลรถตะไล
-            </div>
-          )}
-        </div>
-
-        {/* Modal Footer */}
-        <div className="px-6 py-4 sm:px-7 border-t border-gray-200 bg-white/70 flex items-center justify-between">
-          <div className="text-xs font-mono text-gray-400 hidden sm:flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-sky-500" />
-            <span>KUKPS Talai Transit Command Center</span>
           </div>
-
-          <div className="flex items-center gap-2 ml-auto">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 rounded-md text-xs sm:text-sm font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-200 active:bg-gray-200 transition-all shadow-2xs cursor-pointer"
-            >
-              ปิดหน้าต่าง
-            </button>
+        ) : (
+          <div className="py-12 text-center text-muted-foreground">
+            ไม่พบข้อมูลรถตะไล
           </div>
-        </div>
-      </div>
-    </div>
+        )}
+      </SheetContent>
+    </Sheet>
   );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  switch (status) {
-    case "active":
-      return (
-        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-mono font-medium bg-gray-100 text-black border border-gray-300 shrink-0">
-          <CheckCircle2 className="w-3.5 h-3.5 text-black animate-pulse" />
-          พร้อมใช้งาน
-        </span>
-      );
-    case "inactive":
-    default:
-      return (
-        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-mono font-medium bg-gray-200 text-gray-500 border border-gray-200 shrink-0">
-          <XCircle className="w-3.5 h-3.5 text-gray-400" />
-          ปิดใช้งาน
-        </span>
-      );
-  }
 }

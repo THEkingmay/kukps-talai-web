@@ -1,4 +1,16 @@
-import { Plus, X, Route } from "lucide-react";
+import { Plus, Route as RouteIcon, Loader2 } from "lucide-react";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 
 interface CreateRouteModalProps {
   isOpen: boolean;
@@ -17,65 +29,54 @@ export default function CreateRouteModal({
   onSubmit,
   onClose,
 }: CreateRouteModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 backdrop-blur-xs bg-gray-900/40 animate-fade-in">
-      <div className="bg-white border border-gray-200 rounded-lg shadow-2xl w-full max-w-xl overflow-hidden">
-        <div className="p-6 sm:p-7 border-b border-gray-200 flex items-center justify-between bg-white/80">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-md bg-gray-100 text-gray-600 flex items-center justify-center border border-gray-200">
-              <Plus className="w-4 h-4" />
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Plus className="h-5 w-5" />
             </div>
-            <h3 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">
-              เพิ่มเส้นทางเดินรถใหม่ (Add Route)
-            </h3>
+            <div>
+              <DialogTitle>เพิ่มเส้นทางเดินรถใหม่ (Add Route)</DialogTitle>
+              <DialogDescription>
+                ระบุชื่อสายเดินรถให้ชัดเจน
+              </DialogDescription>
+            </div>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition-colors text-sm font-semibold"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        </DialogHeader>
 
-        <form onSubmit={onSubmit} className="p-6 sm:p-7 space-y-5">
-          <div>
-            <label className="block text-xs sm:text-sm font-semibold text-gray-800 mb-2 flex items-center gap-1.5">
-              <Route className="w-4 h-4 text-gray-500" />
-              ชื่อสายการเดินรถ <span className="text-black">*</span>
-            </label>
-            <input
+        <form onSubmit={onSubmit} className="space-y-6 pt-4">
+          <div className="space-y-2">
+            <Label htmlFor="route-name" className="flex items-center gap-2">
+              <RouteIcon className="h-4 w-4 text-muted-foreground" />
+              ชื่อสายการเดินรถ <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="route-name"
               type="text"
               required
               value={routeName}
               onChange={(e) => onChangeName(e.target.value)}
               placeholder="ระบุชื่อสายการเดินรถ..."
-              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-md text-xs sm:text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-black transition-all"
+              disabled={isSubmitting}
             />
-            <p className="text-xs text-gray-500 mt-2 leading-relaxed">
-              ระบุชื่อสายเดินรถให้ชัดเจน ครอบคลุมจุดเริ่มต้นและสถานที่สำคัญในมหาวิทยาลัย
+            <p className="text-xs text-muted-foreground">
+              ครอบคลุมจุดเริ่มต้นและสถานที่สำคัญในมหาวิทยาลัย
             </p>
           </div>
 
-          <div className="pt-4 border-t border-gray-200 flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 rounded-md text-xs sm:text-sm font-semibold text-gray-500 bg-white border border-gray-200 hover:bg-white active:bg-gray-200 transition-all"
-            >
+          <DialogFooter className="border-t pt-4">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               ยกเลิก
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting || !routeName.trim()}
-              className="px-6 py-2.5 rounded-md text-xs sm:text-sm font-semibold text-white bg-black hover:bg-gray-600 active:bg-black disabled:opacity-50 transition-all shadow-xs"
-            >
+            </Button>
+            <Button type="submit" disabled={isSubmitting || !routeName.trim()}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isSubmitting ? "กำลังบันทึก..." : "ยืนยันเพิ่มเส้นทาง"}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

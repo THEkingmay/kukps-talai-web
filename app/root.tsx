@@ -12,6 +12,9 @@ import "./app.css";
 import AuthProvider from "./components/providers/AuthProvider";
 import { DialogProvider } from "./components/providers/DialogProvider";
 
+import { ThemeProvider } from "next-themes";
+import { TooltipProvider } from "./components/ui/tooltip";
+
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
@@ -21,21 +24,25 @@ export const links: Route.LinksFunction = () => [
   },
   {
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Prompt:wght@100;200;300;400;500;600;700;800;900&display=swap",
   },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
       </head>
-      <body className="bg-gray-50 text-gray-900 antialiased font-sans">
-        {children}
+      <body className="min-h-screen bg-background text-foreground antialiased font-sans">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <TooltipProvider>
+            {children}
+          </TooltipProvider>
+        </ThemeProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

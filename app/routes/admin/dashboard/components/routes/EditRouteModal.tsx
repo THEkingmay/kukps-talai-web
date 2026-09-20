@@ -1,5 +1,17 @@
 import type { Route as RouteType } from "~/types";
-import { Pencil, X, Route as RouteIcon } from "lucide-react";
+import { Pencil, Route as RouteIcon, Loader2 } from "lucide-react";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 
 interface EditRouteModalProps {
   route: RouteType | null;
@@ -21,58 +33,49 @@ export default function EditRouteModal({
   if (!route) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 backdrop-blur-xs bg-gray-900/40 animate-fade-in">
-      <div className="bg-white border border-gray-200 rounded-lg shadow-2xl w-full max-w-xl overflow-hidden">
-        <div className="p-6 sm:p-7 border-b border-gray-200 flex items-center justify-between bg-white/80">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-md bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100">
-              <Pencil className="w-4 h-4" />
+    <Dialog open={!!route} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Pencil className="h-5 w-5" />
             </div>
-            <h3 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">
-              แก้ไขเส้นทางเดินรถ ({route.id})
-            </h3>
+            <div>
+              <DialogTitle>แก้ไขเส้นทางเดินรถ</DialogTitle>
+              <DialogDescription className="font-mono text-xs">
+                ID: {route.id}
+              </DialogDescription>
+            </div>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition-colors text-sm font-semibold"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        </DialogHeader>
 
-        <form onSubmit={onSubmit} className="p-6 sm:p-7 space-y-5">
-          <div>
-            <label className="block text-xs sm:text-sm font-semibold text-gray-800 mb-2 flex items-center gap-1.5">
-              <RouteIcon className="w-4 h-4 text-gray-500" />
+        <form onSubmit={onSubmit} className="space-y-6 pt-4">
+          <div className="space-y-2">
+            <Label htmlFor="edit-route-name" className="flex items-center gap-2">
+              <RouteIcon className="h-4 w-4 text-muted-foreground" />
               ชื่อสายการเดินรถ
-            </label>
-            <input
+            </Label>
+            <Input
+              id="edit-route-name"
               type="text"
               required
               value={editName}
               onChange={(e) => onChangeName(e.target.value)}
-              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-md text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-black transition-all"
+              disabled={isSubmitting}
             />
           </div>
 
-          <div className="pt-4 border-t border-gray-200 flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 rounded-md text-xs sm:text-sm font-semibold text-gray-500 bg-white border border-gray-200 hover:bg-white active:bg-gray-200 transition-all"
-            >
+          <DialogFooter className="border-t pt-4">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               ยกเลิก
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting || !editName.trim()}
-              className="px-6 py-2.5 rounded-md text-xs sm:text-sm font-semibold text-white bg-black hover:bg-gray-600 active:bg-black disabled:opacity-50 transition-all shadow-xs"
-            >
+            </Button>
+            <Button type="submit" disabled={isSubmitting || !editName.trim()}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isSubmitting ? "กำลังบันทึก..." : "บันทึกการแก้ไข"}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

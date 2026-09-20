@@ -13,6 +13,9 @@ import {
   ShieldAlert,
 } from "lucide-react";
 
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Badge } from "~/components/ui/badge";
+
 export function meta() {
   return [
     { title: "Dashboard — KUKPS smart talai" },
@@ -41,48 +44,45 @@ export default function DashboardRoute() {
   }, [isSuperAdmin]);
 
   return (
-    <div className="bg-white min-h-screen text-gray-800 font-sans flex flex-col antialiased">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       {/* Top Navigation */}
       <Navbar />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="container mx-auto max-w-7xl flex-1 space-y-8 px-4 py-8 sm:px-6 lg:px-8">
         {/* Banner Overview Header */}
-        <div className="bg-white border border-gray-200 rounded-md p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium bg-gray-100 text-black border border-gray-300">
-                <span className="w-2 h-2 rounded-full bg-black animate-pulse" />
-                KUKPS smart talai Control Center
-              </div>
-              <span
-                className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold border ${
-                  isSuperAdmin
-                    ? "bg-amber-50 text-amber-900 border-amber-200"
-                    : "bg-gray-200 text-gray-700 border-gray-200"
-                }`}
-              >
-                {isSuperAdmin ? "Role: Super Admin" : "Role: Admin"}
-              </span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-              แผงควบคุมระบบผู้ดูแลระบบ (Admin Dashboard)
+            <h1 className="text-3xl font-bold tracking-tight">
+              Dashboard
             </h1>
-            <p className="text-xs sm:text-sm text-gray-500 max-w-2xl">
+            <p className="text-muted-foreground">
               จัดการผู้ใช้งานระบบ รหัสเชิญเจ้าหน้าที่ ตรวจสอบสถานะรถตะไล
-              และวางแผนเส้นทางเดินรถสวัสดิการ มก.กำแพงแสน
+              และวางแผนเส้นทางเดินรถ
             </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="gap-1 font-mono">
+              <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+              System Online
+            </Badge>
+            {isSuperAdmin && (
+              <Badge variant="secondary" className="gap-1">
+                <ShieldAlert className="h-3 w-3" />
+                Super Admin
+              </Badge>
+            )}
           </div>
         </div>
 
         {/* Top Metric Stat Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="ผู้ใช้งานระบบ"
             subtitle="User Accounts"
             value={isSuperAdmin ? "จัดการผู้ใช้" : "จำกัดสิทธิ์"}
             isLocked={!isSuperAdmin}
-            icon={<Users className="w-5 h-5" />}
+            icon={<Users className="h-4 w-4" />}
             isActive={activeTab === "users"}
             onClick={() => setActiveTab("users")}
           />
@@ -91,7 +91,7 @@ export default function DashboardRoute() {
             subtitle="Admin Invites"
             value={isSuperAdmin ? "จัดการสิทธิ์" : "จำกัดสิทธิ์"}
             isLocked={!isSuperAdmin}
-            icon={<UserPlus className="w-5 h-5" />}
+            icon={<UserPlus className="h-4 w-4" />}
             isActive={activeTab === "invites"}
             onClick={() => setActiveTab("invites")}
           />
@@ -99,7 +99,7 @@ export default function DashboardRoute() {
             title="รถตะไล"
             subtitle="Active Fleet"
             value="จัดการรถตะไล"
-            icon={<Bus className="w-5 h-5" />}
+            icon={<Bus className="h-4 w-4" />}
             isActive={activeTab === "cars"}
             onClick={() => setActiveTab("cars")}
           />
@@ -107,81 +107,77 @@ export default function DashboardRoute() {
             title="สายการเดินรถ"
             subtitle="Campus Routes"
             value="จัดการเส้นทาง"
-            icon={<RouteIcon className="w-5 h-5" />}
+            icon={<RouteIcon className="h-4 w-4" />}
             isActive={activeTab === "routes"}
             onClick={() => setActiveTab("routes")}
           />
         </div>
 
         {/* Tab Navigation Menu */}
-        <div className="flex flex-col md:flex-row border-b border-gray-200 space-x-2">
+        <div className="flex overflow-x-auto border-b">
           <button
             onClick={() => setActiveTab("users")}
-            id="tab-users"
-            className={`px-4 py-3 text-xs sm:text-sm font-semibold transition-all border-b-2 -mb-px flex items-center gap-2 shrink-0 ${
+            className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-all ${
               activeTab === "users"
-                ? "border-black text-black"
-                : "border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300"
+                ? "border-primary text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
             }`}
           >
-            <Users className="w-4 h-4" />
-            <span>ผู้ใช้งานระบบ</span>
+            <Users className="h-4 w-4" />
+            ผู้ใช้งานระบบ
             {!isSuperAdmin && (
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
-                <ShieldAlert className="w-3 h-3 text-amber-600" />
-                Super Admin
-              </span>
+              <Badge variant="outline" className="ml-1 h-5 bg-muted/50 px-1 text-[10px]">
+                <ShieldAlert className="mr-1 h-3 w-3" />
+                Locked
+              </Badge>
             )}
           </button>
 
           <button
             onClick={() => setActiveTab("invites")}
-            id="tab-invites"
-            className={`px-4 py-3 text-xs sm:text-sm font-semibold transition-all border-b-2 -mb-px flex items-center gap-2 shrink-0 ${
+            className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-all ${
               activeTab === "invites"
-                ? "border-black text-black"
-                : "border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300"
+                ? "border-primary text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
             }`}
           >
-            <UserPlus className="w-4 h-4" />
-            <span>จัดการรหัสเชิญ</span>
+            <UserPlus className="h-4 w-4" />
+            จัดการรหัสเชิญ
             {!isSuperAdmin && (
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
-                <ShieldAlert className="w-3 h-3 text-amber-600" />
-                Super Admin
-              </span>
+              <Badge variant="outline" className="ml-1 h-5 bg-muted/50 px-1 text-[10px]">
+                <ShieldAlert className="mr-1 h-3 w-3" />
+                Locked
+              </Badge>
             )}
           </button>
 
           <button
             onClick={() => setActiveTab("cars")}
-            id="tab-cars"
-            className={`px-4 py-3 text-xs sm:text-sm font-semibold transition-all border-b-2 -mb-px flex items-center gap-2 shrink-0 ${
+            className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-all ${
               activeTab === "cars"
-                ? "border-black text-black"
-                : "border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300"
+                ? "border-primary text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
             }`}
           >
-            <Bus className="w-4 h-4" />
-            <span>การจัดการยานพาหนะ</span>
+            <Bus className="h-4 w-4" />
+            การจัดการยานพาหนะ
           </button>
 
           <button
             onClick={() => setActiveTab("routes")}
-            id="tab-routes"
-            className={`px-4 py-3 text-xs sm:text-sm font-semibold transition-all border-b-2 -mb-px flex items-center gap-2 shrink-0 ${
+            className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-all ${
               activeTab === "routes"
-                ? "border-black text-black"
-                : "border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300"
+                ? "border-primary text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
             }`}
           >
-            <RouteIcon className="w-4 h-4" />
-            <span>สายการเดินรถ</span>
+            <RouteIcon className="h-4 w-4" />
+            สายการเดินรถ
           </button>
         </div>
 
         {/* Tab Content Display */}
-        <div className="pt-2">
+        <div className="pt-4">
           {activeTab === "users" && <UserComponent />}
           {activeTab === "invites" && <AdminInviteComponent />}
           {activeTab === "cars" && <CarsComponent />}
@@ -211,56 +207,47 @@ function StatCard({
   onClick: () => void;
 }) {
   return (
-    <div
+    <Card
       onClick={onClick}
-      className={`p-6 border rounded-md bg-white cursor-pointer transition-all ${
+      className={`cursor-pointer transition-all hover:border-foreground/20 hover:shadow-sm ${
         isActive
-          ? "border-black shadow-md shadow-black/5 ring-1 ring-black/20"
-          : "border-gray-200 hover:border-gray-300 hover:shadow-xs"
+          ? "border-primary ring-1 ring-primary"
+          : isLocked
+            ? "opacity-60 grayscale"
+            : ""
       }`}
     >
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <span className="text-xs font-mono font-medium text-gray-500 uppercase tracking-wider block flex items-center gap-1">
-            {subtitle}
-            {isLocked && (
-              <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded font-sans">
-                Super Admin
-              </span>
-            )}
-          </span>
-          <h3 className="text-base font-bold text-gray-900">{title}</h3>
-        </div>
-
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">
+          {subtitle}
+          {isLocked && (
+            <Badge variant="outline" className="ml-2 h-4 px-1 text-[9px] uppercase">
+              Super Admin
+            </Badge>
+          )}
+        </CardTitle>
         <div
-          className={`w-10 h-10 rounded-md flex items-center justify-center transition-colors ${
+          className={`flex h-8 w-8 items-center justify-center rounded-md ${
             isActive
-              ? "bg-black text-white"
+              ? "bg-primary text-primary-foreground"
               : isLocked
-                ? "bg-amber-50 text-amber-700"
-                : "bg-gray-100 text-black"
+                ? "bg-muted text-muted-foreground"
+                : "bg-muted/50 text-foreground"
           }`}
         >
           {icon}
         </div>
-      </div>
-
-      <div className="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between">
-        <span className="text-xl font-extrabold font-mono text-gray-900">
-          {value}
-        </span>
-        <span
-          className={`text-xs font-semibold ${
-            isActive ? "text-gray-600" : "text-gray-400"
-          }`}
-        >
+      </CardHeader>
+      <CardContent>
+        <div className="text-lg font-bold">{title}</div>
+        <p className="text-xs text-muted-foreground mt-1 font-mono">
           {isActive
-            ? "กำลังแสดงข้อมูล →"
+            ? "• กำลังแสดงข้อมูล"
             : isLocked
-              ? "จำกัดสิทธิ์เฉพาะ Super Admin"
-              : "กดดูรายละเอียด"}
-        </span>
-      </div>
-    </div>
+              ? "🔒 จำกัดสิทธิ์เฉพาะ Super Admin"
+              : "→ กดดูรายละเอียด"}
+        </p>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,16 +1,17 @@
-import { useEffect, useState } from "react";
-import {
-  X,
-  Eye,
-  EyeOff,
-  Copy,
-  Check,
-  KeyRound,
-  Loader2,
-  RefreshCw,
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { KeyRound, X, Copy, Check, Eye, EyeOff, Loader2, RefreshCw } from "lucide-react";
 import apiClient from "~/configs/axios";
 import { useDialog } from "~/components/providers/DialogProvider";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
 
 interface CredentialModalProps {
   isOpen: boolean;
@@ -18,46 +19,56 @@ interface CredentialModalProps {
   onClose: () => void;
 }
 
-interface CarCredentials {
-  carMqttUsername: string;
-  encryptedMqttPassword: string;
-}
-
 export default function CredentialModal({
   isOpen,
   carId,
   onClose,
 }: CredentialModalProps) {
-  const { alert, confirm } = useDialog();
-  const [showPassword, setShowPassword] = useState(false);
-  const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [credentials, setCredentials] = useState<CarCredentials | null>(null);
+  const [credentials, setCredentials] = useState<{
+    clientId: string;
+    username: string;
+    passwordHash: string;
+  } | null>(null);
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const { confirm, alert } = useDialog();
 
   const fetchCredentials = async () => {
-    apiClient
-      .get(`/cars/mqtt-credentials/${carId}`)
-      .then((res) => setCredentials(res.data.data))
-      .catch(() => setError("ไม่สามารถโหลดข้อมูล Credentials ได้"))
-      .finally(() => setIsLoading(false));
+    if (!carId) return;
+    try {
+      setIsLoading(true);
+      setError(null);
+      const res = await apiClient.get(`/cars/credentials/${carId}`);
+      if (res.data.success) {
+        setCredentials(res.data.data);
+      } else {
+        setError(res.data.message || "Failed to load credentials");
+      }
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message || "ไม่สามารถโหลดข้อมูล Credentials ได้"
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    if (!isOpen || !carId) return;
-
-    setIsLoading(true);
-    setError(null);
-    setCredentials(null);
-    setShowPassword(false);
-    setCopiedField(null);
-    fetchCredentials();
+    if (isOpen) {
+      fetchCredentials();
+      setShowPassword(false);
+      setCopiedField(null);
+    } else {
+      setCredentials(null);
+      setError(null);
+    }
   }, [isOpen, carId]);
 
-  if (!isOpen) return null;
-
-  const username = credentials?.carMqttUsername ?? "";
-  const password = credentials?.encryptedMqttPassword ?? "";
+  const username = credentials?.username || "";
+  const password = credentials?.passwordHash || "";
 
   function handleCopy(value: string, field: string) {
     if (!value) return;
@@ -72,13 +83,11 @@ export default function CredentialModal({
       description: "คุณแน่ใจหรือไม่ว่าต้องการรีเซ็ต MQTT Credentials สำหรับรถคันนี้? ข้อมูลเก่าจะใช้ไม่ได้อีกต่อไป",
       confirmText: "รีเซ็ตเลย",
       cancelText: "ยกเลิก",
+      variant: "destructive",
       onConfirm: async () => {
         try {
           setIsLoading(true);
-          const res = await apiClient.post(
-            `/cars/mqtt-credentials/${carId}/reset`,
-          );
-
+          const res = await apiClient.post(`/cars/mqtt-credentials/${carId}/reset`);
           if (res.data.success) {
             fetchCredentials();
             alert({
@@ -89,8 +98,7 @@ export default function CredentialModal({
         } catch (err: any) {
           alert({
             title: "เกิดข้อผิดพลาด",
-            description:
-              err.response?.data?.message || "ไม่สามารถรีเซ็ต Credentials ได้",
+            description: err.response?.data?.message || "ไม่สามารถรีเซ็ต Credentials ได้",
           });
         } finally {
           setIsLoading(false);
@@ -100,129 +108,92 @@ export default function CredentialModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center p-4 backdrop-blur-xs bg-gray-900/40 animate-fade-in"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white border border-gray-200 rounded-md shadow-2xl w-full max-w-sm overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between bg-white/90">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100 shrink-0">
-              <KeyRound className="w-4 h-4" />
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <KeyRound className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-gray-900 tracking-tight">
-                MQTT Credentials
-              </h3>
-              <p className="text-[10px] font-mono text-gray-400 tracking-wider">
+              <DialogTitle>MQTT Credentials</DialogTitle>
+              <DialogDescription>
                 จัดการรหัสผ่านและข้อมูลเชื่อมต่อ
-              </p>
+              </DialogDescription>
             </div>
           </div>
+        </DialogHeader>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition-colors cursor-pointer"
-            aria-label="ปิด"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        <div className="p-5 space-y-3">
+        <div className="space-y-4 pt-4">
           {isLoading ? (
-            <div className="py-8 flex flex-col items-center gap-2">
-              <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
-              <span className="text-[11px] font-mono text-gray-400 uppercase tracking-wider">
-                กำลังโหลด…
-              </span>
+            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+              <Loader2 className="mb-2 h-6 w-6 animate-spin" />
+              <span className="text-xs font-medium uppercase tracking-wider">กำลังโหลด...</span>
             </div>
           ) : error ? (
             <div className="py-6 text-center">
-              <p className="text-xs text-black font-medium">{error}</p>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsLoading(true);
-                  setError(null);
-                  apiClient
-                    .get(`/cars/credentials/${carId}`)
-                    .then((res) => setCredentials(res.data.data))
-                    .catch(() =>
-                      setError("ไม่สามารถโหลดข้อมูล Credentials ได้"),
-                    )
-                    .finally(() => setIsLoading(false));
-                }}
-                className="mt-2 text-[11px] font-semibold text-sky-600 hover:text-sky-700 underline underline-offset-2 cursor-pointer"
-              >
+              <p className="text-sm font-medium">{error}</p>
+              <Button variant="link" onClick={fetchCredentials} className="mt-2">
                 ลองอีกครั้ง
-              </button>
+              </Button>
             </div>
           ) : (
-            <>
+            <div className="grid gap-3">
               <CredentialField
                 label="Car ID"
                 value={carId}
                 isCopied={copiedField === "carId"}
                 onCopy={() => handleCopy(carId, "carId")}
               />
-
               <CredentialField
                 label="Username"
                 value={username}
                 isCopied={copiedField === "username"}
                 onCopy={() => handleCopy(username, "username")}
               />
-
               <CredentialField
                 label="Password"
                 value={showPassword ? password : "••••••••••••"}
                 isCopied={copiedField === "password"}
                 onCopy={() => handleCopy(password, "password")}
                 trailing={
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
                     onClick={() => setShowPassword((p) => !p)}
-                    className="w-7 h-7 rounded-lg hover:bg-gray-200 text-gray-400 flex items-center justify-center transition-colors cursor-pointer"
                     aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
                   >
                     {showPassword ? (
-                      <EyeOff className="w-3.5 h-3.5" />
+                      <EyeOff className="h-4 w-4" />
                     ) : (
-                      <Eye className="w-3.5 h-3.5" />
+                      <Eye className="h-4 w-4" />
                     )}
-                  </button>
+                  </Button>
                 }
               />
-            </>
+            </div>
           )}
         </div>
 
-        <div className="px-5 py-3 border-t border-gray-200 bg-white/70 flex justify-between items-center">
-          <button
+        <DialogFooter className="border-t pt-4 flex flex-row items-center justify-between sm:justify-between">
+          <Button
             type="button"
+            variant="destructive"
             onClick={handleReset}
             disabled={isLoading || !credentials}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-black hover:text-white hover:bg-black border border-transparent hover:border-black transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="gap-2"
           >
-            <RefreshCw className="w-3 h-3" />
+            <RefreshCw className="h-4 w-4" />
             รีเซ็ต
-          </button>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded-md text-xs font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-200 active:bg-gray-200 transition-all shadow-2xs cursor-pointer"
-          >
+          </Button>
+          <Button type="button" variant="outline" onClick={onClose}>
             ปิด
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -240,29 +211,31 @@ function CredentialField({
   trailing?: React.ReactNode;
 }) {
   return (
-    <div className="p-3 bg-white/60 border border-gray-200 rounded-md flex items-center gap-3">
+    <div className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3">
       <div className="flex-1 min-w-0">
-        <span className="text-[10px] font-mono text-gray-400 uppercase tracking-wider block mb-0.5">
+        <span className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
           {label}
         </span>
-        <span className="text-sm font-mono font-semibold text-gray-800 block truncate select-all">
+        <span className="block truncate font-mono text-sm font-semibold select-all">
           {value || "—"}
         </span>
       </div>
-      <div className="flex items-center gap-0.5 shrink-0">
+      <div className="flex shrink-0 items-center gap-1">
         {trailing}
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
           onClick={onCopy}
-          className="w-7 h-7 rounded-lg hover:bg-gray-200 text-gray-400 flex items-center justify-center transition-colors cursor-pointer"
           aria-label={`คัดลอก ${label}`}
         >
           {isCopied ? (
-            <Check className="w-3.5 h-3.5 text-black" />
+            <Check className="h-4 w-4 text-green-500" />
           ) : (
-            <Copy className="w-3.5 h-3.5" />
+            <Copy className="h-4 w-4" />
           )}
-        </button>
+        </Button>
       </div>
     </div>
   );
