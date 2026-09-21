@@ -7,9 +7,6 @@ import RoutesComponent from "./components/routes.component";
 import UserComponent from "./components/user.component";
 import { ShieldAlert } from "lucide-react";
 
-import { Badge } from "~/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-
 export function meta() {
   return [
     { title: "Dashboard — KUKPS smart talai" },
@@ -41,64 +38,52 @@ export default function DashboardRoute() {
       {/* Top Navigation */}
       <Navbar />
 
-      {/* Main Container */}
-      <main className="container mx-auto max-w-7xl flex-1 space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-        {/* Banner Overview Header */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between border-b pb-6">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">
-              Dashboard Overview
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              จัดการผู้ใช้งานระบบ รหัสเชิญเจ้าหน้าที่ ตรวจสอบสถานะรถตะไล
-              และวางแผนเส้นทางเดินรถ
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="gap-1 font-mono bg-muted/50 px-2 py-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-              System Online
-            </Badge>
-            {isSuperAdmin && (
-              <Badge variant="secondary" className="gap-1 px-2 py-1">
-                <ShieldAlert className="h-3 w-3 text-amber-500" />
-                Super Admin
-              </Badge>
-            )}
-          </div>
+      {/* Main Full-Screen Layout */}
+      <main className="flex flex-col md:flex-row flex-1 w-full">
+        {/* Sidebar / Mobile Nav */}
+        <aside className="w-full md:w-56 lg:w-56 shrink-0 border-b md:border-b-0 md:border-r border-border p-4">
+          <nav className="flex md:flex-col gap-1 overflow-x-auto pb-2 md:pb-0 scrollbar-none [&::-webkit-scrollbar]:hidden">
+            {[
+              { id: "users", label: "ผู้ใช้งาน", requiresSuperAdmin: true },
+              { id: "invites", label: "รหัสเชิญ", requiresSuperAdmin: true },
+              { id: "cars", label: "ยานพาหนะ", requiresSuperAdmin: false },
+              {
+                id: "routes",
+                label: "สายการเดินรถ",
+                requiresSuperAdmin: false,
+              },
+            ].map((item) => {
+              const isDisabled = item.requiresSuperAdmin && !isSuperAdmin;
+              const isActive = activeTab === item.id;
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() =>
+                    !isDisabled && setActiveTab(item.id as TabType)
+                  }
+                  disabled={isDisabled}
+                  className={`flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap text-left ${
+                    isActive
+                      ? "bg-muted text-foreground font-semibold"
+                      : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                  } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
+                  {item.label}
+                  {isDisabled && <ShieldAlert className="ml-2 h-3 w-3" />}
+                </button>
+              );
+            })}
+          </nav>
+        </aside>
+
+        {/* Main Content */}
+        <div className="flex-1 min-w-0 p-4 md:p-6 lg:p-8 outline-none">
+          {activeTab === "users" && <UserComponent />}
+          {activeTab === "invites" && <AdminInviteComponent />}
+          {activeTab === "cars" && <CarsComponent />}
+          {activeTab === "routes" && <RoutesComponent />}
         </div>
-
-        {/* Tab Navigation Menu using Shadcn Tabs */}
-        <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as TabType)} className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="users" disabled={!isSuperAdmin}>
-              ผู้ใช้งาน
-              {!isSuperAdmin && <ShieldAlert className="ml-2 h-3 w-3 text-muted-foreground" />}
-            </TabsTrigger>
-            <TabsTrigger value="invites" disabled={!isSuperAdmin}>
-              รหัสเชิญ
-              {!isSuperAdmin && <ShieldAlert className="ml-2 h-3 w-3 text-muted-foreground" />}
-            </TabsTrigger>
-            <TabsTrigger value="cars">ยานพาหนะ</TabsTrigger>
-            <TabsTrigger value="routes">สายการเดินรถ</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="users" className="mt-0 outline-none">
-            <UserComponent />
-          </TabsContent>
-          
-          <TabsContent value="invites" className="mt-0 outline-none">
-            <AdminInviteComponent />
-          </TabsContent>
-          
-          <TabsContent value="cars" className="mt-0 outline-none">
-            <CarsComponent />
-          </TabsContent>
-          
-          <TabsContent value="routes" className="mt-0 outline-none">
-            <RoutesComponent />
-          </TabsContent>
-        </Tabs>
       </main>
     </div>
   );

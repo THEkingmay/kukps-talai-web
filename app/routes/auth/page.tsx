@@ -8,7 +8,14 @@ import { useDialog } from "~/components/providers/DialogProvider";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "~/components/ui/card";
 
 type AuthMode = "login" | "register" | "forgot_password";
 
@@ -33,7 +40,9 @@ export default function AuthPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [isResetSubmitting, setIsResetSubmitting] = useState(false);
-  const [resetSuccessEmail, setResetSuccessEmail] = useState<string | null>(null);
+  const [resetSuccessEmail, setResetSuccessEmail] = useState<string | null>(
+    null,
+  );
 
   const isLoading = isAuthLoading || isResetSubmitting;
 
@@ -93,12 +102,15 @@ export default function AuthPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
-        <Link to="/" className="flex items-center gap-2 self-center font-medium">
+        {/*<Link
+          to="/"
+          className="flex items-center gap-2 self-center font-medium"
+        >
           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <Bus className="h-4 w-4" />
           </div>
           TalaiETA
-        </Link>
+        </Link>*/}
         <div className="flex flex-col gap-6">
           <Card>
             <CardHeader className="text-center">
@@ -127,7 +139,11 @@ export default function AuthPage() {
                     </span>{" "}
                     แล้ว กรุณาตรวจสอบกล่องจดหมาย
                   </p>
-                  <Button variant="outline" className="w-full" onClick={() => switchMode("login")}>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => switchMode("login")}
+                  >
                     กลับไปหน้าเข้าสู่ระบบ
                   </Button>
                 </div>
@@ -164,7 +180,11 @@ export default function AuthPage() {
                       <Input
                         id="auth-password"
                         type="password"
-                        autoComplete={mode === "register" ? "new-password" : "current-password"}
+                        autoComplete={
+                          mode === "register"
+                            ? "new-password"
+                            : "current-password"
+                        }
                         required
                         minLength={8}
                         disabled={isLoading}
@@ -177,7 +197,9 @@ export default function AuthPage() {
                   {mode === "register" && (
                     <>
                       <div className="grid gap-2">
-                        <Label htmlFor="auth-confirm-password">ยืนยันรหัสผ่าน</Label>
+                        <Label htmlFor="auth-confirm-password">
+                          ยืนยันรหัสผ่าน
+                        </Label>
                         <Input
                           id="auth-confirm-password"
                           type="password"
@@ -205,8 +227,14 @@ export default function AuthPage() {
                     </>
                   )}
 
-                  <Button type="submit" className="w-full mt-2" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <Button
+                    type="submit"
+                    className="w-full mt-2"
+                    disabled={isLoading}
+                  >
+                    {isLoading && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     {mode === "register"
                       ? "ลงทะเบียน"
                       : mode === "forgot_password"
@@ -219,12 +247,28 @@ export default function AuthPage() {
             {mode !== "forgot_password" && (
               <CardFooter>
                 <div className="text-center w-full text-sm">
-                  {mode === "register" ? "มีบัญชีอยู่แล้ว? " : "ยังไม่มีบัญชี? "}
+                  {mode === "register"
+                    ? "มีบัญชีอยู่แล้ว? "
+                    : "ยังไม่มีบัญชี? "}
                   <button
-                    onClick={() => switchMode(mode === "register" ? "login" : "register")}
+                    onClick={() =>
+                      switchMode(mode === "register" ? "login" : "register")
+                    }
                     className="underline underline-offset-4 hover:text-primary"
                   >
                     {mode === "register" ? "เข้าสู่ระบบ" : "สมัครสมาชิก"}
+                  </button>
+                </div>
+              </CardFooter>
+            )}
+            {mode === "forgot_password" && (
+              <CardFooter>
+                <div className="text-center w-full text-sm">
+                  <button
+                    onClick={() => switchMode("login")}
+                    className="underline underline-offset-4 hover:text-primary"
+                  >
+                    เข้าสู่ระบบ
                   </button>
                 </div>
               </CardFooter>

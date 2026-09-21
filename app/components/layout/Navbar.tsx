@@ -40,9 +40,9 @@ export default function Navbar() {
       <div className="container mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-4">
           <Link to="/admin/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            {/*<div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <Bus className="h-4 w-4" />
-            </div>
+            </div>*/}
             <span className="font-semibold tracking-tight">TalaiETA</span>
             <span className="rounded-md border bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase text-muted-foreground">
               Admin

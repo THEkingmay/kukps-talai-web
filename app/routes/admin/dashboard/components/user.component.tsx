@@ -196,6 +196,16 @@ export default function UserComponent() {
 
   return (
     <div className="space-y-6">
+      {/* Vercel-style Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Users</h2>
+          <p className="text-muted-foreground text-sm">
+            จัดการบัญชีผู้ใช้งานและตรวจสอบสถานะการเข้าใช้งานระบบ
+          </p>
+        </div>
+      </div>
+
       {/* Metrics Overview Cards */}
       <UserMetrics
         total={metrics.total}

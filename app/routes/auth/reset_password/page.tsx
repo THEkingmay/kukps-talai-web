@@ -7,7 +7,14 @@ import { useDialog } from "~/components/providers/DialogProvider";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "~/components/ui/card";
 
 function useResetToken() {
   const [token, setToken] = useState<string | null>(null);
@@ -90,29 +97,39 @@ export default function ResetPasswordPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
-        <Link to="/" className="flex items-center gap-2 self-center font-medium">
+        {/*<Link to="/" className="flex items-center gap-2 self-center font-medium">
           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <Bus className="h-4 w-4" />
           </div>
           TalaiETA
-        </Link>
+        </Link>*/}
         <div className="flex flex-col gap-6">
           <Card>
             <CardHeader className="text-center">
               {isInitializing ? null : !token ? (
                 <>
-                  <CardTitle className="text-xl text-destructive">ไม่พบโทเคน</CardTitle>
-                  <CardDescription>ลิงก์อาจไม่ถูกต้อง หมดอายุ หรือใช้ไปแล้ว</CardDescription>
+                  <CardTitle className="text-xl text-destructive">
+                    ไม่พบโทเคน
+                  </CardTitle>
+                  <CardDescription>
+                    ลิงก์อาจไม่ถูกต้อง หมดอายุ หรือใช้ไปแล้ว
+                  </CardDescription>
                 </>
               ) : isSuccess ? (
                 <>
-                  <CardTitle className="text-xl text-green-600">สำเร็จ</CardTitle>
-                  <CardDescription>รหัสผ่านของคุณได้รับการอัปเดตเรียบร้อยแล้ว</CardDescription>
+                  <CardTitle className="text-xl text-green-600">
+                    สำเร็จ
+                  </CardTitle>
+                  <CardDescription>
+                    รหัสผ่านของคุณได้รับการอัปเดตเรียบร้อยแล้ว
+                  </CardDescription>
                 </>
               ) : (
                 <>
                   <CardTitle className="text-xl">ตั้งรหัสผ่านใหม่</CardTitle>
-                  <CardDescription>กำหนดรหัสผ่านใหม่สำหรับเข้าใช้งานระบบ</CardDescription>
+                  <CardDescription>
+                    กำหนดรหัสผ่านใหม่สำหรับเข้าใช้งานระบบ
+                  </CardDescription>
                 </>
               )}
             </CardHeader>
@@ -150,7 +167,9 @@ export default function ResetPasswordPage() {
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="reset-confirm-password">ยืนยันรหัสผ่านใหม่</Label>
+                    <Label htmlFor="reset-confirm-password">
+                      ยืนยันรหัสผ่านใหม่
+                    </Label>
                     <Input
                       id="reset-confirm-password"
                       type="password"
@@ -163,17 +182,26 @@ export default function ResetPasswordPage() {
                     />
                   </div>
 
-                  <Button type="submit" className="w-full mt-2" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <Button
+                    type="submit"
+                    className="w-full mt-2"
+                    disabled={isLoading}
+                  >
+                    {isLoading && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     บันทึกรหัสผ่านใหม่
                   </Button>
                 </form>
               )}
             </CardContent>
-            {(!isInitializing && token && !isSuccess) && (
+            {!isInitializing && token && !isSuccess && (
               <CardFooter>
                 <div className="text-center w-full text-sm">
-                  <Link to="/auth" className="underline underline-offset-4 hover:text-primary">
+                  <Link
+                    to="/auth"
+                    className="underline underline-offset-4 hover:text-primary"
+                  >
                     กลับไปยังหน้าเข้าสู่ระบบ
                   </Link>
                 </div>

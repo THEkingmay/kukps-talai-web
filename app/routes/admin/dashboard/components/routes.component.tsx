@@ -264,56 +264,57 @@ export default function RoutesComponent() {
   };
 
   return (
-    <div className="bg-background border rounded-md shadow-sm overflow-hidden">
-      {/* Header Bar */}
-      <div className="p-4 sm:p-5 border-b bg-background flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="relative w-full sm:max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="ค้นหาชื่อเส้นทาง หรือ ID..."
-            className="pl-9 pr-9"
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-0 top-0 h-9 w-9 text-muted-foreground"
-              onClick={() => setSearchQuery("")}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
+    <div className="space-y-6">
+      {/* Vercel-style Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Routes</h2>
+          <p className="text-muted-foreground text-sm">
+            จัดการเส้นทางเดินรถและจุดจอดต่างๆ ของรถตะไล
+          </p>
         </div>
-
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1.5 rounded-md text-xs font-mono font-medium bg-muted text-muted-foreground border">
-            ทั้งหมด: {routes.length} สาย
-          </span>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fetchRoutesData(false)}
-            disabled={isLoading}
-            className="h-9"
-          >
+          <Button variant="outline" onClick={() => fetchRoutesData(false)} disabled={isLoading}>
             <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
             รีเฟรช
           </Button>
-
-          <Button
-            size="sm"
-            onClick={() => setIsCreateModalOpen(true)}
-            className="h-9"
-          >
+          <Button onClick={() => setIsCreateModalOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             เพิ่มเส้นทาง
           </Button>
         </div>
       </div>
+
+      <div className="bg-background border rounded-md shadow-sm overflow-hidden">
+        {/* Header Bar */}
+        <div className="p-4 sm:p-5 border-b bg-background flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="relative w-full sm:max-w-sm">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="ค้นหาชื่อเส้นทาง หรือ ID..."
+              className="pl-9 pr-9"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-0 top-0 h-9 w-9 text-muted-foreground"
+                onClick={() => setSearchQuery("")}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1.5 rounded-md text-xs font-mono font-medium bg-muted text-muted-foreground border">
+              ทั้งหมด: {routes.length} สาย
+            </span>
+          </div>
+        </div>
 
       {/* Content Area */}
       <div className="p-0">
@@ -344,6 +345,7 @@ export default function RoutesComponent() {
           onDelete={handleDelete}
           formatDate={formatDate}
         />
+      </div>
       </div>
 
       {/* Detail Modal */}
