@@ -24,16 +24,16 @@ export async function getAll(): Promise<ActionResult<{data: User[]}>> {
   }
   }
 
-export async function updateUserStatus(id: string, status: 'active' | 'suspended'): Promise<ActionResult<{ message: string }>> {
+export async function restoreUser(id: string): Promise<ActionResult<{ message: string }>> {
   try {
-    const res = await apiClient.patch(`/users/${id}`, { status });
+    const res = await apiClient.patch(`/users/restore/${id}`);
     return { success: true, data: res.data };
   } catch (err) {
     if (axios.isAxiosError(err)) {
       return {
         success: false,
         error:
-          err.response?.data?.message ?? err.message ?? "ดึงข้อมูลไม่สำเร็จ",
+          err.response?.data?.message ?? err.message ?? "คืนค่าไม่สำเร็จ",
       };
     }
     return {

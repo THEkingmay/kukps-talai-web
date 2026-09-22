@@ -10,7 +10,7 @@ import {
 } from "~/components/ui/select";
 import { Button } from "~/components/ui/button";
 
-type StatusFilter = "all" | CarStatus;
+type StatusFilter = "all" | CarStatus | "deleted";
 
 interface CarSearchToolbarProps {
   searchQuery: string;
@@ -93,6 +93,7 @@ export default function CarSearchToolbar({
               <SelectItem value="all">ทุกสถานะ</SelectItem>
               <SelectItem value="active">พร้อมใช้งาน</SelectItem>
               <SelectItem value="inactive">ปิดใช้งาน</SelectItem>
+              <SelectItem value="deleted">ถูกลบแล้ว</SelectItem>
             </SelectContent>
           </Select>
 

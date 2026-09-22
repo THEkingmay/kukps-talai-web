@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useDialog } from "~/components/providers/DialogProvider";
 import { useAuth } from "~/components/providers/AuthProvider";
-import { getAll, updateUserStatus, deleteUser } from "~/actions/user.action";
+import { getAll, restoreUser, deleteUser } from "~/actions/user.action";
 import type { User, UserRole } from "~/types";
 
 import UserMetrics from "./users/UserMetrics";
@@ -9,7 +9,7 @@ import UserSearchToolbar from "./users/UserSearchToolbar";
 import UserTable from "./users/UserTable";
 import UserAccessRestricted from "./users/UserAccessRestricted";
 
-type StatusFilter = "all" | "active" | "suspended" | "deleted";
+type StatusFilter = "all" | "active" | "deleted";
 type RoleFilter = "all" | UserRole;
 
 export default function UserComponent() {
@@ -56,10 +56,9 @@ export default function UserComponent() {
   // Compute Metrics Summary
   const metrics = useMemo(() => {
     const total = users.length;
-    const active = users.filter((u) => u.status === "active").length;
-    const suspended = users.filter((u) => u.status === "suspended").length;
-    const deleted = users.filter((u) => u.status === "deleted").length;
-    return { total, active, suspended, deleted };
+    const active = users.filter((u) => u.deletedAt === null).length;
+    const deleted = users.filter((u) => u.deletedAt !== null).length;
+    return { total, active, deleted };
   }, [users]);
 
   // Filtered Users List
@@ -71,8 +70,12 @@ export default function UserComponent() {
         u.email.toLowerCase().includes(query) ||
         u.id.toLowerCase().includes(query);
 
-      const matchesStatus =
-        statusFilter === "all" || u.status === statusFilter;
+      let matchesStatus = true;
+      if (statusFilter === "active") {
+        matchesStatus = u.deletedAt === null;
+      } else if (statusFilter === "deleted") {
+        matchesStatus = u.deletedAt !== null;
+      }
 
       const matchesRole = roleFilter === "all" || u.role === roleFilter;
 
@@ -80,43 +83,30 @@ export default function UserComponent() {
     });
   }, [users, searchQuery, statusFilter, roleFilter]);
 
-  // Toggle Status Handler (Active <-> Suspended)
-  const handleToggleStatus = async (userToUpdate: User) => {
-    if (userToUpdate.status === "deleted") {
-      alert({
-        title: "ไม่สามารถแก้ไขได้",
-        description: "ผู้ใช้งานถูกลบแล้ว ไม่สามารถปรับเปลี่ยนสถานะได้อีก",
-      });
-      return;
-    }
-
-    const nextStatus =
-      userToUpdate.status === "active" ? "suspended" : "active";
-    const statusTextTH =
-      nextStatus === "active" ? "เปิดใช้งาน" : "ระงับสิทธิ์";
-
+  // Restore User Handler
+  const handleRestoreUser = async (userToRestore: User) => {
     confirm({
-      title: `ยืนยันการ${statusTextTH}?`,
-      description: `คุณต้องการปรับสถานะบัญชี ${userToUpdate.email} เป็น ${statusTextTH} หรือไม่?`,
-      confirmText: `ยืนยัน${statusTextTH}`,
+      title: "ยืนยันการกู้คืนผู้ใช้?",
+      description: `คุณต้องการกู้คืนบัญชีผู้ใช้ ${userToRestore.email} กลับมาใช้งานหรือไม่?`,
+      confirmText: "ยืนยันกู้คืน",
       cancelText: "ยกเลิก",
       onConfirm: async () => {
-        setUpdatingId(userToUpdate.id);
+        setUpdatingId(userToRestore.id);
         try {
-          const res = await updateUserStatus(userToUpdate.id, nextStatus);
+          const res = await restoreUser(userToRestore.id);
           if (res.success) {
             alert({
-              title: "อัปเดตสำเร็จ",
-              description: `เปลี่ยนสถานะเป็น ${statusTextTH} เรียบร้อยแล้ว`,
+              title: "กู้คืนสำเร็จ",
+              description: `กู้คืนบัญชีผู้ใช้เรียบร้อยแล้ว`,
             });
             setUsers((prev) =>
               prev.map((u) =>
-                u.id === userToUpdate.id ? { ...u, status: nextStatus } : u
-              )
+                u.id === userToRestore.id ? { ...u, deletedAt: null } : u,
+              ),
             );
           } else {
             alert({
-              title: "อัปเดตไม่สำเร็จ",
+              title: "กู้คืนไม่สำเร็จ",
               description: res.error,
             });
           }
@@ -134,11 +124,11 @@ export default function UserComponent() {
 
   // Soft Delete User Handler
   const handleDeleteUser = async (userToDelete: User) => {
-    if (userToDelete.status === "deleted") return;
+    if (userToDelete.deletedAt !== null) return;
 
     confirm({
       title: "ยืนยันการลบบัญชี?",
-      description: `คุณต้องการลบบัญชีผู้ใช้ ${userToDelete.email} หรือไม่? เมื่อลบแล้ว สถานะจะเปลี่ยนเป็น Deleted และไม่สามารถแก้ไขได้อีก`,
+      description: `คุณต้องการลบบัญชีผู้ใช้ ${userToDelete.email} หรือไม่? เมื่อลบแล้ว สถานะจะเปลี่ยนเป็นถูกลบ`,
       confirmText: "ยืนยันลบบัญชี",
       cancelText: "ยกเลิก",
       onConfirm: async () => {
@@ -148,12 +138,12 @@ export default function UserComponent() {
           if (res.success) {
             alert({
               title: "ลบผู้ใช้สำเร็จ",
-              description: "เปลี่ยนสถานะผู้ใช้เป็น Deleted เรียบร้อยแล้ว",
+              description: "เปลี่ยนสถานะผู้ใช้เป็นถูกลบเรียบร้อยแล้ว",
             });
             setUsers((prev) =>
               prev.map((u) =>
-                u.id === userToDelete.id ? { ...u, status: "deleted" } : u
-              )
+                u.id === userToDelete.id ? { ...u, deletedAt: new Date().toISOString() } : u,
+              ),
             );
           } else {
             alert({
@@ -210,7 +200,6 @@ export default function UserComponent() {
       <UserMetrics
         total={metrics.total}
         active={metrics.active}
-        suspended={metrics.suspended}
         deleted={metrics.deleted}
       />
 
@@ -239,7 +228,7 @@ export default function UserComponent() {
           error={error}
           currentUserId={currentUser?.id}
           updatingId={updatingId}
-          onToggleStatus={handleToggleStatus}
+          onRestoreUser={handleRestoreUser}
           onDeleteUser={handleDeleteUser}
           onRefresh={fetchUsers}
           formatDate={formatDate}

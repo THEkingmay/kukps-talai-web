@@ -10,7 +10,7 @@ import {
 } from "~/components/ui/select";
 import { Button } from "~/components/ui/button";
 
-type StatusFilter = "all" | "active" | "suspended" | "deleted";
+type StatusFilter = "all" | "active" | "deleted";
 type RoleFilter = "all" | UserRole;
 
 interface UserSearchToolbarProps {
@@ -76,7 +76,6 @@ export default function UserSearchToolbar({
             <SelectContent>
               <SelectItem value="all">สถานะทั้งหมด</SelectItem>
               <SelectItem value="active">ใช้งานปกติ</SelectItem>
-              <SelectItem value="suspended">ระงับสิทธิ์</SelectItem>
               <SelectItem value="deleted">ถูกลบแล้ว</SelectItem>
             </SelectContent>
           </Select>
@@ -93,6 +92,7 @@ export default function UserSearchToolbar({
               <SelectItem value="superadmin">Super Admin</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
               <SelectItem value="user">User ทั่วไป</SelectItem>
+              <SelectItem value="driver">คนขับรถ</SelectItem>
             </SelectContent>
           </Select>
 

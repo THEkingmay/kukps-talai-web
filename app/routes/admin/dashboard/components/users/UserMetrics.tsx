@@ -1,16 +1,14 @@
-import { Users, ShieldCheck, ShieldAlert, Trash2 } from "lucide-react";
+import { Users, ShieldCheck, Trash2 } from "lucide-react";
 
 interface UserMetricsProps {
   total: number;
   active: number;
-  suspended: number;
   deleted: number;
 }
 
 export default function UserMetrics({
   total,
   active,
-  suspended,
   deleted,
 }: UserMetricsProps) {
   return (
@@ -24,11 +22,6 @@ export default function UserMetrics({
         <ShieldCheck className="w-4 h-4 text-green-500" />
         <span className="text-muted-foreground">ใช้งานปกติ:</span>
         <span className="font-semibold font-mono">{active}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <ShieldAlert className="w-4 h-4 text-amber-500" />
-        <span className="text-muted-foreground">ระงับสิทธิ์:</span>
-        <span className="font-semibold font-mono">{suspended}</span>
       </div>
       <div className="flex items-center gap-2">
         <Trash2 className="w-4 h-4 text-muted-foreground" />

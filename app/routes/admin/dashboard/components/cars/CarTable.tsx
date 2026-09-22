@@ -8,6 +8,7 @@ import {
   XCircle,
   KeyRound,
   Loader2,
+  Lock,
 } from "lucide-react";
 import {
   Table,
@@ -29,6 +30,7 @@ interface CarTableProps {
   onOpenDetail: (id: string) => void;
   onOpenEdit: (car: ResponseCarData) => void;
   onDelete: (car: ResponseCarData) => void;
+  onRestore: (car: ResponseCarData) => void;
   onOpenCredential: (id: string) => void;
 }
 
@@ -41,6 +43,7 @@ export default function CarTable({
   onOpenDetail,
   onOpenEdit,
   onDelete,
+  onRestore,
   onOpenCredential,
 }: CarTableProps) {
   return (
@@ -77,8 +80,10 @@ export default function CarTable({
                 ? routeNameMap[car.routeId] || `สาย: ${car.routeId}`
                 : "ยังไม่ได้ระบุสาย";
 
+              const isDeleted = car.deletedAt !== null;
+
               return (
-                <TableRow key={car.id}>
+                <TableRow key={car.id} className={isDeleted ? "opacity-60 grayscale" : ""}>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded bg-muted text-muted-foreground flex items-center justify-center border shrink-0">
@@ -107,55 +112,77 @@ export default function CarTable({
                     )}
                   </TableCell>
                   <TableCell>
-                    <CarStatusBadge status={car.status} />
+                    <CarStatusBadge status={car.status} isDeleted={isDeleted} />
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground font-mono">
                     {car.updatedBy || "System"}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant="default"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => onOpenDetail(car.id)}
-                        title="ดูรายละเอียดทั้งหมด"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => onOpenCredential(car.id)}
-                        title="ดู MQTT Credentials"
-                      >
-                        <KeyRound className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => onOpenEdit(car)}
-                        title="แก้ไขข้อมูลรถ"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => onDelete(car)}
-                        disabled={deletingId === car.id}
-                        title="ลบรถตะไล"
-                      >
-                        {deletingId === car.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-4 h-4" />
-                        )}
-                      </Button>
-                    </div>
+                    {isDeleted ? (
+                      <div className="flex items-center justify-end gap-2">
+                        <Badge variant="outline" className="text-muted-foreground gap-1">
+                          <Lock className="w-3 h-3" />
+                          ถูกลบแล้ว
+                        </Badge>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={deletingId === car.id}
+                          onClick={() => onRestore(car)}
+                          title="กู้คืนรถตะไล"
+                        >
+                          {deletingId === car.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            "กู้คืน"
+                          )}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="default"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => onOpenDetail(car.id)}
+                          title="ดูรายละเอียดทั้งหมด"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => onOpenCredential(car.id)}
+                          title="ดู MQTT Credentials"
+                        >
+                          <KeyRound className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => onOpenEdit(car)}
+                          title="แก้ไขข้อมูลรถ"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => onDelete(car)}
+                          disabled={deletingId === car.id}
+                          title="ลบรถตะไล"
+                        >
+                          {deletingId === car.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
+                    )}
                   </TableCell>
                 </TableRow>
               );
@@ -173,7 +200,15 @@ export default function CarTable({
   );
 }
 
-function CarStatusBadge({ status }: { status: string }) {
+function CarStatusBadge({ status, isDeleted }: { status: string, isDeleted: boolean }) {
+  if (isDeleted) {
+    return (
+      <Badge variant="outline" className="text-muted-foreground gap-1">
+        <Lock className="w-3 h-3" />
+        ถูกลบแล้ว
+      </Badge>
+    );
+  }
   if (status === "active") {
     return (
       <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/30">

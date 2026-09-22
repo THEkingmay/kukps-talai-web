@@ -1,5 +1,5 @@
 import type { Route } from "~/types";
-import { Eye, Pencil, Trash2, Route as RouteIcon, MapPin, Loader2 } from "lucide-react";
+import { Eye, Pencil, Trash2, Route as RouteIcon, MapPin, Loader2, Lock } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Button } from "~/components/ui/button";
+import { Badge } from "~/components/ui/badge";
 
 interface RouteTableProps {
   routes: Route[];
@@ -19,6 +20,7 @@ interface RouteTableProps {
   onOpenEdit: (route: Route) => void;
   onOpenPoints: (route: Route) => void;
   onDelete: (route: Route) => void;
+  onRestore: (route: Route) => void;
   formatDate: (isoString?: string | null) => string;
 }
 
@@ -31,6 +33,7 @@ export default function RouteTable({
   onOpenEdit,
   onOpenPoints,
   onDelete,
+  onRestore,
   formatDate,
 }: RouteTableProps) {
   return (
@@ -62,8 +65,11 @@ export default function RouteTable({
               </TableCell>
             </TableRow>
           ) : (
-            filteredRoutes.map((route, index) => (
-              <TableRow key={route.id}>
+            filteredRoutes.map((route, index) => {
+              const isDeleted = route.deletedAt !== null;
+              
+              return (
+              <TableRow key={route.id} className={isDeleted ? "opacity-60 grayscale" : ""}>
                 <TableCell className="font-mono text-muted-foreground">
                   {String(index + 1).padStart(2, '0')}
                 </TableCell>
@@ -88,52 +94,74 @@ export default function RouteTable({
                   )}
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <Button
-                      variant="default"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => onOpenDetail(route.id)}
-                      title="ดูรายละเอียดสายรถ"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => onOpenPoints(route)}
-                      title="จัดการจุดจอด"
-                    >
-                      <MapPin className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => onOpenEdit(route)}
-                      title="แก้ไขชื่อสายรถ"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => onDelete(route)}
-                      disabled={deletingId === route.id}
-                      title="ลบสายการเดินรถ"
-                    >
-                      {deletingId === route.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="w-4 h-4" />
-                      )}
-                    </Button>
-                  </div>
+                  {isDeleted ? (
+                    <div className="flex items-center justify-end gap-2">
+                      <Badge variant="outline" className="text-muted-foreground gap-1">
+                        <Lock className="w-3 h-3" />
+                        ถูกลบแล้ว
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={deletingId === route.id}
+                        onClick={() => onRestore(route)}
+                        title="กู้คืนสายการเดินรถ"
+                      >
+                        {deletingId === route.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          "กู้คืน"
+                        )}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        variant="default"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => onOpenDetail(route.id)}
+                        title="ดูรายละเอียดสายรถ"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => onOpenPoints(route)}
+                        title="จัดการจุดจอด"
+                      >
+                        <MapPin className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => onOpenEdit(route)}
+                        title="แก้ไขชื่อสายรถ"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => onDelete(route)}
+                        disabled={deletingId === route.id}
+                        title="ลบสายการเดินรถ"
+                      >
+                        {deletingId === route.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div>
+                  )}
                 </TableCell>
               </TableRow>
-            ))
+            )})
           )}
         </TableBody>
       </Table>

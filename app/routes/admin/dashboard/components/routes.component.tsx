@@ -7,6 +7,7 @@ import {
   createRoute,
   updateRoute,
   deleteRoute,
+  restoreRoute,
 } from "~/actions/route.action";
 import { RefreshCw, Plus, Search, X } from "lucide-react";
 import { Input } from "~/components/ui/input";
@@ -218,7 +219,7 @@ export default function RoutesComponent() {
   const handleDelete = async (routeToDelete: Route) => {
     confirm({
       title: "ยืนยันการลบเส้นทาง?",
-      description: `คุณต้องการลบเส้นทาง ${routeToDelete.name} ใช่หรือไม่?`,
+      description: `คุณต้องการลบเส้นทาง ${routeToDelete.name} ใช่หรือไม่? (สถานะจะถูกเปลี่ยนเป็นลบแล้ว)`,
       confirmText: "ยืนยันลบ",
       cancelText: "ยกเลิก",
       onConfirm: async () => {
@@ -241,6 +242,41 @@ export default function RoutesComponent() {
           alert({
             title: "เกิดข้อผิดพลาด",
             description: "ไม่สามารถลบเส้นทางได้",
+          });
+        } finally {
+          setDeletingId(null);
+        }
+      },
+    });
+  };
+
+  // Handle Restore Route
+  const handleRestore = async (routeToRestore: Route) => {
+    confirm({
+      title: "ยืนยันการกู้คืนเส้นทาง?",
+      description: `คุณต้องการกู้คืนเส้นทาง ${routeToRestore.name} ใช่หรือไม่?`,
+      confirmText: "ยืนยันกู้คืน",
+      cancelText: "ยกเลิก",
+      onConfirm: async () => {
+        setDeletingId(routeToRestore.id);
+        try {
+          const res = await restoreRoute(routeToRestore.id);
+          if (res.success) {
+            alert({
+              title: "กู้คืนสำเร็จ",
+              description: "กู้คืนเส้นทางกลับสู่ระบบเรียบร้อยแล้ว",
+            });
+            fetchRoutesData(false);
+          } else {
+            alert({
+              title: "กู้คืนไม่สำเร็จ",
+              description: res.error,
+            });
+          }
+        } catch {
+          alert({
+            title: "เกิดข้อผิดพลาด",
+            description: "ไม่สามารถกู้คืนเส้นทางได้",
           });
         } finally {
           setDeletingId(null);
@@ -343,6 +379,7 @@ export default function RoutesComponent() {
           }}
           onOpenPoints={(r) => setPointsRoute(r)}
           onDelete={handleDelete}
+          onRestore={handleRestore}
           formatDate={formatDate}
         />
       </div>

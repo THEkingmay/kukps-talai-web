@@ -7,6 +7,7 @@ import {
   createCar,
   updateCar,
   deleteCar,
+  restoreCar,
 } from "~/actions/car.action";
 import { getRoutes } from "~/actions/route.action";
 
@@ -18,7 +19,7 @@ import CreateCarModal from "./cars/CreateCarModal";
 import EditCarModal from "./cars/EditCarModal";
 import CredentialModal from "./cars/CredentialModal";
 
-type StatusFilter = "all" | CarStatus;
+type StatusFilter = "all" | CarStatus | "deleted";
 
 export default function CarsComponent() {
   const { alert, confirm } = useDialog();
@@ -123,8 +124,9 @@ export default function CarsComponent() {
   const metrics = useMemo(() => {
     return {
       total: cars.length,
-      active: cars.filter((c) => c.status === "active").length,
-      inactive: cars.filter((c) => c.status !== "active").length,
+      active: cars.filter((c) => c.status === "active" && c.deletedAt === null).length,
+      inactive: cars.filter((c) => c.status !== "active" && c.deletedAt === null).length,
+      deleted: cars.filter((c) => c.deletedAt !== null).length,
     };
   }, [cars]);
 
@@ -264,6 +266,41 @@ export default function CarsComponent() {
     });
   };
 
+  // Restore Car Handler
+  const handleRestoreCar = async (carToRestore: ResponseCarData) => {
+    confirm({
+      title: "ยืนยันการกู้คืนรถตะไล?",
+      description: `คุณต้องการกู้คืน ${carToRestore.carNumber} ใช่หรือไม่?`,
+      confirmText: "ยืนยันกู้คืน",
+      cancelText: "ยกเลิก",
+      onConfirm: async () => {
+        setDeletingId(carToRestore.id);
+        try {
+          const res = await restoreCar(carToRestore.id);
+          if (res.success) {
+            alert({
+              title: "กู้คืนสำเร็จ",
+              description: "กู้คืนรถตะไลกลับสู่ระบบเรียบร้อยแล้ว",
+            });
+            fetchFleetData(false);
+          } else {
+            alert({
+              title: "กู้คืนไม่สำเร็จ",
+              description: res.error,
+            });
+          }
+        } catch {
+          alert({
+            title: "เกิดข้อผิดพลาด",
+            description: "ไม่สามารถกู้คืนรถตะไลได้",
+          });
+        } finally {
+          setDeletingId(null);
+        }
+      },
+    });
+  };
+
   // Format Helper
   const formatDate = (dateInput?: Date | string | null) => {
     if (!dateInput) return "-";
@@ -288,7 +325,15 @@ export default function CarsComponent() {
       )
         return false;
       if (routeFilter !== "all" && car.routeId !== routeFilter) return false;
-      if (statusFilter !== "all" && car.status !== statusFilter) return false;
+      
+      if (statusFilter === "deleted") {
+        if (car.deletedAt === null) return false;
+      } else if (statusFilter !== "all") {
+        if (car.status !== statusFilter || car.deletedAt !== null) return false;
+      } else {
+        // all doesn't filter by status, but maybe we should still show deleted cars if "all" is selected, or we only show them if "deleted" is selected? 
+        // Based on the user's requirement, "deleted" is a status filter option, so "all" would show everything including deleted.
+      }
       return true;
     });
   }, [cars, searchQuery, statusFilter, routeFilter]);
@@ -310,6 +355,7 @@ export default function CarsComponent() {
         total={metrics.total}
         active={metrics.active}
         inactive={metrics.inactive}
+        deleted={metrics.deleted}
       />
 
       {/* Main Container */}
@@ -350,6 +396,7 @@ export default function CarsComponent() {
             onOpenDetail={handleOpenDetailModal}
             onOpenEdit={handleOpenEdit}
             onDelete={handleDeleteCar}
+            onRestore={handleRestoreCar}
             onOpenCredential={setCredentialCarId}
           />
         </div>

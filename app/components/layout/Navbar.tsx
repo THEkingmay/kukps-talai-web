@@ -37,12 +37,10 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-4">
-          <Link to="/admin/dashboard" className="flex items-center gap-2">
-            {/*<div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <Bus className="h-4 w-4" />
-            </div>*/}
+      <div className="flex h-14 w-full items-center">
+        {/* Logo Section */}
+        <div className="flex h-full items-center px-4 md:w-56 md:shrink-0 md:border-r border-border">
+          <Link to="/" className="flex items-center gap-2">
             <span className="font-semibold tracking-tight">TalaiETA</span>
             <span className="rounded-md border bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase text-muted-foreground">
               Admin
@@ -50,7 +48,7 @@ export default function Navbar() {
           </Link>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-1 items-center justify-end gap-3 px-4 sm:px-6 lg:px-8">
           <ModeToggle />
 
           <DropdownMenu>

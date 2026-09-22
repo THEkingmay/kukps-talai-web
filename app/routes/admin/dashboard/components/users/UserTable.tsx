@@ -1,5 +1,12 @@
 import type { User } from "~/types";
-import { Lock, Trash2, CheckCircle2, AlertTriangle, XCircle, Loader2 } from "lucide-react";
+import {
+  Lock,
+  Trash2,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  Loader2,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -18,7 +25,7 @@ interface UserTableProps {
   error: string | null;
   currentUserId?: string;
   updatingId: string | null;
-  onToggleStatus: (user: User) => void;
+  onRestoreUser: (user: User) => void;
   onDeleteUser: (user: User) => void;
   onRefresh: () => void;
   formatDate: (dateStr: string) => string;
@@ -31,7 +38,7 @@ export default function UserTable({
   error,
   currentUserId,
   updatingId,
-  onToggleStatus,
+  onRestoreUser,
   onDeleteUser,
   onRefresh,
   formatDate,
@@ -71,23 +78,32 @@ export default function UserTable({
             </TableRow>
           ) : filteredUsers.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+              <TableCell
+                colSpan={5}
+                className="h-24 text-center text-muted-foreground"
+              >
                 ไม่พบข้อมูลผู้ใช้งานที่ตรงกับเงื่อนไข
               </TableCell>
             </TableRow>
           ) : (
             filteredUsers.map((item) => {
-              const isDeleted = item.status === "deleted";
+              const isDeleted = item.deletedAt !== null;
               const isCurrent = item.id === currentUserId;
               const isUpdatingThis = updatingId === item.id;
 
               return (
-                <TableRow key={item.id} className={isDeleted ? "opacity-60 grayscale" : ""}>
+                <TableRow
+                  key={item.id}
+                  className={isDeleted ? "opacity-60 grayscale" : ""}
+                >
                   <TableCell>
                     <div className="font-medium flex items-center gap-2">
                       {item.email}
                       {isCurrent && (
-                        <Badge variant="secondary" className="text-[10px] uppercase font-mono">
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] uppercase font-mono"
+                        >
                           You
                         </Badge>
                       )}
@@ -98,36 +114,50 @@ export default function UserTable({
                   </TableCell>
                   <TableCell>
                     <Badge
-                      variant={item.role === "superadmin" ? "default" : item.role === "admin" ? "secondary" : "outline"}
+                      variant={
+                        item.role === "superadmin"
+                          ? "default"
+                          : item.role === "admin"
+                            ? "secondary"
+                            : "outline"
+                      }
                       className="font-mono text-[10px] uppercase"
                     >
                       {item.role}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <StatusBadge status={item.status} />
+                    <StatusBadge isDeleted={isDeleted} />
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground font-mono">
                     {formatDate(item.createdAt)}
                   </TableCell>
                   <TableCell className="text-right">
                     {isDeleted ? (
-                      <Badge variant="outline" className="text-muted-foreground gap-1">
-                        <Lock className="w-3 h-3" />
-                        ถูกลบแล้ว
-                      </Badge>
+                      <div className="flex items-center justify-end gap-2">
+                        <Badge
+                          variant="outline"
+                          className="text-muted-foreground gap-1"
+                        >
+                          <Lock className="w-3 h-3" />
+                          ถูกลบแล้ว
+                        </Badge>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={isUpdatingThis}
+                          onClick={() => onRestoreUser(item)}
+                          title="กู้คืนผู้ใช้"
+                        >
+                          {isUpdatingThis ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            "กู้คืน"
+                          )}
+                        </Button>
+                      </div>
                     ) : (
                       <div className="flex items-center justify-end gap-2">
-                        {!isCurrent && (
-                          <Button
-                            variant={item.status === "active" ? "secondary" : "outline"}
-                            size="sm"
-                            disabled={isUpdatingThis}
-                            onClick={() => onToggleStatus(item)}
-                          >
-                            {isUpdatingThis ? <Loader2 className="w-4 h-4 animate-spin" /> : item.status === "active" ? "ระงับสิทธิ์" : "เปิดใช้งาน"}
-                          </Button>
-                        )}
                         {!isCurrent && (
                           <Button
                             variant="destructive"
@@ -159,20 +189,19 @@ export default function UserTable({
   );
 }
 
-function StatusBadge({ status }: { status: "active" | "suspended" | "deleted" }) {
-  if (status === "active") {
+function StatusBadge({
+  isDeleted,
+}: {
+  isDeleted: boolean;
+}) {
+  if (!isDeleted) {
     return (
-      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/30">
+      <Badge
+        variant="outline"
+        className="bg-green-50 text-green-700 border-green-200 gap-1 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/30"
+      >
         <CheckCircle2 className="w-3 h-3 animate-pulse" />
         ใช้งานอยู่
-      </Badge>
-    );
-  }
-  if (status === "suspended") {
-    return (
-      <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 gap-1 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30">
-        <AlertTriangle className="w-3 h-3" />
-        ระงับสิทธิ์
       </Badge>
     );
   }
