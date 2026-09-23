@@ -1,0 +1,134 @@
+import * as React from "react"
+import { format, isBefore, isAfter } from "date-fns"
+import { MoreHorizontal, Edit, Trash2 } from "lucide-react"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table"
+import { Badge } from "~/components/ui/badge"
+import { Button } from "~/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu"
+import type { CarDriverShift, User, ResponseCarData } from "~/types"
+import { useDialog } from "~/components/providers/DialogProvider"
+
+interface ExtendedShift extends CarDriverShift {
+  driverObj?: User;
+  carObj?: ResponseCarData;
+}
+
+interface AssignmentDriverTableProps {
+  assignments: ExtendedShift[];
+  onEdit: (shift: CarDriverShift) => void;
+  onDelete: (id: string) => void;
+  isLoading: boolean;
+}
+
+export function AssignmentDriverTable({
+  assignments,
+  onEdit,
+  onDelete,
+  isLoading
+}: AssignmentDriverTableProps) {
+  const { confirm } = useDialog()
+
+  const getStatus = (start: Date, end: Date) => {
+    const now = new Date()
+    const startDate = new Date(start)
+    const endDate = new Date(end)
+    
+    if (isBefore(now, startDate)) {
+      return { label: "Upcoming", variant: "secondary" as const }
+    } else if (isAfter(now, endDate)) {
+      return { label: "Past", variant: "outline" as const }
+    } else {
+      return { label: "Active", variant: "default" as const }
+    }
+  }
+
+  const handleDelete = (id: string) => {
+    confirm({
+      title: "ยืนยันการลบ",
+      description: "คุณต้องการลบการมอบหมายงานนี้ใช่หรือไม่?",
+      confirmText: "ลบ",
+      cancelText: "ยกเลิก",
+      onConfirm: () => onDelete(id)
+    })
+  }
+
+  if (isLoading) {
+    return <div className="p-8 text-center text-muted-foreground">กำลังโหลดข้อมูล...</div>
+  }
+
+  if (assignments.length === 0) {
+    return <div className="p-8 text-center text-muted-foreground">ไม่พบข้อมูลการมอบหมายงาน</div>
+  }
+
+  return (
+    <div className="rounded-md border bg-background overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Driver</TableHead>
+            <TableHead>Car</TableHead>
+            <TableHead>Start Time</TableHead>
+            <TableHead>End Time</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="w-[80px]"></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {assignments.map((shift) => {
+            const status = getStatus(shift.startTime, shift.endTime)
+            return (
+              <TableRow key={shift.id}>
+                <TableCell>
+                  <div className="font-medium">{shift.driverObj?.email || shift.driverId}</div>
+                  <div className="text-xs text-muted-foreground">ID: {shift.driverId.slice(0, 8)}...</div>
+                </TableCell>
+                <TableCell>
+                  <div className="font-medium">{shift.carObj?.carNumber || shift.carId}</div>
+                </TableCell>
+                <TableCell>{format(new Date(shift.startTime), "dd MMM, HH:mm")}</TableCell>
+                <TableCell>{format(new Date(shift.endTime), "dd MMM, HH:mm")}</TableCell>
+                <TableCell>
+                  <Badge variant={status.variant}>{status.label}</Badge>
+                </TableCell>
+                <TableCell align="right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onEdit(shift)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        แก้ไข
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => handleDelete(shift.id)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        ลบ
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
+    </div>
+  )
+}

@@ -117,7 +117,7 @@ export default function Home() {
               ดาวน์โหลดแอป Android (.APK)
             </Button>
 
-            <Button
+            {/*<Button
               asChild
               size="lg"
               variant="outline"
@@ -127,7 +127,7 @@ export default function Home() {
                 <UserCheck className="h-4 w-4" />
                 เข้าสู่ระบบเจ้าหน้าที่
               </Link>
-            </Button>
+            </Button>*/}
           </div>
 
           <div className="mt-6 flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground">

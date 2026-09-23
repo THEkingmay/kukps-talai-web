@@ -62,9 +62,9 @@ export interface CarDriverShift {
   carId: string;
   driverId: string;
   startTime: Date;
-  endTime: Date | null;
+  endTime: Date;
   createdAt: Date;
-  updatedBy: string | null;
+  updatedBy: string;
   updatedAt: Date;
 }
 

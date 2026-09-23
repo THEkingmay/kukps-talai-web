@@ -137,11 +137,13 @@ export default function EditCarModal({
                 <SelectValue placeholder="-- กรุณาเลือกสายการเดินรถ --" />
               </SelectTrigger>
               <SelectContent>
-                {routes.map((r) => (
-                  <SelectItem key={r.id} value={r.id}>
-                    {r.name}
-                  </SelectItem>
-                ))}
+                {routes
+                  .filter((rs) => rs.deletedAt == null)
+                  .map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.name}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>

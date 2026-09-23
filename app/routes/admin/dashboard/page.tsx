@@ -5,6 +5,8 @@ import AdminInviteComponent from "./components/admin-invite.component";
 import CarsComponent from "./components/cars.component";
 import RoutesComponent from "./components/routes.component";
 import UserComponent from "./components/user.component";
+import AssignmentDriverComponent from "./components/assignment-driver.component";
+
 import { ShieldAlert } from "lucide-react";
 
 export function meta() {
@@ -17,7 +19,7 @@ export function meta() {
   ];
 }
 
-type TabType = "users" | "invites" | "cars" | "routes";
+type TabType = "users" | "invites" | "cars" | "routes" | "assignment-driver";
 
 export default function DashboardRoute() {
   const { user } = useAuth();
@@ -52,6 +54,11 @@ export default function DashboardRoute() {
                 label: "สายการเดินรถ",
                 requiresSuperAdmin: false,
               },
+              {
+                id: "assignment-driver",
+                label: "การจัดการงานผู้ขับรถ",
+                requiresSuperAdmin: false,
+              },
             ].map((item) => {
               const isDisabled = item.requiresSuperAdmin && !isSuperAdmin;
               const isActive = activeTab === item.id;
@@ -83,6 +90,7 @@ export default function DashboardRoute() {
           {activeTab === "invites" && <AdminInviteComponent />}
           {activeTab === "cars" && <CarsComponent />}
           {activeTab === "routes" && <RoutesComponent />}
+          {activeTab === "assignment-driver" && <AssignmentDriverComponent />}
         </div>
       </main>
     </div>
