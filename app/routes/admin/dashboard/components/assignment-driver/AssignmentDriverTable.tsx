@@ -1,5 +1,6 @@
 import * as React from "react"
 import { format, isBefore, isAfter } from "date-fns"
+import { th } from "date-fns/locale"
 import { MoreHorizontal, Edit, Trash2 } from "lucide-react"
 import {
   Table,
@@ -30,6 +31,14 @@ interface AssignmentDriverTableProps {
   onEdit: (shift: CarDriverShift) => void;
   onDelete: (id: string) => void;
   isLoading: boolean;
+}
+
+const formatThaiDate = (dateVal: Date | string) => {
+  const d = new Date(dateVal)
+  const dayMonth = format(d, "dd MMM", { locale: th })
+  const year = d.getFullYear() + 543
+  const time = format(d, "HH:mm")
+  return `${dayMonth} ${year}, ${time}`
 }
 
 export function AssignmentDriverTable({
@@ -77,17 +86,22 @@ export function AssignmentDriverTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Driver</TableHead>
-            <TableHead>Car</TableHead>
-            <TableHead>Start Time</TableHead>
-            <TableHead>End Time</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>คนขับรถ</TableHead>
+            <TableHead>รถ (ป้ายทะเบียน)</TableHead>
+            <TableHead>เวลาเริ่มงาน</TableHead>
+            <TableHead>เวลาสิ้นสุด</TableHead>
+            <TableHead>สถานะ</TableHead>
             <TableHead className="w-[80px]"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {assignments.map((shift) => {
             const status = getStatus(shift.startTime, shift.endTime)
+            let statusText = ""
+            if (status.label === "Upcoming") statusText = "งานในอนาคต"
+            else if (status.label === "Past") statusText = "จบไปแล้ว"
+            else statusText = "กำลังทำงาน"
+            
             return (
               <TableRow key={shift.id}>
                 <TableCell>
@@ -97,10 +111,10 @@ export function AssignmentDriverTable({
                 <TableCell>
                   <div className="font-medium">{shift.carObj?.carNumber || shift.carId}</div>
                 </TableCell>
-                <TableCell>{format(new Date(shift.startTime), "dd MMM, HH:mm")}</TableCell>
-                <TableCell>{format(new Date(shift.endTime), "dd MMM, HH:mm")}</TableCell>
+                <TableCell>{formatThaiDate(shift.startTime)}</TableCell>
+                <TableCell>{formatThaiDate(shift.endTime)}</TableCell>
                 <TableCell>
-                  <Badge variant={status.variant}>{status.label}</Badge>
+                  <Badge variant={status.variant}>{statusText}</Badge>
                 </TableCell>
                 <TableCell align="right">
                   <DropdownMenu>

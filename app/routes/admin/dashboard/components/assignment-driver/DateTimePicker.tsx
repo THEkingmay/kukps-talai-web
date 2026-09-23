@@ -1,5 +1,6 @@
 import * as React from "react"
 import { format } from "date-fns"
+import { th } from "date-fns/locale"
 import { Calendar as CalendarIcon } from "lucide-react"
 
 import { cn } from "~/lib/utils"
@@ -19,7 +20,7 @@ interface DateTimePickerProps {
   placeholder?: string
 }
 
-export function DateTimePicker({ value, onChange, disabled, placeholder = "Pick a date and time" }: DateTimePickerProps) {
+export function DateTimePicker({ value, onChange, disabled, placeholder = "เลือกวันและเวลา" }: DateTimePickerProps) {
   const [date, setDate] = React.useState<Date | undefined>(value)
   const [time, setTime] = React.useState<string>(value ? format(value, "HH:mm") : "")
 
@@ -59,6 +60,13 @@ export function DateTimePicker({ value, onChange, disabled, placeholder = "Pick 
     onChange(updatedDate)
   }
 
+  const formatThaiDate = (dateVal: Date) => {
+    const dayMonth = format(dateVal, "dd MMM", { locale: th })
+    const year = dateVal.getFullYear() + 543
+    const timeVal = format(dateVal, "HH:mm")
+    return `${dayMonth} ${year}, ${timeVal}`
+  }
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -71,7 +79,7 @@ export function DateTimePicker({ value, onChange, disabled, placeholder = "Pick 
           disabled={disabled}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {value ? format(value, "PPp") : <span>{placeholder}</span>}
+          {value ? formatThaiDate(value) : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
@@ -79,9 +87,10 @@ export function DateTimePicker({ value, onChange, disabled, placeholder = "Pick 
           mode="single"
           selected={date}
           onSelect={handleDateSelect}
+          locale={th}
         />
         <div className="p-3 border-t border-border flex items-center justify-between gap-2">
-          <span className="text-sm font-medium">Time</span>
+          <span className="text-sm font-medium">เวลา</span>
           <Input 
             type="time" 
             value={time}

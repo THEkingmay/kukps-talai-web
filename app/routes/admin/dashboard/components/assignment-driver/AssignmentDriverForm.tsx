@@ -104,67 +104,73 @@ export function AssignmentDriverForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 pt-6">
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label>คนขับ (Driver) <span className="text-destructive">*</span></Label>
-          <ComboboxSelector
-            options={driverOptions}
-            value={formData.driverId}
-            onValueChange={(val) => setFormData(p => ({ ...p, driverId: val }))}
-            placeholder="เลือกคนขับ..."
-            searchPlaceholder="ค้นหาชื่อคนขับ..."
-            emptyText="ไม่พบคนขับ"
-            disabled={isSubmitting}
-          />
+    <form onSubmit={handleSubmit} className="flex flex-col h-full">
+      <div className="flex-1 space-y-6">
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">คนขับรถ <span className="text-destructive">*</span></Label>
+            <ComboboxSelector
+              options={driverOptions}
+              value={formData.driverId}
+              onValueChange={(val) => setFormData(p => ({ ...p, driverId: val }))}
+              placeholder="เลือกคนขับรถ..."
+              searchPlaceholder="ค้นหาชื่อคนขับ..."
+              emptyText="ไม่พบคนขับ"
+              disabled={isSubmitting}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">รถ (ป้ายทะเบียน) <span className="text-destructive">*</span></Label>
+            <ComboboxSelector
+              options={carOptions}
+              value={formData.carId}
+              onValueChange={(val) => setFormData(p => ({ ...p, carId: val }))}
+              placeholder="เลือกรถ..."
+              searchPlaceholder="ค้นหาป้ายทะเบียน..."
+              emptyText="ไม่พบรถ"
+              disabled={isSubmitting}
+            />
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <Label>รถ (Car) <span className="text-destructive">*</span></Label>
-          <ComboboxSelector
-            options={carOptions}
-            value={formData.carId}
-            onValueChange={(val) => setFormData(p => ({ ...p, carId: val }))}
-            placeholder="เลือกรถ..."
-            searchPlaceholder="ค้นหาป้ายทะเบียน..."
-            emptyText="ไม่พบรถ"
-            disabled={isSubmitting}
-          />
-        </div>
+        <div className="h-px bg-border my-2" />
 
-        <div className="space-y-2">
-          <Label>เริ่มงาน (Start Time) <span className="text-destructive">*</span></Label>
-          <DateTimePicker
-            value={formData.startTime}
-            onChange={(val) => setFormData(p => ({ ...p, startTime: val }))}
-            disabled={isSubmitting}
-            placeholder="เลือกวัน-เวลาเริ่มงาน"
-          />
-        </div>
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">เวลาเริ่มงาน <span className="text-destructive">*</span></Label>
+            <DateTimePicker
+              value={formData.startTime}
+              onChange={(val) => setFormData(p => ({ ...p, startTime: val }))}
+              disabled={isSubmitting}
+              placeholder="เลือกวัน-เวลาเริ่มงาน"
+            />
+          </div>
 
-        <div className="space-y-2">
-          <Label>สิ้นสุดงาน (End Time) <span className="text-destructive">*</span></Label>
-          <DateTimePicker
-            value={formData.endTime}
-            onChange={(val) => setFormData(p => ({ ...p, endTime: val }))}
-            disabled={isSubmitting}
-            placeholder="เลือกวัน-เวลาสิ้นสุดงาน"
-          />
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">เวลาสิ้นสุดงาน <span className="text-destructive">*</span></Label>
+            <DateTimePicker
+              value={formData.endTime}
+              onChange={(val) => setFormData(p => ({ ...p, endTime: val }))}
+              disabled={isSubmitting}
+              placeholder="เลือกวัน-เวลาสิ้นสุดงาน"
+            />
+          </div>
         </div>
 
         {conflictError && (
-          <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md flex items-start gap-2">
+          <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md flex items-start gap-2 border border-destructive/20">
             <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
             <p>{conflictError}</p>
           </div>
         )}
       </div>
 
-      <div className="flex items-center justify-end gap-2 pt-4 border-t">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+      <div className="flex items-center justify-end gap-3 pt-6 mt-6 border-t border-border bg-background">
+        <Button type="button" variant="ghost" onClick={onCancel} disabled={isSubmitting} className="font-normal">
           ยกเลิก
         </Button>
-        <Button type="submit" disabled={!isFormValid || isSubmitting}>
+        <Button type="submit" disabled={!isFormValid || isSubmitting} className="font-medium shadow-sm">
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {initialData?.id ? "บันทึกการแก้ไข" : "สร้างงาน"}
         </Button>
