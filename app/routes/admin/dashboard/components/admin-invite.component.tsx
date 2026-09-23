@@ -7,7 +7,7 @@ import {
 } from "~/actions/admin-invite.action";
 import Alert from "~/components/ui/Alert";
 import { useAuth } from "~/components/providers/AuthProvider";
-import type { AdminInvite } from "~/types";
+import type { AdminInvite, InviteRole } from "~/types";
 import { RefreshCw, Search, Plus } from "lucide-react";
 import { Button } from "~/components/ui/button";
 
@@ -20,6 +20,7 @@ export default function AdminInviteComponent() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const [adminInvites, setAdminInvites] = useState<AdminInvite[]>([]);
   const [addEmail, setAddEmail] = useState<string>("");
+  const [addRole, setAddRole] = useState<InviteRole | "">("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
@@ -59,7 +60,7 @@ export default function AdminInviteComponent() {
   const isEmailDuplicate = adminInvites.some(
     (inv) =>
       inv.email.toLowerCase() === addEmail.trim().toLowerCase() &&
-      addEmail.trim() !== ""
+      addEmail.trim() !== "",
   );
 
   const handleAddInvite = async (e: React.FormEvent) => {
@@ -94,13 +95,23 @@ export default function AdminInviteComponent() {
       return;
     }
 
+    if (!addRole) {
+      setAlertState({
+        type: "warning",
+        title: "กรุณาระบุข้อมูล",
+        message: "กรุณาเลือกระดับสิทธิ์",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     setAlertState(null);
 
-    const result = await addAdminInvite(trimmedEmail);
+    const result = await addAdminInvite(trimmedEmail, addRole);
     if (result.success) {
       setAdminInvites((prev) => [result.data.data, ...prev]);
       setAddEmail("");
+      setAddRole("");
       setIsCreateModalOpen(false);
       setAlertState({
         type: "success",
@@ -140,23 +151,23 @@ export default function AdminInviteComponent() {
 
         const result = await deleteAdminInvite(invite.email);
         if (result.success) {
-      setAdminInvites((prev) =>
-        prev.filter((item) => item.email !== invite.email)
-      );
-      setAlertState({
-        type: "success",
-        title: "ลบรหัสเชิญสำเร็จ",
-        message: `ลบรหัสเชิญสำหรับ ${invite.email} เรียบร้อยแล้ว`,
-      });
-    } else {
-      setAlertState({
-        type: "error",
-        title: "เกิดข้อผิดพลาดในการลบ",
-        message: result.error,
-      });
-    }
+          setAdminInvites((prev) =>
+            prev.filter((item) => item.email !== invite.email),
+          );
+          setAlertState({
+            type: "success",
+            title: "ลบรหัสเชิญสำเร็จ",
+            message: `ลบรหัสเชิญสำหรับ ${invite.email} เรียบร้อยแล้ว`,
+          });
+        } else {
+          setAlertState({
+            type: "error",
+            title: "เกิดข้อผิดพลาดในการลบ",
+            message: result.error,
+          });
+        }
         setDeletingEmail(null);
-      }
+      },
     });
   };
 
@@ -169,14 +180,14 @@ export default function AdminInviteComponent() {
     (invite) =>
       invite.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (invite.addedBy &&
-        invite.addedBy.toLowerCase().includes(searchTerm.toLowerCase()))
+        invite.addedBy.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
   const pendingCount = adminInvites.filter(
-    (i) => i.status === "pending"
+    (i) => i.status === "pending",
   ).length;
   const acceptedCount = adminInvites.filter(
-    (i) => i.status === "accepted"
+    (i) => i.status === "accepted",
   ).length;
 
   return (
@@ -186,12 +197,19 @@ export default function AdminInviteComponent() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Admin Invites</h2>
           <p className="text-muted-foreground text-sm">
-            สร้างและบริหารจัดการสิทธิ์รหัสเชิญสำหรับเจ้าหน้าที่ผู้ดูแลระบบรายใหม่ (@ku.th)
+            สร้างและบริหารจัดการสิทธิ์รหัสเชิญสำหรับเจ้าหน้าที่ผู้ดูแลระบบรายใหม่
+            (@ku.th)
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={fetchAdminInvites} disabled={isLoading}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+          <Button
+            variant="outline"
+            onClick={fetchAdminInvites}
+            disabled={isLoading}
+          >
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
             รีเฟรช
           </Button>
           <Button onClick={() => setIsCreateModalOpen(true)}>
@@ -233,7 +251,15 @@ export default function AdminInviteComponent() {
             <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-2 pointer-events-none" />
           </div>
           <div className="text-xs text-muted-foreground font-mono self-end sm:self-center">
-            แสดง <span className="font-medium text-foreground">{filteredInvites.length}</span> จากทั้งหมด <span className="font-medium text-foreground">{adminInvites.length}</span> รายการ
+            แสดง{" "}
+            <span className="font-medium text-foreground">
+              {filteredInvites.length}
+            </span>{" "}
+            จากทั้งหมด{" "}
+            <span className="font-medium text-foreground">
+              {adminInvites.length}
+            </span>{" "}
+            รายการ
           </div>
         </div>
 
@@ -249,13 +275,18 @@ export default function AdminInviteComponent() {
       <InviteCreateModal
         isOpen={isCreateModalOpen}
         email={addEmail}
+        role={addRole}
         isSubmitting={isSubmitting}
         isEmailDuplicate={isEmailDuplicate}
         onChangeEmail={setAddEmail}
+        onChangeRole={setAddRole}
         onSubmit={handleAddInvite}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          setAddEmail("");
+          setAddRole("");
+        }}
       />
     </div>
   );
 }
-

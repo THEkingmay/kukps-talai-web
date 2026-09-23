@@ -74,7 +74,7 @@ export default function Home() {
               className="hidden sm:flex"
             >
               <Link to="/auth" id="nav-admin-login">
-                เข้าสู่ระบบผู้ดูแล
+                เข้าสู่ระบบเจ้าหน้าที่
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -99,9 +99,6 @@ export default function Home() {
           <h1 className="text-balance text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
             ระบบติดตามบริการรถตะไล
             <br />
-            <span className="text-muted-foreground">
-              สะดวกรวดเร็ว แม่นยำทุกการเดินทาง
-            </span>
           </h1>
 
           <p className="mt-6 max-w-[42rem] text-balance leading-normal text-muted-foreground sm:text-xl sm:leading-8">
@@ -128,7 +125,7 @@ export default function Home() {
             >
               <Link to="/auth">
                 <UserCheck className="h-4 w-4" />
-                เข้าสู่ระบบผู้ดูแลระบบ
+                เข้าสู่ระบบเจ้าหน้าที่
               </Link>
             </Button>
           </div>

@@ -7,8 +7,12 @@ export default function ProtectedRoute() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      navigate("/auth", { replace: true });
+    if (!isLoading) {
+      if (!user) {
+        navigate("/auth", { replace: true });
+      } else if (user.role === "driver") {
+        navigate("/driver/dashboard", { replace: true });
+      }
     }
   }, [isLoading, user, navigate]);
 
@@ -16,9 +20,10 @@ export default function ProtectedRoute() {
     return <FullPageLoading />;
   }
 
-  if (user) {
+  if (user && (user.role === "superadmin" || user.role === "admin")) {
     return <Outlet />;
   }
 
-  return null;
+  // กำลังรอ useEffect ทำการ redirect
+  return <FullPageLoading />;
 }

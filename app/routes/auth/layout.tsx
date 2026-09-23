@@ -9,7 +9,11 @@ export default function AuthLayout() {
 
   useEffect(() => {
     if (!isLoading && user) {
-      navigate("/admin/dashboard", { replace: true });
+      if (user.role === "driver") {
+        navigate("/driver/dashboard", { replace: true });
+      } else if (user.role === "admin" || user.role === "superadmin") {
+        navigate("/admin/dashboard", { replace: true });
+      }
     }
   }, [user, navigate, isLoading]);
 

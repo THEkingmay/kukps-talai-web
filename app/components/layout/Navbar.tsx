@@ -42,9 +42,6 @@ export default function Navbar() {
         <div className="flex h-full items-center px-4 md:w-56 md:shrink-0 md:border-r border-border">
           <Link to="/" className="flex items-center gap-2">
             <span className="font-semibold tracking-tight">TalaiETA</span>
-            <span className="rounded-md border bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase text-muted-foreground">
-              Admin
-            </span>
           </Link>
         </div>
 

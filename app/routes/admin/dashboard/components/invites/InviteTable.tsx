@@ -1,5 +1,12 @@
 import type { AdminInvite } from "~/types";
-import { Trash2, Lock, CheckCircle2, XCircle, Clock, Loader2 } from "lucide-react";
+import {
+  Trash2,
+  Lock,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Loader2,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -32,6 +39,7 @@ export default function InviteTable({
             <TableHead>อีเมลผู้รับเชิญ</TableHead>
             <TableHead>สร้างโดย (Added By)</TableHead>
             <TableHead>สถานะ</TableHead>
+            <TableHead>ระดับสิทธิ์</TableHead>
             <TableHead>วันที่สร้าง</TableHead>
             <TableHead className="text-right">แอ็กชัน</TableHead>
           </TableRow>
@@ -48,14 +56,19 @@ export default function InviteTable({
             </TableRow>
           ) : filteredInvites.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+              <TableCell
+                colSpan={5}
+                className="h-24 text-center text-muted-foreground"
+              >
                 ไม่พบรายการรหัสเชิญ
               </TableCell>
             </TableRow>
           ) : (
             filteredInvites.map((invite, index) => (
               <TableRow key={invite.email || index}>
-                <TableCell className="font-medium text-foreground">{invite.email}</TableCell>
+                <TableCell className="font-medium text-foreground">
+                  {invite.email}
+                </TableCell>
                 <TableCell>
                   <Badge variant="secondary" className="font-mono text-[10px]">
                     {invite.addedBy || "Super Admin"}
@@ -63,6 +76,20 @@ export default function InviteTable({
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={invite.status} />
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant={
+                      invite.role === "superadmin"
+                        ? "default"
+                        : invite.role === "admin" || invite.role === "driver"
+                          ? "secondary"
+                          : "outline"
+                    }
+                    className="font-mono text-[10px] uppercase"
+                  >
+                    {invite.role}
+                  </Badge>
                 </TableCell>
                 <TableCell className="font-mono text-xs text-muted-foreground">
                   {invite.createdAt
@@ -115,7 +142,10 @@ function StatusBadge({ status }: { status: string }) {
   switch (status) {
     case "accepted":
       return (
-        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/30">
+        <Badge
+          variant="outline"
+          className="bg-green-50 text-green-700 border-green-200 gap-1 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/30"
+        >
           <CheckCircle2 className="w-3.5 h-3.5" />
           ลงทะเบียนแล้ว
         </Badge>
@@ -130,7 +160,10 @@ function StatusBadge({ status }: { status: string }) {
     case "pending":
     default:
       return (
-        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 gap-1 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30">
+        <Badge
+          variant="outline"
+          className="bg-amber-50 text-amber-700 border-amber-200 gap-1 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30"
+        >
           <Clock className="w-3.5 h-3.5 animate-pulse" />
           รอยืนยัน
         </Badge>

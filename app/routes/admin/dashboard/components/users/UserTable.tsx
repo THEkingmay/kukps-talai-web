@@ -117,7 +117,9 @@ export default function UserTable({
                       variant={
                         item.role === "superadmin"
                           ? "default"
-                          : item.role === "admin"
+                          : item.role === "admin" ||
+                              item.role === "user" ||
+                              item.role === "driver"
                             ? "secondary"
                             : "outline"
                       }
@@ -189,11 +191,7 @@ export default function UserTable({
   );
 }
 
-function StatusBadge({
-  isDeleted,
-}: {
-  isDeleted: boolean;
-}) {
+function StatusBadge({ isDeleted }: { isDeleted: boolean }) {
   if (!isDeleted) {
     return (
       <Badge

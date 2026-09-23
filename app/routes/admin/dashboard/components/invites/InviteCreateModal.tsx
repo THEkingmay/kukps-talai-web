@@ -1,4 +1,4 @@
-import { PlusCircle, Loader2, Mail, AlertCircle } from "lucide-react";
+import { PlusCircle, Loader2, Mail, AlertCircle, Shield } from "lucide-react";
 
 import {
   Dialog,
@@ -11,13 +11,23 @@ import {
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import type { InviteRole } from "~/types";
 
 interface InviteCreateModalProps {
   isOpen: boolean;
   email: string;
+  role: InviteRole | "";
   isSubmitting: boolean;
   isEmailDuplicate: boolean;
   onChangeEmail: (val: string) => void;
+  onChangeRole: (val: InviteRole) => void;
   onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
 }
@@ -25,9 +35,11 @@ interface InviteCreateModalProps {
 export default function InviteCreateModal({
   isOpen,
   email,
+  role,
   isSubmitting,
   isEmailDuplicate,
   onChangeEmail,
+  onChangeRole,
   onSubmit,
   onClose,
 }: InviteCreateModalProps) {
@@ -62,15 +74,44 @@ export default function InviteCreateModal({
               onChange={(e) => onChangeEmail(e.target.value)}
               placeholder="ตัวอย่าง: newadmin@ku.th"
               disabled={isSubmitting}
-              className={isEmailDuplicate ? "border-destructive focus-visible:ring-destructive" : ""}
+              className={
+                isEmailDuplicate
+                  ? "border-destructive focus-visible:ring-destructive"
+                  : ""
+              }
             />
-            <p className="text-xs text-muted-foreground">เฉพาะโดเมน @ku.th เท่านั้น</p>
+            <p className="text-xs text-muted-foreground">
+              เฉพาะโดเมน @ku.th เท่านั้น
+            </p>
             {isEmailDuplicate && (
               <p className="text-xs text-destructive font-medium flex items-center gap-1 mt-1">
                 <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                 อีเมลนี้ถูกสร้างรหัสเชิญไว้อยู่แล้วในรายการ
               </p>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="invite-role" className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-muted-foreground" />
+              ระดับสิทธิ์ (Role) <span className="text-destructive">*</span>
+            </Label>
+            <Select
+              value={role}
+              onValueChange={(val) => onChangeRole(val as InviteRole)}
+              disabled={isSubmitting}
+            >
+              <SelectTrigger id="invite-role">
+                <SelectValue placeholder="เลือกระดับสิทธิ์ผู้ใช้งาน" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="superadmin">
+                  ผู้ดูแลระบบสูงสุด (Superadmin)
+                </SelectItem>
+                <SelectItem value="admin">ผู้ดูแลระบบ (Admin)</SelectItem>
+                <SelectItem value="driver">พนักงานขับรถ (Driver)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <DialogFooter className="border-t pt-4">
@@ -84,7 +125,9 @@ export default function InviteCreateModal({
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting || isEmailDuplicate || !email.trim()}
+              disabled={
+                isSubmitting || isEmailDuplicate || !email.trim() || !role
+              }
             >
               {isSubmitting && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

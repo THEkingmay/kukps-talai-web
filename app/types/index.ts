@@ -1,7 +1,7 @@
 export type UserRole = "superadmin" | "admin" | "user" | "driver";
 export type InviteStatus = "pending" | "accepted" | "rejected";
 export type CarStatus = "active" | "inactive";
-export type InviteRole = "admin" | "driver";
+export type InviteRole = "superadmin" | "admin" | "driver";
 
 export interface User {
   id: string;
@@ -55,6 +55,17 @@ export interface CarHistoryLog {
   lat: number;
   lng: number;
   createdAt: string;
+}
+
+export interface CarDriverShift {
+  id: string;
+  carId: string;
+  driverId: string;
+  startTime: Date;
+  endTime: Date | null;
+  createdAt: Date;
+  updatedBy: string | null;
+  updatedAt: Date;
 }
 
 export interface SessionUserType {

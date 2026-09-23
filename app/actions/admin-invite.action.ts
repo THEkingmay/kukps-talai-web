@@ -1,12 +1,15 @@
-import type { AdminInvite } from "~/types";
+import type { AdminInvite, InviteRole } from "~/types";
 import apiClient from "~/configs/axios";
 import axios from "axios";
 export type ActionResult<T = unknown> =
   { success: true; data: T } | { success: false; error: string };
 
-export async function addAdminInvite(email: string) : Promise<ActionResult<{data: AdminInvite}>> {
+export async function addAdminInvite(
+  email: string,
+  role: InviteRole,
+): Promise<ActionResult<{ data: AdminInvite }>> {
   try {
-    const response = await apiClient.post("/admin-invites", { email });
+    const response = await apiClient.post("/admin-invites", { email, role });
     return { success: true, data: response.data };
   } catch (err) {
     if (axios.isAxiosError(err)) {
@@ -23,7 +26,9 @@ export async function addAdminInvite(email: string) : Promise<ActionResult<{data
     };
   }
 }
-export async function getAdminInvites() : Promise<ActionResult<{data: AdminInvite[]}>> {
+export async function getAdminInvites(): Promise<
+  ActionResult<{ data: AdminInvite[] }>
+> {
   try {
     const response = await apiClient.get("/admin-invites");
     return { success: true, data: response.data };
@@ -42,7 +47,9 @@ export async function getAdminInvites() : Promise<ActionResult<{data: AdminInvit
     };
   }
 }
-export async function deleteAdminInvite(email : string) : Promise<ActionResult<{message: string}>> {
+export async function deleteAdminInvite(
+  email: string,
+): Promise<ActionResult<{ message: string }>> {
   try {
     const response = await apiClient.delete(`/admin-invites/${email}`);
     return { success: true, data: response.data };
@@ -53,7 +60,8 @@ export async function deleteAdminInvite(email : string) : Promise<ActionResult<{
         error:
           err.response?.data?.message ?? err.message ?? "ลบข้อมูลไม่สำเร็จ",
       };
-    }return {
+    }
+    return {
       success: false,
       error: "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ",
     };

@@ -124,8 +124,11 @@ export default function CarsComponent() {
   const metrics = useMemo(() => {
     return {
       total: cars.length,
-      active: cars.filter((c) => c.status === "active" && c.deletedAt === null).length,
-      inactive: cars.filter((c) => c.status !== "active" && c.deletedAt === null).length,
+      active: cars.filter((c) => c.status === "active" && c.deletedAt === null)
+        .length,
+      inactive: cars.filter(
+        (c) => c.status !== "active" && c.deletedAt === null,
+      ).length,
       deleted: cars.filter((c) => c.deletedAt !== null).length,
     };
   }, [cars]);
@@ -170,7 +173,9 @@ export default function CarsComponent() {
       } else {
         alert({
           title: "เพิ่มรถไม่สำเร็จ",
-          description: res.error,
+          description: res.error.includes("duplicate key value")
+            ? "หมายเลขรถนี้มีอยู่แล้ว"
+            : res.error,
         });
       }
     } catch {
@@ -325,13 +330,13 @@ export default function CarsComponent() {
       )
         return false;
       if (routeFilter !== "all" && car.routeId !== routeFilter) return false;
-      
+
       if (statusFilter === "deleted") {
         if (car.deletedAt === null) return false;
       } else if (statusFilter !== "all") {
         if (car.status !== statusFilter || car.deletedAt !== null) return false;
       } else {
-        // all doesn't filter by status, but maybe we should still show deleted cars if "all" is selected, or we only show them if "deleted" is selected? 
+        // all doesn't filter by status, but maybe we should still show deleted cars if "all" is selected, or we only show them if "deleted" is selected?
         // Based on the user's requirement, "deleted" is a status filter option, so "all" would show everything including deleted.
       }
       return true;

@@ -14,4 +14,7 @@ export default [
     route("auth", "routes/auth/page.tsx"),
     route("auth/reset-password", "routes/auth/reset_password/page.tsx"),
   ]),
+  layout("routes/driver/layout.tsx", [
+    route("driver/dashboard", "routes/driver/dashboard/page.tsx"),
+  ]),
 ] satisfies RouteConfig;
