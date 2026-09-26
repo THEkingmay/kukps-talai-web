@@ -195,7 +195,9 @@ export default function AdminInviteComponent() {
       {/* Vercel-style Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Admin Invites</h2>
+          <h2 className="text-2xl font-bold tracking-tight">
+            การเชิญผู้ดูแลระบบและเจ้าหน้าที่
+          </h2>
           <p className="text-muted-foreground text-sm">
             สร้างและบริหารจัดการสิทธิ์รหัสเชิญสำหรับเจ้าหน้าที่ผู้ดูแลระบบรายใหม่
             (@ku.th)

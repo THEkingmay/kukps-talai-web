@@ -348,7 +348,7 @@ export default function CarsComponent() {
       {/* Vercel-style Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Vehicles</h2>
+          <h2 className="text-2xl font-bold tracking-tight">รถตะไล</h2>
           <p className="text-muted-foreground text-sm">
             จัดการข้อมูลรถตะไลประจำสาย และข้อมูลการเดินรถเบื้องต้น
           </p>

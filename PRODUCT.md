@@ -16,7 +16,7 @@ Strictly university staff and administrators (Super Admin and Admin roles) manag
 
 ## Product Purpose
 
-An admin dashboard for managing campus shuttle buses ("รถตะลัย") at Kasetsart University Kamphaeng Saen. It facilitates route configuration, station management, vehicle tracking, and administrative access control. Success is defined by secure access, real-time accuracy of the fleet monitor, and intuitive management of complex routing configurations.
+An admin dashboard for managing campus shuttle buses ("รถตะไล") at Kasetsart University Kamphaeng Saen. It facilitates route configuration, station management, vehicle tracking, and administrative access control. Success is defined by secure access, real-time accuracy of the fleet monitor, and intuitive management of complex routing configurations.
 
 ## Positioning
 

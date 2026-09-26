@@ -142,7 +142,9 @@ export default function UserComponent() {
             });
             setUsers((prev) =>
               prev.map((u) =>
-                u.id === userToDelete.id ? { ...u, deletedAt: new Date().toISOString() } : u,
+                u.id === userToDelete.id
+                  ? { ...u, deletedAt: new Date().toISOString() }
+                  : u,
               ),
             );
           } else {
@@ -189,7 +191,7 @@ export default function UserComponent() {
       {/* Vercel-style Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Users</h2>
+          <h2 className="text-2xl font-bold tracking-tight">ผู้ใช้งาน</h2>
           <p className="text-muted-foreground text-sm">
             จัดการบัญชีผู้ใช้งานและตรวจสอบสถานะการเข้าใช้งานระบบ
           </p>

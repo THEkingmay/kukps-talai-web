@@ -304,14 +304,20 @@ export default function RoutesComponent() {
       {/* Vercel-style Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Routes</h2>
+          <h2 className="text-2xl font-bold tracking-tight">สายการเดินรถ</h2>
           <p className="text-muted-foreground text-sm">
             จัดการเส้นทางเดินรถและจุดจอดต่างๆ ของรถตะไล
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => fetchRoutesData(false)} disabled={isLoading}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+          <Button
+            variant="outline"
+            onClick={() => fetchRoutesData(false)}
+            disabled={isLoading}
+          >
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
             รีเฟรช
           </Button>
           <Button onClick={() => setIsCreateModalOpen(true)}>
@@ -352,37 +358,37 @@ export default function RoutesComponent() {
           </div>
         </div>
 
-      {/* Content Area */}
-      <div className="p-0">
-        {/* Error Banner */}
-        {error && (
-          <div className="m-4 p-4 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center justify-between">
-            <span>{error}</span>
-            <button
-              onClick={() => fetchRoutesData(false)}
-              className="underline font-semibold hover:text-destructive/80"
-            >
-              ลองอีกครั้ง
-            </button>
-          </div>
-        )}
+        {/* Content Area */}
+        <div className="p-0">
+          {/* Error Banner */}
+          {error && (
+            <div className="m-4 p-4 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center justify-between">
+              <span>{error}</span>
+              <button
+                onClick={() => fetchRoutesData(false)}
+                className="underline font-semibold hover:text-destructive/80"
+              >
+                ลองอีกครั้ง
+              </button>
+            </div>
+          )}
 
-        <RouteTable
-          routes={routes}
-          filteredRoutes={filteredRoutes}
-          isLoading={isLoading}
-          deletingId={deletingId}
-          onOpenDetail={handleOpenDetailModal}
-          onOpenEdit={(r) => {
-            setEditingRoute(r);
-            setEditRouteName(r.name);
-          }}
-          onOpenPoints={(r) => setPointsRoute(r)}
-          onDelete={handleDelete}
-          onRestore={handleRestore}
-          formatDate={formatDate}
-        />
-      </div>
+          <RouteTable
+            routes={routes}
+            filteredRoutes={filteredRoutes}
+            isLoading={isLoading}
+            deletingId={deletingId}
+            onOpenDetail={handleOpenDetailModal}
+            onOpenEdit={(r) => {
+              setEditingRoute(r);
+              setEditRouteName(r.name);
+            }}
+            onOpenPoints={(r) => setPointsRoute(r)}
+            onDelete={handleDelete}
+            onRestore={handleRestore}
+            formatDate={formatDate}
+          />
+        </div>
       </div>
 
       {/* Detail Modal */}
