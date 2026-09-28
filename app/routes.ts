@@ -17,4 +17,5 @@ export default [
   layout("routes/driver/layout.tsx", [
     route("driver/dashboard", "routes/driver/dashboard/page.tsx"),
   ]),
+  layout("routes/eta/layout.tsx", [route("eta", "routes/eta/page.tsx")]),
 ] satisfies RouteConfig;

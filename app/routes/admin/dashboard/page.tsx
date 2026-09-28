@@ -6,6 +6,7 @@ import CarsComponent from "./components/cars.component";
 import RoutesComponent from "./components/routes.component";
 import UserComponent from "./components/user.component";
 import AssignmentDriverComponent from "./components/assignment-driver.component";
+import EtaComponent from "./components/eta.component";
 
 import { ShieldAlert } from "lucide-react";
 
@@ -19,7 +20,8 @@ export function meta() {
   ];
 }
 
-type TabType = "users" | "invites" | "cars" | "routes" | "assignment-driver";
+type TabType =
+  "users" | "invites" | "cars" | "routes" | "assignment-driver" | "eta";
 
 export default function DashboardRoute() {
   const { user } = useAuth();
@@ -59,6 +61,11 @@ export default function DashboardRoute() {
                 label: "การจัดการงานผู้ขับรถ",
                 requiresSuperAdmin: false,
               },
+              {
+                id: "eta",
+                label: "ดูตำแหน่งรถแบบเรียลไทม์",
+                requiresSuperAdmin: false,
+              },
             ].map((item) => {
               const isDisabled = item.requiresSuperAdmin && !isSuperAdmin;
               const isActive = activeTab === item.id;
@@ -91,6 +98,7 @@ export default function DashboardRoute() {
           {activeTab === "cars" && <CarsComponent />}
           {activeTab === "routes" && <RoutesComponent />}
           {activeTab === "assignment-driver" && <AssignmentDriverComponent />}
+          {activeTab === "eta" && <EtaComponent role="admin" />}
         </div>
       </main>
     </div>
