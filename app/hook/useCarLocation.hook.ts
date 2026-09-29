@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-import apiClient from "~/configs/axios";
-import type {} from "~/types";
+import { useEffect, useRef, useState } from "react";
+import apiClient, { publicApiClient } from "~/configs/axios";
 
 export interface CarLocationUpdate {
   carId: string;
@@ -15,31 +14,42 @@ export function useCarLocation(wsUrl: string) {
     CarLocationUpdate[] | null
   >(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [reconnectTimeout, setReconnectTimeout] =
-    useState<NodeJS.Timeout | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const unmountedRef = useRef(false);
+
   useEffect(() => {
-    const ws = new WebSocket(wsUrl);
+    unmountedRef.current = false;
+
     const fetchInitialLocation = async () => {
       try {
-        const res = await apiClient.get(`/cars/live-positions`);
-        setCurrentLocation(res.data.data);
+        const res = await publicApiClient.get(`/cars/live-positions`);
+        if (!unmountedRef.current) setCurrentLocation(res.data.data);
       } catch (error) {
         console.error(error);
       }
     };
 
     const connect = () => {
+      if (unmountedRef.current) return;
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+
       ws.onopen = () => {
-        setIsConnected(true);
+        if (!unmountedRef.current) setIsConnected(true);
       };
       ws.onclose = () => {
+        if (unmountedRef.current) return;
         setIsConnected(false);
-        // ลองต่อใหม่หลังจากผ่านไป 3 วินาที
-        setReconnectTimeout(setTimeout(connect, 3000));
+        reconnectTimerRef.current = setTimeout(connect, 3000);
+      };
+      ws.onerror = () => {
+        ws.close();
       };
       ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        // แก้แค่ไอดีนั้นๆ
+        if (unmountedRef.current) return;
+        const data = JSON.parse(event.data) as
+          CarLocationUpdate | CarLocationUpdate[];
         if (Array.isArray(data)) {
           setCurrentLocation(data);
         } else {
@@ -55,20 +65,14 @@ export function useCarLocation(wsUrl: string) {
           });
         }
       };
-      ws.onerror = () => {
-        setIsConnected(false);
-        if (reconnectTimeout) clearTimeout(reconnectTimeout);
-        setReconnectTimeout(
-          setTimeout(() => {
-            ws.close();
-          }, 0),
-        );
-      };
     };
+
     fetchInitialLocation().then(connect);
+
     return () => {
-      if (reconnectTimeout) clearTimeout(reconnectTimeout);
-      if (ws) ws.close();
+      unmountedRef.current = true;
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      if (wsRef.current) wsRef.current.close();
     };
   }, [wsUrl]);
 

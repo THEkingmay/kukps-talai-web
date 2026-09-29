@@ -9,3 +9,14 @@ const apiClient = axios.create({
 });
 
 export default apiClient;
+
+const MOBILE_TOKEN = import.meta.env.VITE_MOBILE_ACCESS_TOKEN as
+  string | undefined;
+
+export const publicApiClient = axios.create({
+  baseURL: BASE_URL,
+  withCredentials: false,
+  headers: {
+    ...(MOBILE_TOKEN ? { "x-mobile-token": MOBILE_TOKEN } : {}),
+  },
+});

@@ -6,7 +6,7 @@ import CarsComponent from "./components/cars.component";
 import RoutesComponent from "./components/routes.component";
 import UserComponent from "./components/user.component";
 import AssignmentDriverComponent from "./components/assignment-driver.component";
-import EtaComponent from "./components/eta.component";
+import EtaView from "./components/eta/EtaView";
 
 import { ShieldAlert } from "lucide-react";
 
@@ -38,12 +38,12 @@ export default function DashboardRoute() {
   }, [isSuperAdmin]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="flex h-screen flex-col bg-background text-foreground">
       {/* Top Navigation */}
       <Navbar />
 
       {/* Main Full-Screen Layout */}
-      <main className="flex flex-col md:flex-row flex-1 w-full">
+      <main className="flex flex-1 min-h-0 flex-col md:flex-row w-full">
         {/* Sidebar / Mobile Nav */}
         <aside className="w-full md:w-56 lg:w-56 shrink-0 border-b md:border-b-0 md:border-r border-border p-4">
           <nav className="flex md:flex-col gap-1 overflow-x-auto pb-2 md:pb-0 scrollbar-none [&::-webkit-scrollbar]:hidden">
@@ -92,13 +92,16 @@ export default function DashboardRoute() {
         </aside>
 
         {/* Main Content */}
-        <div className="flex-1 min-w-0 p-4 md:p-6 lg:p-8 outline-none">
+        <div className={activeTab === "eta"
+          ? "flex-1 min-w-0 min-h-0 overflow-hidden"
+          : "flex-1 min-w-0 p-4 md:p-6 lg:p-8 overflow-auto outline-none"
+        }>
           {activeTab === "users" && <UserComponent />}
           {activeTab === "invites" && <AdminInviteComponent />}
           {activeTab === "cars" && <CarsComponent />}
           {activeTab === "routes" && <RoutesComponent />}
           {activeTab === "assignment-driver" && <AssignmentDriverComponent />}
-          {activeTab === "eta" && <EtaComponent role="admin" />}
+          {activeTab === "eta" && <EtaView role="admin" />}
         </div>
       </main>
     </div>
