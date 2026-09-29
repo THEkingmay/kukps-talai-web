@@ -11,6 +11,7 @@ import { useCarLocation } from "~/hook/useCarLocation.hook";
 import type { ResponseCarData, Route, RoutePoint } from "~/types";
 import EtaCarCard from "./EtaCarCard";
 import EtaSidebar from "./EtaSidebar";
+import { ClientOnly } from "~/components/client-only";
 
 // Lazy import — Leaflet uses `window` and cannot run on the server (SSR)
 const EtaMap = lazy(() => import("./EtaMap"));
@@ -86,7 +87,7 @@ export default function EtaView({ role }: EtaViewProps) {
 
       {/* Map area */}
       <div className="flex-1 relative min-h-0">
-        <Suspense
+        <ClientOnly
           fallback={
             <div className="h-full w-full animate-pulse bg-muted flex items-center justify-center">
               <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
@@ -95,19 +96,29 @@ export default function EtaView({ role }: EtaViewProps) {
             </div>
           }
         >
-          <EtaMap
-            role={role}
-            currentLocation={currentLocation}
-            routePoints={routePoints.filter(
-              (r) => r.routeId === selectedRouteId,
-            )}
-            selectedRouteId={selectedRouteId}
-            selectedCarId={selectedCarId}
-            carIdsInRoute={carIdsInRoute}
-            onCarSelect={setSelectedCarId}
-            isConnected={isConnected}
-          />
-        </Suspense>
+          <Suspense
+            fallback={
+              <div className="h-full w-full animate-pulse bg-muted flex items-center justify-center">
+                <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
+                  กำลังโหลดแผนที่...
+                </span>
+              </div>
+            }
+          >
+            <EtaMap
+              role={role}
+              currentLocation={currentLocation}
+              routePoints={routePoints.filter(
+                (r) => r.routeId === selectedRouteId,
+              )}
+              selectedRouteId={selectedRouteId}
+              selectedCarId={selectedCarId}
+              carIdsInRoute={carIdsInRoute}
+              onCarSelect={setSelectedCarId}
+              isConnected={isConnected}
+            />
+          </Suspense>
+        </ClientOnly>
         {selectedCarId && (
           <div className="absolute bottom-20 left-4 z-[1001] md:bottom-6">
             <EtaCarCard
