@@ -58,11 +58,6 @@ export default function EtaCarCard({
           </span>
         </div>
 
-        {/* Admin only — driver placeholder */}
-        {role === "admin" && (
-          <div className="text-xs text-muted-foreground font-mono">คนขับ: —</div>
-        )}
-
         {/* Separator */}
         <div className="h-px bg-border" />
 
@@ -75,7 +70,7 @@ export default function EtaCarCard({
         {/* Coordinates */}
         {loc && (
           <div className="text-[10px] font-mono text-muted-foreground/70 tabular-nums">
-            {loc.lat.toFixed(5)}, {loc.lng.toFixed(5)}
+            {loc.lat}, {loc.lng}
           </div>
         )}
       </div>

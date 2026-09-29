@@ -5,7 +5,7 @@ import {
   createPoints,
   updatePoint,
   deletePoint,
-} from "~/actions/route-poimts.action";
+} from "~/actions/route-points.action";
 import {
   Sheet,
   SheetContent,
@@ -462,7 +462,10 @@ export default function RoutePointModal({
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="w-full !max-w-[95vw] sm:!max-w-[95vw] xl:!max-w-[95vw] p-0 flex flex-col h-full bg-background border-border" showCloseButton={false}>
+      <SheetContent
+        className="w-full !max-w-[95vw] sm:!max-w-[95vw] xl:!max-w-[95vw] p-0 flex flex-col h-full bg-background border-border"
+        showCloseButton={false}
+      >
         {/* Header */}
         <div className="p-5 sm:p-6 border-b border-border flex items-center justify-between bg-background shrink-0">
           <SheetHeader className="flex flex-row items-center gap-4 space-y-0 text-left">

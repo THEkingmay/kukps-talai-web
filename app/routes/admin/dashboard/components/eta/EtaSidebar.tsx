@@ -81,12 +81,9 @@ export default function EtaSidebar({
             >
               <span className="w-2 h-2 rounded-full shrink-0 bg-green-500 animate-pulse" />
               <div className="flex-1 min-w-0">
-                <p className="font-mono text-sm font-medium truncate">{car.carNumber}</p>
-                {role === "admin" && (
-                  <p className="text-[11px] text-muted-foreground font-mono truncate">
-                    คนขับ: —
-                  </p>
-                )}
+                <p className="font-mono text-sm font-medium truncate">
+                  {car.carNumber}
+                </p>
               </div>
             </button>
           );

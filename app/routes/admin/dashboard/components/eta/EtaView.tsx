@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { getCars } from "~/actions/car.action";
 import { getRoutes } from "~/actions/route.action";
-import { getRoutePointsByRouteId } from "~/actions/route-poimts.action";
+import { getAllRoutePoints } from "~/actions/route-points.action";
 import {
   getCarsPublic,
   getRoutesPublic,
-  getRoutePointsByRouteIdPublic,
+  getAllRoutePointsPublic,
 } from "~/actions/public-eta.action";
 import { useCarLocation } from "~/hook/useCarLocation.hook";
 import type { ResponseCarData, Route, RoutePoint } from "~/types";
@@ -41,31 +41,23 @@ export default function EtaView({ role }: EtaViewProps) {
         if (routesData.success) {
           setRoutes(routesData.data.data);
           setSelectedRouteId(routesData.data.data[0]?.id ?? null);
+          if (role === "user") {
+            getAllRoutePointsPublic().then((data) => {
+              if (data.success) setRoutePoints(data.data.data);
+            });
+          } else {
+            getAllRoutePoints().then((data) => {
+              if (data.success) setRoutePoints(data.data.data);
+            });
+          }
         }
       } catch (err) {
         console.error(err);
       }
     };
+
     fetchData();
   }, [role]);
-
-  // Fetch routePoints when selectedRouteId changes
-  useEffect(() => {
-    if (!selectedRouteId) return;
-    const fetchPoints = async () => {
-      try {
-        const res =
-          role === "user"
-            ? await getRoutePointsByRouteIdPublic(selectedRouteId)
-            : await getRoutePointsByRouteId(selectedRouteId);
-        if (res.success) setRoutePoints(res.data.data);
-        else setRoutePoints([]);
-      } catch {
-        setRoutePoints([]);
-      }
-    };
-    fetchPoints();
-  }, [selectedRouteId, role]);
 
   const carIdsInRoute = useMemo(
     () => cars.filter((c) => c.routeId === selectedRouteId).map((c) => c.id),
@@ -106,7 +98,9 @@ export default function EtaView({ role }: EtaViewProps) {
           <EtaMap
             role={role}
             currentLocation={currentLocation}
-            routePoints={routePoints}
+            routePoints={routePoints.filter(
+              (r) => r.routeId === selectedRouteId,
+            )}
             selectedRouteId={selectedRouteId}
             selectedCarId={selectedCarId}
             carIdsInRoute={carIdsInRoute}

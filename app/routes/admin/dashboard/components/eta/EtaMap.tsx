@@ -1,6 +1,13 @@
 // This component is client-only (react-leaflet does not support SSR)
 import { useEffect, useMemo, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Polyline,
+  useMap,
+} from "react-leaflet";
 import L from "leaflet";
 import type { RoutePoint } from "~/types";
 import type { CarLocationUpdate } from "~/hook/useCarLocation.hook";
@@ -76,7 +83,9 @@ export default function EtaMap({
 }: EtaMapProps) {
   // Deduplicate named stops (same logic as CarDetailMap lines 76-105)
   const filteredRoutePoints = useMemo(() => {
-    const routeStops = routePoints.filter((r) => r.name !== null && r.name !== "");
+    const routeStops = routePoints.filter(
+      (r) => r.name !== null && r.name !== "",
+    );
     const result: { text: string; lat: number; lng: number }[] = [];
     const hasPosition: { lat: number; lng: number }[] = [];
 
@@ -163,18 +172,6 @@ export default function EtaMap({
           currentLocation={currentLocation}
         />
       </MapContainer>
-
-      {/* Connection status overlay */}
-      <div className="absolute top-3 right-3 z-[1000] flex items-center gap-1.5 bg-background/90 backdrop-blur-sm border border-border rounded-md px-2.5 py-1.5 shadow-sm">
-        <span
-          className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-            isConnected ? "bg-green-500 animate-pulse" : "bg-red-400"
-          }`}
-        />
-        <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
-          {isConnected ? "Live" : "กำลังเชื่อมต่อ..."}
-        </span>
-      </div>
 
       {/* Loading overlay when currentLocation is null */}
       {currentLocation === null && (

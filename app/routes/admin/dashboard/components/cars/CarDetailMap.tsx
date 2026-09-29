@@ -10,7 +10,7 @@ import {
 import L from "leaflet";
 import type { ResponseCarData, RoutePoint } from "~/types";
 import { useCarLocation } from "~/hook/useCarLocation.hook";
-import { getRoutePointsByRouteId } from "~/actions/route-poimts.action";
+import { getRoutePointsByRouteId } from "~/actions/route-points.action";
 
 const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:3000";
 const KUKPS_CENTER: [number, number] = [14.02372, 99.97487];
