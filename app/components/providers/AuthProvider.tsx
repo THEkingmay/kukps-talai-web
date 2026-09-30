@@ -6,6 +6,7 @@ import {
   registerAction,
   logoutAction,
 } from "~/actions/auth.action";
+import { updateProfileAction } from "~/actions/user.action";
 import { useDialog } from "./DialogProvider";
 
 interface AuthContextProps {
@@ -17,6 +18,11 @@ interface AuthContextProps {
     password: string,
     invite_code: string,
   ) => Promise<void>;
+  updateProfile: (
+    firstName: string | null,
+    lastName: string | null,
+    profileImage: File | null,
+  ) => Promise<void>;
   user: User | null;
 }
 
@@ -25,6 +31,7 @@ const AuthContext = createContext<AuthContextProps>({
   login: async (_email, _password) => {},
   logout: async () => {},
   register: async (_email, _password, _invite_code) => {},
+  updateProfile: async (_firstName, _lastName, _profileImage) => {},
   user: null,
 });
 
@@ -95,8 +102,33 @@ export default function AuthProvider({
     setUser(null);
   };
 
+  const updateProfile = async (
+    firstName: string | null,
+    lastName: string | null,
+    profileImage: File | null,
+  ) => {
+    if (!user) return;
+    const result = await updateProfileAction(
+      user.id,
+      firstName,
+      lastName,
+      profileImage,
+    );
+
+    if (!result.success) {
+      alert({
+        title: "อัปเดตโปรไฟล์ไม่สำเร็จ",
+        description: result.error,
+      });
+      return;
+    }
+    setUser(result.data.user);
+  };
+
   return (
-    <AuthContext.Provider value={{ isLoading, login, logout, register, user }}>
+    <AuthContext.Provider
+      value={{ isLoading, login, logout, register, updateProfile, user }}
+    >
       {children}
     </AuthContext.Provider>
   );

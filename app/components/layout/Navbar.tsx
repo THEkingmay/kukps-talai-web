@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Link } from "react-router";
 import { Bus, LogOut, Settings, User } from "lucide-react";
 import { useAuth } from "~/components/providers/AuthProvider";
 import { useDialog } from "~/components/providers/DialogProvider";
+import { UserProfileSheet } from "~/components/layout/UserProfileSheet";
 
 import { ModeToggle } from "~/components/mode-toggle";
 import {
@@ -13,12 +15,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "~/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { confirm } = useDialog();
+  const [isProfileSheetOpen, setIsProfileSheetOpen] = useState(false);
 
   const handleLogout = () => {
     confirm({
@@ -52,6 +55,12 @@ export default function Navbar() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8 border">
+                  {user?.profileImageUrl && (
+                    <AvatarImage
+                      src={user.profileImageUrl}
+                      alt={user?.email || "User"}
+                    />
+                  )}
                   <AvatarFallback className="bg-primary/10 text-primary font-mono text-xs">
                     {userInitial}
                   </AvatarFallback>
@@ -69,18 +78,14 @@ export default function Navbar() {
                   </p>
                 </div>
               </DropdownMenuLabel>
-              {/*<DropdownMenuSeparator />
+              <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem disabled>
+                <DropdownMenuItem onSelect={() => setIsProfileSheetOpen(true)}>
                   <User className="mr-2 h-4 w-4" />
-                  <span>โปรไฟล์ (เร็วๆ นี้)</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem disabled>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>ตั้งค่า (เร็วๆ นี้)</span>
+                  <span>โปรไฟล์</span>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
-              <DropdownMenuSeparator />*/}
+              <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={handleLogout}
                 className="text-destructive focus:bg-destructive/10 focus:text-destructive"
@@ -92,6 +97,11 @@ export default function Navbar() {
           </DropdownMenu>
         </div>
       </div>
+
+      <UserProfileSheet
+        open={isProfileSheetOpen}
+        onOpenChange={setIsProfileSheetOpen}
+      />
     </header>
   );
 }

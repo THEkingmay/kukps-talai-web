@@ -6,9 +6,12 @@ export type InviteRole = "superadmin" | "admin" | "driver";
 export interface User {
   id: string;
   email: string;
-  role: UserRole;
-  createdAt: string;
-  deletedAt: string | null;
+  role: "superadmin" | "admin" | "user" | "driver";
+  firstName: string | null;
+  lastName: string | null;
+  profileImageUrl: string | null;
+  createdAt: Date;
+  deletedAt: Date | null;
 }
 
 export interface AdminInvite {

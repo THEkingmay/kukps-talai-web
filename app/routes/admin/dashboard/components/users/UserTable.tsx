@@ -28,7 +28,7 @@ interface UserTableProps {
   onRestoreUser: (user: User) => void;
   onDeleteUser: (user: User) => void;
   onRefresh: () => void;
-  formatDate: (dateStr: string) => string;
+  formatDate: (dateInput?: Date | string | null) => string;
 }
 
 export default function UserTable({

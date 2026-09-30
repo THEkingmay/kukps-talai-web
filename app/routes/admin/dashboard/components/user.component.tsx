@@ -9,6 +9,8 @@ import UserSearchToolbar from "./users/UserSearchToolbar";
 import UserTable from "./users/UserTable";
 import UserAccessRestricted from "./users/UserAccessRestricted";
 
+import { formatDate } from "~/helper";
+
 type StatusFilter = "all" | "active" | "deleted";
 type RoleFilter = "all" | UserRole;
 
@@ -142,9 +144,7 @@ export default function UserComponent() {
             });
             setUsers((prev) =>
               prev.map((u) =>
-                u.id === userToDelete.id
-                  ? { ...u, deletedAt: new Date().toISOString() }
-                  : u,
+                u.id === userToDelete.id ? { ...u, deletedAt: new Date() } : u,
               ),
             );
           } else {
@@ -164,23 +164,6 @@ export default function UserComponent() {
       },
     });
   };
-
-  const formatDate = (dateStr: string): string => {
-    try {
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return dateStr;
-      return d.toLocaleDateString("th-TH", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
   // Access Restriction Guard
   if (!isSuperAdmin) {
     return <UserAccessRestricted />;
