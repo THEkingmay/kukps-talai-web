@@ -15,6 +15,8 @@ import { DialogProvider } from "./components/providers/DialogProvider";
 import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "./components/ui/tooltip";
 
+import WebsocketProvider from "./components/providers/WebsocketProvider";
+
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
@@ -38,10 +40,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased font-sans">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <TooltipProvider>
-            {children}
-          </TooltipProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <TooltipProvider>{children}</TooltipProvider>
         </ThemeProvider>
         <ScrollRestoration />
         <Scripts />
@@ -53,9 +58,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <DialogProvider>
-      <AuthProvider>
-        <Outlet />
-      </AuthProvider>
+      <WebsocketProvider>
+        <AuthProvider>
+          <Outlet />
+        </AuthProvider>
+      </WebsocketProvider>
     </DialogProvider>
   );
 }
@@ -80,10 +87,22 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     <main className="min-h-screen flex items-center justify-center p-6 bg-gray-50 font-sans">
       <div className="max-w-2xl w-full bg-white border border-gray-200 shadow-sm rounded-lg overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100 flex items-center space-x-3 bg-red-50">
-          <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          <svg
+            className="w-6 h-6 text-red-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
           </svg>
-          <h1 className="text-lg font-semibold text-red-800 tracking-tight">System Alert: {message}</h1>
+          <h1 className="text-lg font-semibold text-red-800 tracking-tight">
+            System Alert: {message}
+          </h1>
         </div>
         <div className="p-6">
           <p className="text-gray-700 font-medium mb-4">{details}</p>
@@ -98,7 +117,10 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
             </div>
           )}
           <div className="mt-6">
-            <a href="/" className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition-colors">
+            <a
+              href="/"
+              className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition-colors"
+            >
               Return to Control Panel
             </a>
           </div>

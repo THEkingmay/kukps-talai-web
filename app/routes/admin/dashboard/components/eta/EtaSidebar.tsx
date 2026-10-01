@@ -4,13 +4,13 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/lib/utils";
 import EtaRouteTabs from "./EtaRouteTabs";
 import type { Route, ResponseCarData } from "~/types";
-import type { CarLocationUpdate } from "~/hook/useCarLocation.hook";
+import type { WebsocketMessageTypeLocation } from "~/components/providers/WebsocketProvider";
 
 interface EtaSidebarProps {
   role: "admin" | "user";
   routes: Route[];
   cars: ResponseCarData[];
-  currentLocation: CarLocationUpdate[] | null;
+  currentLocation: Omit<WebsocketMessageTypeLocation, "type">[] | null;
   selectedRouteId: string | null;
   selectedCarId: string | null;
   onRouteSelect: (routeId: string) => void;

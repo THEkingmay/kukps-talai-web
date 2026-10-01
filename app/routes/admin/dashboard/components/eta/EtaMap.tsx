@@ -10,7 +10,7 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import type { RoutePoint } from "~/types";
-import type { CarLocationUpdate } from "~/hook/useCarLocation.hook";
+import type { WebsocketMessageTypeLocation } from "~/components/providers/WebsocketProvider";
 
 const KUKPS_CENTER: [number, number] = [14.02372, 99.97487];
 
@@ -44,7 +44,7 @@ function FlyToSelectedCar({
   currentLocation,
 }: {
   selectedCarId: string | null;
-  currentLocation: CarLocationUpdate[] | null;
+  currentLocation: Omit<WebsocketMessageTypeLocation, "type">[] | null;
 }) {
   const map = useMap();
   const [lastFlownId, setLastFlownId] = useState<string | null>(null);
@@ -63,7 +63,7 @@ function FlyToSelectedCar({
 
 export interface EtaMapProps {
   role: "admin" | "user";
-  currentLocation: CarLocationUpdate[] | null;
+  currentLocation: Omit<WebsocketMessageTypeLocation, "type">[] | null;
   routePoints: RoutePoint[];
   selectedRouteId: string | null;
   selectedCarId: string | null;

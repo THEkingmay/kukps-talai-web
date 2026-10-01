@@ -1,12 +1,12 @@
 import { Bus, X } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import type { ResponseCarData } from "~/types";
-import type { CarLocationUpdate } from "~/hook/useCarLocation.hook";
+import type { WebsocketMessageTypeLocation } from "~/components/providers/WebsocketProvider";
 
 interface EtaCarCardProps {
   carId: string;
   cars: ResponseCarData[];
-  currentLocation: CarLocationUpdate[] | null;
+  currentLocation: Omit<WebsocketMessageTypeLocation, "type">[] | null;
   role: "admin" | "user";
   onClose: () => void;
 }

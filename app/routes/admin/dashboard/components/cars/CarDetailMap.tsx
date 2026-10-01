@@ -9,8 +9,8 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import type { ResponseCarData, RoutePoint } from "~/types";
-import { useCarLocation } from "~/hook/useCarLocation.hook";
 import { getRoutePointsByRouteId } from "~/actions/route-points.action";
+import { useWebsocket } from "~/components/providers/WebsocketProvider";
 
 const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:3000";
 const KUKPS_CENTER: [number, number] = [14.02372, 99.97487];
@@ -66,7 +66,7 @@ function formatTime(date: Date) {
 }
 
 export default function CarDetailMap({ car }: CarDetailMapProps) {
-  const { currentLocation } = useCarLocation(WS_URL);
+  const { currentLocation } = useWebsocket();
 
   const loc = currentLocation?.find((l) => l.carId === car?.id);
   const position: [number, number] | null = loc ? [loc.lat, loc.lng] : null;

@@ -7,7 +7,7 @@ import {
   getRoutesPublic,
   getAllRoutePointsPublic,
 } from "~/actions/public-eta.action";
-import { useCarLocation } from "~/hook/useCarLocation.hook";
+import { useWebsocket } from "~/components/providers/WebsocketProvider";
 import type { ResponseCarData, Route, RoutePoint } from "~/types";
 import EtaCarCard from "./EtaCarCard";
 import EtaSidebar from "./EtaSidebar";
@@ -28,7 +28,7 @@ export default function EtaView({ role }: EtaViewProps) {
   const [routePoints, setRoutePoints] = useState<RoutePoint[]>([]);
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null);
-  const { currentLocation, isConnected } = useCarLocation(WS_URL);
+  const { currentLocation, isConnected } = useWebsocket();
 
   // Initial fetch
   useEffect(() => {
