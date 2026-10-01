@@ -12,6 +12,7 @@ export interface User {
   profileImageUrl: string | null;
   createdAt: Date;
   deletedAt: Date | null;
+  phoneNumber: string | null;
 }
 
 export interface AdminInvite {

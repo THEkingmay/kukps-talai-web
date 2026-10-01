@@ -1,4 +1,5 @@
 import type { Route } from "~/types";
+import { TableSkeleton } from "~/components/ui/Loading";
 import { Eye, Pencil, Trash2, Route as RouteIcon, MapPin, Loader2, Lock } from "lucide-react";
 import {
   Table,
@@ -50,14 +51,16 @@ export default function RouteTable({
         </TableHeader>
         <TableBody>
           {isLoading ? (
-            <TableRow>
-              <TableCell colSpan={5} className="h-24 text-center">
-                <div className="flex flex-col items-center justify-center text-muted-foreground">
-                  <Loader2 className="mb-2 h-6 w-6 animate-spin" />
-                  <span>กำลังโหลดข้อมูล...</span>
-                </div>
-              </TableCell>
-            </TableRow>
+            <TableSkeleton
+              rowCount={5}
+              columns={[
+                { type: "text" },
+                { type: "icon-text" },
+                { type: "text" },
+                { type: "text" },
+                { type: "actions", className: "text-right" },
+              ]}
+            />
           ) : filteredRoutes.length === 0 ? (
             <TableRow>
               <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">

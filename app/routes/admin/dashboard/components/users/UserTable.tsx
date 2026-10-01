@@ -1,4 +1,5 @@
 import type { User } from "~/types";
+import { TableSkeleton } from "~/components/ui/Loading";
 import {
   Lock,
   Trash2,
@@ -17,6 +18,7 @@ import {
 } from "~/components/ui/table";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 
 interface UserTableProps {
   users: User[];
@@ -48,7 +50,8 @@ export default function UserTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>บัญชีผู้ใช้ (Email & ID)</TableHead>
+            <TableHead>บัญชีผู้ใช้</TableHead>
+            <TableHead>เบอร์โทรศัพท์</TableHead>
             <TableHead>บทบาท (Role)</TableHead>
             <TableHead>สถานะ (Status)</TableHead>
             <TableHead>วันที่สร้าง</TableHead>
@@ -57,17 +60,20 @@ export default function UserTable({
         </TableHeader>
         <TableBody>
           {isLoading ? (
-            <TableRow>
-              <TableCell colSpan={5} className="h-24 text-center">
-                <div className="flex flex-col items-center justify-center text-muted-foreground">
-                  <Loader2 className="mb-2 h-6 w-6 animate-spin" />
-                  <span>กำลังโหลดข้อมูล...</span>
-                </div>
-              </TableCell>
-            </TableRow>
+            <TableSkeleton
+              rowCount={5}
+              columns={[
+                { type: "avatar-text" },
+                { type: "text" },
+                { type: "badge" },
+                { type: "badge" },
+                { type: "text" },
+                { type: "actions", className: "text-right" },
+              ]}
+            />
           ) : error ? (
             <TableRow>
-              <TableCell colSpan={5} className="h-24 text-center">
+              <TableCell colSpan={6} className="h-24 text-center">
                 <div className="flex flex-col items-center justify-center text-destructive">
                   <p className="mb-2">{error}</p>
                   <Button variant="outline" size="sm" onClick={onRefresh}>
@@ -79,7 +85,7 @@ export default function UserTable({
           ) : filteredUsers.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={5}
+                colSpan={6}
                 className="h-24 text-center text-muted-foreground"
               >
                 ไม่พบข้อมูลผู้ใช้งานที่ตรงกับเงื่อนไข
@@ -90,6 +96,7 @@ export default function UserTable({
               const isDeleted = item.deletedAt !== null;
               const isCurrent = item.id === currentUserId;
               const isUpdatingThis = updatingId === item.id;
+              const hasName = item.firstName || item.lastName;
 
               return (
                 <TableRow
@@ -97,20 +104,42 @@ export default function UserTable({
                   className={isDeleted ? "opacity-60 grayscale" : ""}
                 >
                   <TableCell>
-                    <div className="font-medium flex items-center gap-2">
-                      {item.email}
-                      {isCurrent && (
-                        <Badge
-                          variant="secondary"
-                          className="text-[10px] uppercase font-mono"
-                        >
-                          You
-                        </Badge>
-                      )}
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarImage
+                          src={item.profileImageUrl || ""}
+                          alt={hasName ? `${item.firstName || ""} ${item.lastName || ""}`.trim() : item.email}
+                        />
+                        <AvatarFallback>
+                          {(item.firstName?.[0] || item.email[0]).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium flex items-center gap-2">
+                          {hasName
+                            ? `${item.firstName || ""} ${item.lastName || ""}`.trim()
+                            : item.email}
+                          {isCurrent && (
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] uppercase font-mono"
+                            >
+                              You
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground font-mono mt-1">
+                          {hasName ? item.email : item.id}
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground font-mono mt-1">
-                      {item.id}
-                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {item.phoneNumber ? (
+                      <span className="font-mono">{item.phoneNumber}</span>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Badge

@@ -22,6 +22,7 @@ interface AuthContextProps {
     firstName: string | null,
     lastName: string | null,
     profileImage: File | null,
+    phoneNumber: string | null,
   ) => Promise<void>;
   user: User | null;
 }
@@ -31,7 +32,12 @@ const AuthContext = createContext<AuthContextProps>({
   login: async (_email, _password) => {},
   logout: async () => {},
   register: async (_email, _password, _invite_code) => {},
-  updateProfile: async (_firstName, _lastName, _profileImage) => {},
+  updateProfile: async (
+    _firstName,
+    _lastName,
+    _profileImage,
+    _phoneNumber,
+  ) => {},
   user: null,
 });
 
@@ -106,6 +112,7 @@ export default function AuthProvider({
     firstName: string | null,
     lastName: string | null,
     profileImage: File | null,
+    phoneNumber: string | null,
   ) => {
     if (!user) return;
     const result = await updateProfileAction(
@@ -113,6 +120,7 @@ export default function AuthProvider({
       firstName,
       lastName,
       profileImage,
+      phoneNumber,
     );
 
     if (!result.success) {

@@ -1,10 +1,12 @@
 import { Bus, CheckCircle2, XCircle, Trash2 } from "lucide-react";
+import { MetricsSkeleton } from "~/components/ui/Loading";
 
 interface CarMetricsProps {
   total: number;
   active: number;
   inactive: number;
   deleted: number;
+  isLoading?: boolean;
 }
 
 export default function CarMetrics({
@@ -12,7 +14,12 @@ export default function CarMetrics({
   active,
   inactive,
   deleted,
+  isLoading,
 }: CarMetricsProps) {
+  if (isLoading) {
+    return <MetricsSkeleton count={4} />;
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-6 py-2 px-1 text-sm">
       <div className="flex items-center gap-2">

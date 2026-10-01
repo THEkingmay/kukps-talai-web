@@ -1,16 +1,23 @@
 import { Users, ShieldCheck, Trash2 } from "lucide-react";
+import { MetricsSkeleton } from "~/components/ui/Loading";
 
 interface UserMetricsProps {
   total: number;
   active: number;
   deleted: number;
+  isLoading?: boolean;
 }
 
 export default function UserMetrics({
   total,
   active,
   deleted,
+  isLoading,
 }: UserMetricsProps) {
+  if (isLoading) {
+    return <MetricsSkeleton count={3} />;
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-6 py-2 px-1 text-sm">
       <div className="flex items-center gap-2">

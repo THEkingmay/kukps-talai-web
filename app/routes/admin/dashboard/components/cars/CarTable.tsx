@@ -1,4 +1,5 @@
 import type { ResponseCarData } from "~/types";
+import { TableSkeleton } from "~/components/ui/Loading";
 import {
   Bus,
   Eye,
@@ -60,14 +61,16 @@ export default function CarTable({
         </TableHeader>
         <TableBody>
           {isLoading ? (
-            <TableRow>
-              <TableCell colSpan={5} className="h-24 text-center">
-                <div className="flex flex-col items-center justify-center text-muted-foreground">
-                  <Loader2 className="mb-2 h-6 w-6 animate-spin" />
-                  <span>กำลังโหลดข้อมูล...</span>
-                </div>
-              </TableCell>
-            </TableRow>
+            <TableSkeleton
+              rowCount={5}
+              columns={[
+                { type: "icon-text" },
+                { type: "badge" },
+                { type: "badge" },
+                { type: "text" },
+                { type: "actions", className: "text-right" },
+              ]}
+            />
           ) : filteredCars.length === 0 ? (
             <TableRow>
               <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">

@@ -31,6 +31,8 @@ export function UserProfileSheet({
   const [isEditing, setIsEditing] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -57,6 +59,7 @@ export function UserProfileSheet({
   const handleEditClick = () => {
     setFirstName(user.firstName || "");
     setLastName(user.lastName || "");
+    setPhoneNumber(user.phoneNumber || "");
     setIsEditing(true);
   };
 
@@ -70,7 +73,7 @@ export function UserProfileSheet({
 
   const handleSave = async () => {
     setIsLoading(true);
-    await updateProfile(firstName, lastName, selectedFile);
+    await updateProfile(firstName, lastName, selectedFile, phoneNumber);
     setIsEditing(false);
     setSelectedFile(null);
     setPreviewUrl(null);
@@ -146,6 +149,16 @@ export function UserProfileSheet({
                   disabled={isLoading}
                 />
               </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="phoneNumber">เบอร์โทร</Label>
+                <Input
+                  id="phoneNumber"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="กรอกเบอร์โทรของคุณ"
+                  disabled={isLoading}
+                />
+              </div>
             </div>
           </div>
         ) : (
@@ -211,6 +224,12 @@ export function UserProfileSheet({
                   <span className="text-muted-foreground">นามสกุล</span>
                   <span className="font-medium text-right">
                     {user.lastName || "-"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between p-4 border-b border-border">
+                  <span className="text-muted-foreground">เบอร์โทร</span>
+                  <span className="font-medium text-right">
+                    {user.phoneNumber || "-"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between p-4">

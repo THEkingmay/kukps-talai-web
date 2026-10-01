@@ -347,6 +347,7 @@ export default function CarsComponent() {
         active={metrics.active}
         inactive={metrics.inactive}
         deleted={metrics.deleted}
+        isLoading={isLoading}
       />
 
       {/* Main Container */}

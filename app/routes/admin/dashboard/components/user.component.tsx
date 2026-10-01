@@ -70,7 +70,10 @@ export default function UserComponent() {
       const matchesSearch =
         query === "" ||
         u.email.toLowerCase().includes(query) ||
-        u.id.toLowerCase().includes(query);
+        u.id.toLowerCase().includes(query) ||
+        (u.firstName?.toLowerCase().includes(query) ?? false) ||
+        (u.lastName?.toLowerCase().includes(query) ?? false) ||
+        (u.phoneNumber?.toLowerCase().includes(query) ?? false);
 
       let matchesStatus = true;
       if (statusFilter === "active") {
@@ -186,6 +189,7 @@ export default function UserComponent() {
         total={metrics.total}
         active={metrics.active}
         deleted={metrics.deleted}
+        isLoading={isLoading}
       />
 
       {/* Main Table Container */}

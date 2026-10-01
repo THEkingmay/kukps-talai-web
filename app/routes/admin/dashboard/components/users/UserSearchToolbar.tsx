@@ -47,7 +47,7 @@ export default function UserSearchToolbar({
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="ค้นหาตามอีเมล หรือ User ID..."
+            placeholder="ค้นหาชื่อ, อีเมล, เบอร์โทร หรือ ID..."
             className="pl-9 pr-9"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}

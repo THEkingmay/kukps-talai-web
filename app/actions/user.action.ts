@@ -70,12 +70,14 @@ export async function updateProfileAction(
   firstName: string | null,
   lastName: string | null,
   profileImage: File | null,
+  phoneNumber: string | null,
 ): Promise<ActionResult<{ user: User }>> {
   try {
     const formData = new FormData();
     if (firstName) formData.append("firstName", firstName);
     if (lastName) formData.append("lastName", lastName);
     if (profileImage) formData.append("profileImage", profileImage);
+    if (phoneNumber) formData.append("phoneNumber", phoneNumber);
 
     const res = await apiClient.patch(`/users/profile/${userId}`, formData);
     return { success: true, data: res.data };
