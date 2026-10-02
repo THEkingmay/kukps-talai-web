@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, createContext, useContext } from "react";
 import apiClient, { publicApiClient } from "~/configs/axios";
 import GlobalAlert from "../ui/GlobalAlert";
 
-interface WebsocketMessageTypeLocation {
+export interface WebsocketMessageTypeLocation {
   type: "location";
   carId: string;
   lat: number;
@@ -11,7 +11,7 @@ interface WebsocketMessageTypeLocation {
   createdAt: string;
 }
 
-interface WebsocketMessageAlert {
+export interface WebsocketMessageAlert {
   type: "alert";
   alertType: string;
   carId: string;
@@ -77,9 +77,9 @@ export default function WebsocketProvider({
       ws.onmessage = (event) => {
         if (unmountedRef.current) return;
 
-        const data = JSON.parse(event.data);
+        const data = JSON.parse(event.data) as
+          WebsocketMessageAlert | WebsocketMessageTypeLocation;
         const type = data.type;
-
         if (type === "location") {
           if (Array.isArray(data)) {
             setCurrentLocation(data);
@@ -96,7 +96,7 @@ export default function WebsocketProvider({
             });
           }
         } else if (type === "alert") {
-          // ค่อยทำ
+          // ค่อยทำแจ้งเตือยแอดมินทันที เชคว่า user.role เป็น adminหรือ superadmin ค่อยแสดง
         }
       };
     };

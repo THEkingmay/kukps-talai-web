@@ -78,3 +78,12 @@ export interface SessionUserType {
   role: UserRole;
   loginAt: string; // timestampz
 }
+
+export interface DrivingLog {
+  id: string;
+  shiftId: string;
+  startedAt: Date;
+  endedAt: Date | null;
+  status: "active" | "ended";
+  createdAt: Date;
+}
