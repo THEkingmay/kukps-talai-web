@@ -1,6 +1,12 @@
-import { useEffect, useRef, useState, createContext, useContext } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  createContext,
+  useContext,
+} from "react";
 import apiClient, { publicApiClient } from "~/configs/axios";
-import GlobalAlert from "../ui/GlobalAlert";
 
 export interface WebsocketMessageTypeLocation {
   type: "location";
@@ -15,13 +21,21 @@ export interface WebsocketMessageAlert {
   type: "alert";
   alertType: string;
   carId: string;
-  driverId: string;
+  driverId: string | null;
   message: string;
   timestamp: string;
+  driverName: string | null;
+  driverPhone: string | null;
+  carNumber: string | null;
 }
+
+/** ฟัง alert ที่ส่งเข้ามา — คืนฟังก์ชันสำหรับยกเลิกการฟัง */
+export type AlertListener = (alert: WebsocketMessageAlert) => void;
+
 const WebsocketContext = createContext<{
   currentLocation: Omit<WebsocketMessageTypeLocation, "type">[] | null;
   isConnected: boolean;
+  subscribeAlert: (listener: AlertListener) => () => void;
 } | null>(null);
 
 export const useWebsocket = () => {
@@ -45,6 +59,14 @@ export default function WebsocketProvider({
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const unmountedRef = useRef(false);
+  const alertListenersRef = useRef<Set<AlertListener>>(new Set());
+
+  const subscribeAlert = useCallback((listener: AlertListener) => {
+    alertListenersRef.current.add(listener);
+    return () => {
+      alertListenersRef.current.delete(listener);
+    };
+  }, []);
 
   useEffect(() => {
     unmountedRef.current = false;
@@ -96,7 +118,7 @@ export default function WebsocketProvider({
             });
           }
         } else if (type === "alert") {
-          // ค่อยทำแจ้งเตือยแอดมินทันที เชคว่า user.role เป็น adminหรือ superadmin ค่อยแสดง
+          alertListenersRef.current.forEach((listener) => listener(data));
         }
       };
     };
@@ -109,7 +131,9 @@ export default function WebsocketProvider({
     };
   }, []);
   return (
-    <WebsocketContext.Provider value={{ currentLocation, isConnected }}>
+    <WebsocketContext.Provider
+      value={{ currentLocation, isConnected, subscribeAlert }}
+    >
       {children}
     </WebsocketContext.Provider>
   );

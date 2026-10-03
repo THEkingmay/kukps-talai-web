@@ -9,6 +9,7 @@ import AssignmentDriverComponent from "./components/assignment-driver.component"
 import EtaView from "./components/eta/EtaView";
 
 import { ShieldAlert } from "lucide-react";
+import GlobalAlert from "~/components/ui/GlobalAlert";
 
 export function meta() {
   return [
@@ -104,6 +105,7 @@ export default function DashboardRoute() {
           {activeTab === "eta" && <EtaView role="admin" />}
         </div>
       </main>
+      <GlobalAlert />
     </div>
   );
 }
