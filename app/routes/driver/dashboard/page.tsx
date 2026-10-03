@@ -4,29 +4,32 @@ import { useAuth } from "~/components/providers/AuthProvider";
 import { getByDriverId } from "~/actions/assignment-driver.action";
 import { getCars } from "~/actions/car.action";
 import { getRoutes } from "~/actions/route.action";
+import {
+  getMyLogs,
+  type GetDrivingLogType,
+} from "~/actions/driving-log.action";
 import type { CarDriverShift, ResponseCarData, Route } from "~/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Card, CardContent } from "~/components/ui/card";
 import {
   isAfter,
   isBefore,
-  isWithinInterval,
   isToday,
   isTomorrow,
+  isWithinInterval,
   format,
 } from "date-fns";
 import { th } from "date-fns/locale";
-import {
-  Car,
-  Clock,
-  CalendarDays,
-  Route as RouteIcon,
-  ArrowRight,
-} from "lucide-react";
+import { CalendarDays, Clock } from "lucide-react";
 import Loading from "~/components/ui/Loading";
 import { useDialog } from "~/components/providers/DialogProvider";
-import { Badge } from "~/components/ui/badge";
-import DrivingStartEndBtn from "./components/drivingStartEndBtn";
+import ShiftStatusCard from "./components/shiftStatusCard";
+
+const formatHours = (ms: number) => {
+  if (ms <= 0) return "0 ชม.";
+  const hours = ms / 3_600_000;
+  return `${hours.toFixed(1).replace(/\.0$/, "")} ชม.`;
+};
 
 export default function DriverDashboardPage() {
   const { user } = useAuth();
@@ -34,6 +37,7 @@ export default function DriverDashboardPage() {
   const [shifts, setShifts] = useState<CarDriverShift[]>([]);
   const [cars, setCars] = useState<Record<string, ResponseCarData>>({});
   const [routes, setRoutes] = useState<Record<string, Route>>({});
+  const [myLogs, setMyLogs] = useState<GetDrivingLogType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -42,10 +46,11 @@ export default function DriverDashboardPage() {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const [shiftsRes, carsRes, routesRes] = await Promise.all([
+        const [shiftsRes, carsRes, routesRes, logsRes] = await Promise.all([
           getByDriverId(user.id),
           getCars(),
           getRoutes(),
+          getMyLogs(),
         ]);
 
         if (shiftsRes.success) {
@@ -67,7 +72,11 @@ export default function DriverDashboardPage() {
           });
           setRoutes(routeMap);
         }
-      } catch (error) {
+
+        if (logsRes.success) {
+          setMyLogs(logsRes.data.data);
+        }
+      } catch {
         alert({
           title: "เกิดข้อผิดพลาด",
           description: "ไม่สามารถโหลดข้อมูลตารางงานได้",
@@ -78,7 +87,7 @@ export default function DriverDashboardPage() {
     };
 
     fetchData();
-  }, [user?.id]);
+  }, [user?.id, alert]);
 
   if (isLoading) {
     return (
@@ -100,6 +109,11 @@ export default function DriverDashboardPage() {
       end: new Date(shift.endTime),
     }),
   );
+  const activeShift = activeShifts[0];
+  const activeCar = activeShift ? cars[activeShift.carId] : undefined;
+  const activeRoute = activeCar?.routeId
+    ? routes[activeCar.routeId]
+    : undefined;
 
   // งานที่จะถึง (Upcoming)
   const upcomingShifts = shifts
@@ -149,12 +163,38 @@ export default function DriverDashboardPage() {
     {} as Record<string, CarDriverShift[]>,
   );
 
+  // Monthly stats
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+  const shiftsThisMonth = shifts.filter((shift) =>
+    isWithinInterval(new Date(shift.startTime), {
+      start: monthStart,
+      end: nextMonthStart,
+    }),
+  ).length;
+
+  const drivingMsThisMonth = myLogs
+    .filter(({ log }) =>
+      isWithinInterval(new Date(log.startedAt), {
+        start: monthStart,
+        end: nextMonthStart,
+      }),
+    )
+    .reduce(
+      (acc, { log }) =>
+        acc +
+        (new Date(log.endedAt ?? now).getTime() -
+          new Date(log.startedAt).getTime()),
+      0,
+    );
+
   const ShiftCard = ({
     shift,
     status,
   }: {
     shift: CarDriverShift;
-    status: "active" | "upcoming" | "past";
+    status: "upcoming" | "past";
   }) => {
     const startTime = new Date(shift.startTime);
     const endTime = new Date(shift.endTime);
@@ -167,88 +207,40 @@ export default function DriverDashboardPage() {
       startTime.getMonth() !== endTime.getMonth() ||
       startTime.getFullYear() !== endTime.getFullYear();
 
+    const timeLabel = isMultiDay
+      ? `${format(startTime, "d MMM, HH:mm", { locale: th })} – ${format(endTime, "d MMM, HH:mm", { locale: th })}`
+      : `${format(startTime, "HH:mm")} – ${format(endTime, "HH:mm")}`;
+
+    const dateLabel =
+      status === "upcoming"
+        ? isToday(startTime)
+          ? "วันนี้"
+          : isTomorrow(startTime)
+            ? "พรุ่งนี้"
+            : format(startTime, "d MMM", { locale: th })
+        : format(startTime, "d MMM", { locale: th });
+
     return (
-      <Card
-        className={`overflow-hidden transition-all bg-card ${status === "active" ? "border-foreground/20 shadow-sm ring-1 ring-foreground/5" : "shadow-sm hover:border-foreground/20"}`}
-      >
-        <CardContent className="p-0">
-          <div className="p-5 flex flex-col gap-4">
-            {/* Header: Status and Route */}
-            <div className="flex justify-between items-start gap-4">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-9 h-9 rounded-full bg-muted border border-border/50">
-                  <RouteIcon className="w-4 h-4 text-foreground/70" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                    สายรถ
-                  </span>
-                  <span className="font-semibold text-foreground leading-tight">
-                    {route?.name || "ไม่ระบุสายรถ"}
-                  </span>
-                </div>
+      <Card className="shadow-none">
+        <CardContent className="p-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="min-w-0">
+              <div className="truncate text-sm font-medium text-foreground">
+                {route?.name || "ไม่ระบุสายรถ"}
               </div>
-
-              {status === "active" && (
-                <Badge className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 border-emerald-500/20 shrink-0 shadow-none">
-                  <span className="relative flex h-2 w-2 mr-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </span>
-                  กำลังทำงาน
-                </Badge>
-              )}
-              {status === "past" && (
-                <Badge
-                  variant="outline"
-                  className="text-muted-foreground shrink-0 shadow-none bg-muted/50 font-medium"
-                >
-                  เสร็จสิ้น
-                </Badge>
-              )}
+              <div className="mt-0.5 text-xs text-muted-foreground">
+                รถ {car?.carNumber ?? "-"} · {dateLabel}
+              </div>
             </div>
-
-            <div className="h-px w-full bg-border/50" />
-
-            {/* Content: Time and Car */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* Time */}
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Clock className="w-3 h-3" /> เวลา
-                </span>
-                {isMultiDay ? (
-                  <div className="text-sm font-medium text-foreground">
-                    {format(startTime, "d MMM, HH:mm", { locale: th })} -{" "}
-                    {format(endTime, "d MMM, HH:mm", { locale: th })}
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-semibold text-foreground">
-                      {format(startTime, "HH:mm")}
-                    </span>
-                    <ArrowRight className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-sm font-semibold text-foreground">
-                      {format(endTime, "HH:mm")}
-                    </span>
-                    {status === "past" && (
-                      <span className="text-xs text-muted-foreground ml-1 hidden sm:inline-block">
-                        ({format(startTime, "d MMM", { locale: th })})
-                      </span>
-                    )}
-                  </div>
-                )}
+            <div className="shrink-0 sm:text-right">
+              <div className="text-sm font-medium tabular-nums text-foreground">
+                {timeLabel}
               </div>
-
-              {/* Car */}
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Car className="w-3 h-3" /> เลขประจำคันรถ
-                </span>
-                <span className="text-sm font-medium text-foreground">
-                  {car?.carNumber || "-"}
-                </span>
-              </div>
+              {status === "past" && (
+                <div className="mt-0.5 text-[11px] text-muted-foreground">
+                  เสร็จสิ้น
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
@@ -259,33 +251,34 @@ export default function DriverDashboardPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Navbar />
-      <DrivingStartEndBtn currentShift={activeShifts[0]} />
-      <main className="flex-1 px-4 py-8 md:px-8 max-w-2xl mx-auto w-full">
-        <div className="mb-8 flex flex-col gap-1.5">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+      <main className="flex-1 px-4 pb-16 pt-8 md:px-8 max-w-2xl mx-auto w-full">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-xl font-semibold tracking-tight text-foreground">
             ตารางงานของฉัน
           </h1>
-          <p className="text-sm text-muted-foreground">
-            ดูเวลาการทำงาน ข้อมูลสายรถ และรถที่คุณได้รับมอบหมาย
+          <p className="mt-1 text-sm text-muted-foreground">
+            {format(now, "EEEE d MMMM yyyy", { locale: th })}
           </p>
         </div>
 
-        {/* Active Shift Hero Section */}
-        {activeShifts.length > 0 && (
-          <div className="mb-12 space-y-4">
-            <h2 className="text-sm font-medium text-foreground flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-              กำลังดำเนินการ
-            </h2>
-            {activeShifts.map((shift) => (
-              <ShiftCard key={shift.id} shift={shift} status="active" />
-            ))}
+        {/* Active shift status + start/end action */}
+        {activeShift && (
+          <div className="mb-6">
+            <ShiftStatusCard
+              shift={activeShift}
+              car={activeCar}
+              route={activeRoute}
+            />
           </div>
         )}
 
-        {/* Tabs for Upcoming and Past */}
+        {/* Upcoming and History */}
         <Tabs defaultValue="upcoming" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList
+            variant="line"
+            className="grid h-auto w-full grid-cols-2 gap-0 border-b border-border p-0"
+          >
             <TabsTrigger value="upcoming">งานที่จะถึง</TabsTrigger>
             <TabsTrigger value="history">ประวัติย้อนหลัง</TabsTrigger>
           </TabsList>
@@ -294,39 +287,33 @@ export default function DriverDashboardPage() {
             value="upcoming"
             className="space-y-8 outline-none animate-in fade-in-50 duration-300"
           >
-            {Object.keys(groupedUpcoming).length > 0
-              ? (
-                  Object.entries(groupedUpcoming) as [
-                    string,
-                    CarDriverShift[],
-                  ][]
-                ).map(([dateLabel, shiftsInDate]) => (
-                  <div key={dateLabel} className="space-y-4">
-                    <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                      {dateLabel}
-                    </h3>
-                    <div className="space-y-3">
-                      {shiftsInDate.map((shift) => (
-                        <ShiftCard
-                          key={shift.id}
-                          shift={shift}
-                          status="upcoming"
-                        />
-                      ))}
-                    </div>
+            {Object.keys(groupedUpcoming).length > 0 ? (
+              (
+                Object.entries(groupedUpcoming) as [string, CarDriverShift[]][]
+              ).map(([dateLabel, shiftsInDate]) => (
+                <div key={dateLabel} className="space-y-4">
+                  <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    {dateLabel}
+                  </h3>
+                  <div className="space-y-2">
+                    {shiftsInDate.map((shift) => (
+                      <ShiftCard
+                        key={shift.id}
+                        shift={shift}
+                        status="upcoming"
+                      />
+                    ))}
                   </div>
-                ))
-              : !activeShifts.length && (
-                  <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed rounded-lg bg-muted/30">
-                    <CalendarDays className="h-8 w-8 text-muted-foreground/40 mb-3" />
-                    <h3 className="text-sm font-medium text-foreground">
-                      ไม่มีงานที่กำลังจะถึง
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1 max-w-[250px]">
-                      คุณยังไม่ได้รับการมอบหมายงานในอนาคต
-                    </p>
-                  </div>
-                )}
+                </div>
+              ))
+            ) : !activeShift ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <CalendarDays className="mb-3 h-5 w-5 text-muted-foreground/40" />
+                <p className="text-sm text-muted-foreground">
+                  คุณยังไม่มีงานที่กำลังจะถึง
+                </p>
+              </div>
+            ) : null}
           </TabsContent>
 
           <TabsContent
@@ -340,7 +327,7 @@ export default function DriverDashboardPage() {
                     <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                       {monthLabel}
                     </h3>
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       {shiftsInMonth.map((shift) => (
                         <ShiftCard key={shift.id} shift={shift} status="past" />
                       ))}
@@ -349,12 +336,9 @@ export default function DriverDashboardPage() {
                 ),
               )
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed rounded-lg bg-muted/30">
-                <Clock className="h-8 w-8 text-muted-foreground/40 mb-3" />
-                <h3 className="text-sm font-medium text-foreground">
-                  ไม่มีประวัติการทำงาน
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <Clock className="mb-3 h-5 w-5 text-muted-foreground/40" />
+                <p className="text-sm text-muted-foreground">
                   งานที่จบไปแล้วจะแสดงที่นี่
                 </p>
               </div>
