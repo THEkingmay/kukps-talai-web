@@ -6,22 +6,36 @@ import apiClient from "~/configs/axios";
 export interface GetNotificationsParams {
   carId?: string;
   alertType?: NotificationAlertType;
-  from?: Date;
-  to?: Date;
-  limit: number;
-  offset: number;
+  from?: Date | string;
+  to?: Date | string;
+  limit?: number;
+  offset?: number;
 }
+
+/** จำนวน notification ที่ดึงต่อครั้ง (ครบรอบประมาณ list ใน panel) */
+export const NOTIFICATIONS_PAGE_SIZE = 30;
+
 export async function getNotifications({
   carId,
   alertType,
   from,
   to,
-  limit,
-  offset,
-}: GetNotificationsParams): Promise<ActionResult<{ data: Notification[] }>> {
+  limit = NOTIFICATIONS_PAGE_SIZE,
+  offset = 0,
+}: GetNotificationsParams): Promise<
+  ActionResult<{ data: Notification[] }>
+> {
   try {
+    const params = new URLSearchParams();
+    if (carId) params.set("carId", carId);
+    if (alertType) params.set("alertType", alertType);
+    if (from) params.set("from", new Date(from).toISOString());
+    if (to) params.set("to", new Date(to).toISOString());
+    params.set("limit", String(limit));
+    params.set("offset", String(offset));
+
     const response = await apiClient.get(
-      `/notifications?carId=${carId}&alertType=${alertType}&from=${from}&to=${to}&limit=${limit}&offset=${offset}`,
+      `/notifications?${params.toString()}`,
     );
     return {
       success: true,

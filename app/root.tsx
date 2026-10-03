@@ -11,6 +11,7 @@ import type { Route } from "./+types/root";
 import "./app.css";
 import AuthProvider from "./components/providers/AuthProvider";
 import { DialogProvider } from "./components/providers/DialogProvider";
+import NotificationProvider from "./components/providers/NotificationProvider";
 
 import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "./components/ui/tooltip";
@@ -60,7 +61,9 @@ export default function App() {
     <DialogProvider>
       <WebsocketProvider>
         <AuthProvider>
-          <Outlet />
+          <NotificationProvider>
+            <Outlet />
+          </NotificationProvider>
         </AuthProvider>
       </WebsocketProvider>
     </DialogProvider>
