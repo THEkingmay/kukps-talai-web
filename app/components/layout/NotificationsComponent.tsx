@@ -19,13 +19,9 @@ import {
   PopoverTrigger,
 } from "~/components/ui/popover";
 import { Button } from "~/components/ui/button";
-import { ScrollArea } from "~/components/ui/scroll-area";
 import { Skeleton } from "~/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "~/components/ui/tooltip";
+
+import { formatDate } from "~/helper";
 
 const RANGE_OPTIONS: { value: NotificationRange; label: string }[] = [
   { value: "1d", label: "24 ชม." },
@@ -133,7 +129,7 @@ export default function NotificationsComponent() {
         ) : notifications.length === 0 ? (
           <NotificationEmpty />
         ) : (
-          <ScrollArea className="max-h-[420px]">
+          <div className="max-h-[min(420px,60vh)] overflow-y-auto">
             <ul className="divide-y px-2 py-1">
               {notifications.slice(0, MAX_ITEMS).map((notification) => (
                 <li key={notification.id} className="flex gap-3 px-2 py-2.5">
@@ -142,10 +138,9 @@ export default function NotificationsComponent() {
                     <p className="truncate text-sm leading-snug">
                       {notification.message}
                     </p>
+                    <p>รถไอดี: {notification.payload.carId}</p>
+                    <p>เวลา: {formatDate(notification.payload.timestamp)}</p>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      {notification.payload.carNumber
-                        ? `รถ ${(notification.payload.carNumber && notification.payload.carNumber !== "ไม่ระบุ") || notification.carId} · `
-                        : ""}
                       {formatDistanceToNow(new Date(notification.createdAt), {
                         locale: th,
                       })}
@@ -154,7 +149,7 @@ export default function NotificationsComponent() {
                 </li>
               ))}
             </ul>
-          </ScrollArea>
+          </div>
         )}
       </PopoverContent>
     </Popover>

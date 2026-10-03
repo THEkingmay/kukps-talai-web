@@ -61,13 +61,10 @@ function mapAlertToNotification(alert: WebsocketMessageAlert): Notification {
     id: `ws-${createdAt.getTime()}-${alert.carId}`,
     alertType: alert.alertType as Notification["alertType"],
     carId: alert.carId,
-    driverId: alert.driverId,
     message: alert.message,
     payload: {
-      driverName: alert.driverName,
-      driverPhone: alert.driverPhone,
-      carNumber: alert.carNumber,
-      timestamp: alert.timestamp ? new Date(alert.timestamp) : null,
+      timestamp: alert.timestamp,
+      carId: alert.carId,
     },
     createdAt,
   };

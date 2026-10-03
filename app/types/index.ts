@@ -89,18 +89,16 @@ export interface DrivingLog {
 }
 
 export type NotificationAlertType = "driver_not_confirmed";
+export type NotificationPayloadType_driver_not_confirmed = {
+  carId: string;
+  timestamp: string;
+};
 
 export interface Notification {
   id: string;
   alertType: NotificationAlertType;
   carId: string | null;
-  driverId: string | null;
   message: string;
-  payload: {
-    driverName: string | null;
-    driverPhone: string | null;
-    carNumber: string | null;
-    timestamp: Date | null;
-  };
+  payload: NotificationPayloadType_driver_not_confirmed;
   createdAt: Date;
 }

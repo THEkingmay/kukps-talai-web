@@ -38,11 +38,18 @@ const DURATION_MS = 10_000;
 const DEDUPE_MS = 60_000;
 /** รวม alert ที่มาถึงในช่วงนี้เป็นเสียงเดียว */
 const SOUND_COALESCE_MS = 2_000;
+/** เป้ารัวกี่ครั้งต่อ burst */
+const BEEP_COUNT = 3;
+/** ความยาวแต่ละเป้า (วินาที) */
+const BEEP_DURATION_S = 0.18;
+/** ระยะห่างระหว่างเป้า (วินาที) */
+const BEEP_GAP_S = 0.1;
+/** ระดับเสียงสูงสุด (0-1) */
+const BEEP_PEAK = 0.7;
 
 interface ToastItem {
   id: string;
   message: string;
-  detail: string;
   variant: ToastVariant;
   Icon: LucideIcon;
 }
@@ -54,15 +61,14 @@ export default function GlobalAlert() {
   const { user } = useAuth();
   const { subscribeAlert } = useWebsocket();
 
-  const canReceiveAlert =
-    user?.role === "admin" || user?.role === "superadmin";
+  const canReceiveAlert = user?.role === "admin" || user?.role === "superadmin";
 
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const seenCarsRef = useRef<Map<string, number>>(new Map());
   const audioContextRef = useRef<AudioContext | null>(null);
   const lastBeepAtRef = useRef(0);
 
-  // เตือนเบาๆ ครั้งเดียวต่อ burst — ถ้า browser ยังไม่อนุญาต (ยังไม่เคยคลิกหน้าเว็บ) ก็เงียบไป
+  // เป้าสั้น 3 ครั้ง (แนวด่วน) ครั้งเดียวต่อ burst — ถ้า browser ยังไม่อนุญาต (ยังไม่เคยคลิกหน้าเว็บ) ก็เงียบไป
   const playAlertSound = useCallback(() => {
     const now = Date.now();
     if (now - lastBeepAtRef.current < SOUND_COALESCE_MS) return;
@@ -80,16 +86,25 @@ export default function GlobalAlert() {
       if (ctx.state === "suspended") void ctx.resume();
 
       const now$ = ctx.currentTime;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = 880;
-      gain.gain.setValueAtTime(0.0001, now$);
-      gain.gain.exponentialRampToValueAtTime(0.08, now$ + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now$ + 0.25);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(now$);
-      osc.stop(now$ + 0.25);
+      // sawtooth ผ่าน low-pass ให้ฟังเป็นสัญญาณเตือนโดยไม่แหลมบาดหู
+      const filter = ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.value = 2000;
+      filter.connect(ctx.destination);
+
+      for (let i = 0; i < BEEP_COUNT; i++) {
+        const t = now$ + i * (BEEP_DURATION_S + BEEP_GAP_S);
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sawtooth";
+        osc.frequency.value = 880;
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime(BEEP_PEAK, t + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + BEEP_DURATION_S);
+        osc.connect(gain).connect(filter);
+        osc.start(t);
+        osc.stop(t + BEEP_DURATION_S + 0.05);
+      }
     } catch {
       // browser บล็อกเสียง — ข้ามไป ไม่กระทบการแสดง toast
     }
@@ -100,23 +115,16 @@ export default function GlobalAlert() {
       const now = Date.now();
 
       // กันรถคันเดิมเด้งซ้ำ (เช่น ตอน reconnect แล้ว backend ยิงซ้ำ)
-      const seenAt = seenCarsRef.current.get(alert.carId);
+      const seenAt = seenCarsRef.current.get(alert?.carId);
       if (seenAt !== undefined && now - seenAt < DEDUPE_MS) return;
-      seenCarsRef.current.set(alert.carId, now);
+      seenCarsRef.current.set(alert?.carId, now);
 
-      const { variant, Icon } = ALERT_REGISTRY[alert.alertType] ?? FALLBACK_ALERT;
-      const detail = [
-        isUsable(alert.carNumber) ? `รถ ${alert.carNumber}` : null,
-        isUsable(alert.driverName) ? alert.driverName : null,
-        isUsable(alert.driverPhone) ? alert.driverPhone : null,
-      ]
-        .filter((part): part is string => part !== null)
-        .join(" · ");
+      const { variant, Icon } =
+        ALERT_REGISTRY[alert.alertType] ?? FALLBACK_ALERT;
 
       const item: ToastItem = {
-        id: `${alert.carId}-${alert.timestamp}`,
+        id: `${alert?.carId}-${alert.timestamp}`,
         message: alert.message,
-        detail,
         variant,
         Icon,
       };
@@ -130,7 +138,7 @@ export default function GlobalAlert() {
 
       playAlertSound();
     },
-    [playAlertSound]
+    [playAlertSound],
   );
 
   useEffect(() => {
@@ -140,7 +148,7 @@ export default function GlobalAlert() {
 
   const toastsEl = useMemo(
     () =>
-      toasts.map(({ id, message, detail, variant, Icon }) => (
+      toasts.map(({ id, message, variant, Icon }) => (
         <Toast
           key={id}
           variant={variant}
@@ -153,12 +161,11 @@ export default function GlobalAlert() {
           <Icon className="mt-0.5 size-4 shrink-0" />
           <div className="flex-1 space-y-0.5">
             <ToastTitle>{message}</ToastTitle>
-            {detail && <ToastDescription>{detail}</ToastDescription>}
           </div>
           <ToastClose />
         </Toast>
       )),
-    [toasts]
+    [toasts],
   );
 
   if (!canReceiveAlert) return null;

@@ -19,14 +19,10 @@ export interface WebsocketMessageTypeLocation {
 
 export interface WebsocketMessageAlert {
   type: "alert";
-  alertType: string;
+  alertType: "driver_not_confirmed";
   carId: string;
-  driverId: string | null;
   message: string;
   timestamp: string;
-  driverName: string | null;
-  driverPhone: string | null;
-  carNumber: string | null;
 }
 
 /** ฟัง alert ที่ส่งเข้ามา — คืนฟังก์ชันสำหรับยกเลิกการฟัง */

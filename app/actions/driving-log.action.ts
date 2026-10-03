@@ -23,7 +23,7 @@ export async function startDriving(
   shiftId: string,
 ): Promise<ActionResult<{ data: DrivingLog }>> {
   try {
-    const res = await apiClient("/driving-logs/start", { data: { shiftId } });
+    const res = await apiClient.post("/driving-logs/start", { shiftId });
     return { success: true, data: res.data };
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -48,7 +48,7 @@ export async function endDriving(
   logId: string,
 ): Promise<ActionResult<{ data: DrivingLog }>> {
   try {
-    const res = await apiClient("/driving-logs/end", { data: { logId } });
+    const res = await apiClient.post("/driving-logs/end", { logId });
     return { success: true, data: res.data };
   } catch (error) {
     if (axios.isAxiosError(error)) {
