@@ -3,7 +3,6 @@ import type { ResponseCarData, Route, CarStatus } from "~/types";
 import { useDialog } from "~/components/providers/DialogProvider";
 import {
   getCars,
-  getCarById,
   createCar,
   updateCar,
   deleteCar,
@@ -11,19 +10,30 @@ import {
 } from "~/actions/car.action";
 import { getRoutes } from "~/actions/route.action";
 
-import CarMetrics from "./cars/CarMetrics";
-import CarSearchToolbar from "./cars/CarSearchToolbar";
-import CarTable from "./cars/CarTable";
-import CarDetailModal from "./cars/CarDetailModal";
-import CreateCarModal from "./cars/CreateCarModal";
-import EditCarModal from "./cars/EditCarModal";
-import CredentialModal from "./cars/CredentialModal";
-import { formatDate } from "~/helper";
+import CarMetrics from "../dashboard/components/cars/CarMetrics";
+import CarSearchToolbar from "../dashboard/components/cars/CarSearchToolbar";
+import CarTable from "../dashboard/components/cars/CarTable";
+import CreateCarModal from "../dashboard/components/cars/CreateCarModal";
+import EditCarModal from "../dashboard/components/cars/EditCarModal";
+import CredentialModal from "../dashboard/components/cars/CredentialModal";
+import { useAdminShell } from "../shell/ShellContext";
 
 type StatusFilter = "all" | CarStatus | "deleted";
 
-export default function CarsComponent() {
+export function meta() {
+  return [
+    { title: "รถตะไล — KUKPS smart talai" },
+    {
+      name: "description",
+      content:
+        "จัดการข้อมูลรถตะไลประจำสาย และข้อมูลการเดินรถเบื้องต้น",
+    },
+  ];
+}
+
+export default function CarsListPage() {
   const { alert, confirm } = useDialog();
+  const { setBreadcrumb } = useAdminShell();
   const [cars, setCars] = useState<ResponseCarData[]>([]);
   const [routes, setRoutes] = useState<Route[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -37,11 +47,6 @@ export default function CarsComponent() {
   // Modal States
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [editingCar, setEditingCar] = useState<ResponseCarData | null>(null);
-
-  // Car Detail State (getCarById)
-  const [selectedCarId, setSelectedCarId] = useState<string | null>(null);
-  const [detailCar, setDetailCar] = useState<ResponseCarData | null>(null);
-  const [isDetailLoading, setIsDetailLoading] = useState<boolean>(false);
 
   // Create Form State
   const [newCarNumber, setNewCarNumber] = useState<string>("");
@@ -60,8 +65,11 @@ export default function CarsComponent() {
   const isAnyModalOpen =
     isCreateModalOpen ||
     Boolean(editingCar) ||
-    Boolean(selectedCarId) ||
     Boolean(credentialCarId);
+
+  useEffect(() => {
+    setBreadcrumb(null);
+  }, [setBreadcrumb]);
 
   useEffect(() => {
     if (isAnyModalOpen) {
@@ -133,22 +141,6 @@ export default function CarsComponent() {
       deleted: cars.filter((c) => c.deletedAt !== null).length,
     };
   }, [cars]);
-
-  // Handle Detail Modal Load
-  const handleOpenDetailModal = async (id: string) => {
-    setSelectedCarId(id);
-    setIsDetailLoading(true);
-    try {
-      const detail = await getCarById(id);
-      if (detail.success) {
-        setDetailCar(detail.data.data);
-      }
-    } catch (err) {
-      console.error("Failed to load car details:", err);
-    } finally {
-      setIsDetailLoading(false);
-    }
-  };
 
   // Create Car Handler
   const handleCreateSubmit = async (e: React.FormEvent) => {
@@ -322,16 +314,15 @@ export default function CarsComponent() {
       } else if (statusFilter !== "all") {
         if (car.status !== statusFilter || car.deletedAt !== null) return false;
       } else {
-        // all doesn't filter by status, but maybe we should still show deleted cars if "all" is selected, or we only show them if "deleted" is selected?
-        // Based on the user's requirement, "deleted" is a status filter option, so "all" would show everything including deleted.
+        // "all" shows everything including deleted cars.
       }
       return true;
     });
   }, [cars, searchQuery, statusFilter, routeFilter]);
 
   return (
-    <div className="space-y-6">
-      {/* Vercel-style Page Header */}
+    <div className="space-y-6 p-4 md:p-6 lg:p-8">
+      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">รถตะไล</h2>
@@ -385,7 +376,6 @@ export default function CarsComponent() {
             routeNameMap={routeNameMap}
             isLoading={isLoading}
             deletingId={deletingId}
-            onOpenDetail={handleOpenDetailModal}
             onOpenEdit={handleOpenEdit}
             onDelete={handleDeleteCar}
             onRestore={handleRestoreCar}
@@ -397,15 +387,6 @@ export default function CarsComponent() {
         isOpen={Boolean(credentialCarId)}
         carId={credentialCarId || ""}
         onClose={() => setCredentialCarId(null)}
-      />
-      {/* Detail Modal (getCarById) */}
-      <CarDetailModal
-        isOpen={Boolean(selectedCarId)}
-        car={detailCar}
-        isLoading={isDetailLoading}
-        routeNameMap={routeNameMap}
-        onClose={() => setSelectedCarId(null)}
-        formatDate={formatDate}
       />
 
       {/* Create Modal */}

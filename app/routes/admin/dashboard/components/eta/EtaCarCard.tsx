@@ -1,4 +1,5 @@
-import { Bus, X } from "lucide-react";
+import { Link } from "react-router";
+import { ArrowUpRight, Bus, X } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import type { ResponseCarData } from "~/types";
 import type { WebsocketMessageTypeLocation } from "~/components/providers/WebsocketProvider";
@@ -72,6 +73,17 @@ export default function EtaCarCard({
           <div className="text-[10px] font-mono text-muted-foreground/70 tabular-nums">
             {loc.lat}, {loc.lng}
           </div>
+        )}
+
+        {/* Admin only: jump to the consolidated car detail page */}
+        {role === "admin" && (
+          <Link
+            to={`/admin/cars/${carId}`}
+            className="flex items-center justify-center gap-1 rounded-md bg-primary py-1.5 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            ดูรายละเอียดรถ
+            <ArrowUpRight size={12} />
+          </Link>
         )}
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import type { ResponseCarData } from "~/types";
 import { TableSkeleton } from "~/components/ui/Loading";
 import {
@@ -28,7 +29,6 @@ interface CarTableProps {
   routeNameMap: Record<string, string>;
   isLoading: boolean;
   deletingId: string | null;
-  onOpenDetail: (id: string) => void;
   onOpenEdit: (car: ResponseCarData) => void;
   onDelete: (car: ResponseCarData) => void;
   onRestore: (car: ResponseCarData) => void;
@@ -41,7 +41,6 @@ export default function CarTable({
   routeNameMap,
   isLoading,
   deletingId,
-  onOpenDetail,
   onOpenEdit,
   onDelete,
   onRestore,
@@ -93,12 +92,12 @@ export default function CarTable({
                         <Bus className="w-3.5 h-3.5" />
                       </div>
                       <div>
-                        <div
-                          className="font-bold text-foreground cursor-pointer hover:underline"
-                          onClick={() => onOpenDetail(car.id)}
+                        <Link
+                          to={`/admin/cars/${car.id}`}
+                          className="font-bold text-foreground hover:underline"
                         >
                           {car.carNumber}
-                        </div>
+                        </Link>
                         <div className="text-[10px] text-muted-foreground font-mono">
                           ID: {car.id}
                         </div>
@@ -147,10 +146,12 @@ export default function CarTable({
                           variant="default"
                           size="icon"
                           className="h-8 w-8"
-                          onClick={() => onOpenDetail(car.id)}
+                          asChild
                           title="ดูรายละเอียดทั้งหมด"
                         >
-                          <Eye className="w-4 h-4" />
+                          <Link to={`/admin/cars/${car.id}`}>
+                            <Eye className="w-4 h-4" />
+                          </Link>
                         </Button>
                         <Button
                           variant="secondary"
@@ -203,7 +204,7 @@ export default function CarTable({
   );
 }
 
-function CarStatusBadge({ status, isDeleted }: { status: string, isDeleted: boolean }) {
+export function CarStatusBadge({ status, isDeleted }: { status: string, isDeleted: boolean }) {
   if (isDeleted) {
     return (
       <Badge variant="outline" className="text-muted-foreground gap-1">

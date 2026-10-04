@@ -3,7 +3,6 @@ import type { Route } from "~/types";
 import { useDialog } from "~/components/providers/DialogProvider";
 import {
   getRoutes,
-  getRouteById,
   createRoute,
   updateRoute,
   deleteRoute,
@@ -13,14 +12,26 @@ import { RefreshCw, Plus, Search, X } from "lucide-react";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 
-import RouteDetailModal from "./routes/RouteDetailModal";
-import RouteTable from "./routes/RouteTable";
-import CreateRouteModal from "./routes/CreateRouteModal";
-import EditRouteModal from "./routes/EditRouteModal";
-import RoutePointModal from "./routes/RoutePoint.component";
+import RouteTable from "../dashboard/components/routes/RouteTable";
+import CreateRouteModal from "../dashboard/components/routes/CreateRouteModal";
+import EditRouteModal from "../dashboard/components/routes/EditRouteModal";
+import RoutePointModal from "../dashboard/components/routes/RoutePoint.component";
+import { useAdminShell } from "../shell/ShellContext";
+import { formatDate } from "~/helper";
 
-export default function RoutesComponent() {
+export function meta() {
+  return [
+    { title: "สายการเดินรถ — KUKPS smart talai" },
+    {
+      name: "description",
+      content: "จัดการเส้นทางเดินรถและจุดจอดต่างๆ ของรถตะไล",
+    },
+  ];
+}
+
+export default function RoutesListPage() {
   const { alert, confirm } = useDialog();
+  const { setBreadcrumb } = useAdminShell();
   const [routes, setRoutes] = useState<Route[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,11 +40,6 @@ export default function RoutesComponent() {
   // Modal & Selected States
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [editingRoute, setEditingRoute] = useState<Route | null>(null);
-
-  // Route Detail State (getRouteById)
-  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
-  const [detailRoute, setDetailRoute] = useState<Route | null>(null);
-  const [isDetailLoading, setIsDetailLoading] = useState<boolean>(false);
 
   // Route Points State
   const [pointsRoute, setPointsRoute] = useState<Route | null>(null);
@@ -48,8 +54,11 @@ export default function RoutesComponent() {
   const isAnyModalOpen =
     isCreateModalOpen ||
     Boolean(editingRoute) ||
-    Boolean(selectedRouteId) ||
     Boolean(pointsRoute);
+
+  useEffect(() => {
+    setBreadcrumb(null);
+  }, [setBreadcrumb]);
 
   useEffect(() => {
     if (isAnyModalOpen) {
@@ -89,33 +98,6 @@ export default function RoutesComponent() {
   useEffect(() => {
     fetchRoutesData(false);
   }, []);
-
-  // Fetch Route Details by ID
-  const handleOpenDetailModal = async (id: string) => {
-    setSelectedRouteId(id);
-    setDetailRoute(null);
-    setIsDetailLoading(true);
-    try {
-      const res = await getRouteById(id);
-      if (res.success) {
-        setDetailRoute(res.data.data);
-      } else {
-        alert({
-          title: "โหลดข้อมูลไม่สำเร็จ",
-          description: res.error,
-        });
-        setSelectedRouteId(null);
-      }
-    } catch {
-      alert({
-        title: "เกิดข้อผิดพลาด",
-        description: "ไม่สามารถดึงข้อมูลรายละเอียดเส้นทางได้",
-      });
-      setSelectedRouteId(null);
-    } finally {
-      setIsDetailLoading(false);
-    }
-  };
 
   // Filtered Routes
   const filteredRoutes = useMemo(() => {
@@ -285,23 +267,9 @@ export default function RoutesComponent() {
     });
   };
 
-  // Format Helper
-  const formatDate = (isoString?: string | null) => {
-    if (!isoString) return "-";
-    try {
-      const date = new Date(isoString);
-      return new Intl.DateTimeFormat("th-TH", {
-        dateStyle: "medium",
-        timeStyle: "short",
-      }).format(date);
-    } catch {
-      return isoString;
-    }
-  };
-
   return (
-    <div className="space-y-6">
-      {/* Vercel-style Page Header */}
+    <div className="space-y-6 p-4 md:p-6 lg:p-8">
+      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">สายการเดินรถ</h2>
@@ -378,7 +346,6 @@ export default function RoutesComponent() {
             filteredRoutes={filteredRoutes}
             isLoading={isLoading}
             deletingId={deletingId}
-            onOpenDetail={handleOpenDetailModal}
             onOpenEdit={(r) => {
               setEditingRoute(r);
               setEditRouteName(r.name);
@@ -390,15 +357,6 @@ export default function RoutesComponent() {
           />
         </div>
       </div>
-
-      {/* Detail Modal */}
-      <RouteDetailModal
-        isOpen={Boolean(selectedRouteId)}
-        route={detailRoute}
-        isLoading={isDetailLoading}
-        onClose={() => setSelectedRouteId(null)}
-        formatDate={formatDate}
-      />
 
       {/* Create Modal */}
       <CreateRouteModal

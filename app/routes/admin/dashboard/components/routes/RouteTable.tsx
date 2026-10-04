@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import type { Route } from "~/types";
 import { TableSkeleton } from "~/components/ui/Loading";
 import { Eye, Pencil, Trash2, Route as RouteIcon, MapPin, Loader2, Lock } from "lucide-react";
@@ -17,7 +18,6 @@ interface RouteTableProps {
   filteredRoutes: Route[];
   isLoading: boolean;
   deletingId: string | null;
-  onOpenDetail: (id: string) => void;
   onOpenEdit: (route: Route) => void;
   onOpenPoints: (route: Route) => void;
   onDelete: (route: Route) => void;
@@ -30,7 +30,6 @@ export default function RouteTable({
   filteredRoutes,
   isLoading,
   deletingId,
-  onOpenDetail,
   onOpenEdit,
   onOpenPoints,
   onDelete,
@@ -77,13 +76,13 @@ export default function RouteTable({
                   {String(index + 1).padStart(2, '0')}
                 </TableCell>
                 <TableCell>
-                  <div 
-                    className="font-bold text-foreground cursor-pointer hover:underline flex items-center gap-2"
-                    onClick={() => onOpenDetail(route.id)}
+                  <Link
+                    to={`/admin/routes/${route.id}`}
+                    className="font-bold text-foreground hover:underline flex items-center gap-2"
                   >
                     <RouteIcon className="w-4 h-4 text-muted-foreground" />
                     {route.name}
-                  </div>
+                  </Link>
                 </TableCell>
                 <TableCell className="font-mono text-xs text-muted-foreground">
                   {route.id}
@@ -123,10 +122,12 @@ export default function RouteTable({
                         variant="default"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={() => onOpenDetail(route.id)}
+                        asChild
                         title="ดูรายละเอียดสายรถ"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Link to={`/admin/routes/${route.id}`}>
+                          <Eye className="w-4 h-4" />
+                        </Link>
                       </Button>
                       <Button
                         variant="secondary"
