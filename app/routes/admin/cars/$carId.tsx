@@ -21,31 +21,22 @@ import { useAdminShell } from "../shell/ShellContext";
 
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "~/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Loader2, SearchX } from "lucide-react";
 import { VercelSpinner } from "~/components/ui/Loading";
 
 // Leaflet uses `window` — keep it off the SSR path (same as the old detail modal).
-const CarDetailMap = lazy(() => import("../dashboard/components/cars/CarDetailMap"));
+const CarDetailMap = lazy(
+  () => import("../dashboard/components/cars/CarDetailMap"),
+);
 
 export function meta() {
   return [
     { title: "รายละเอียดรถตะไล — KUKPS smart talai" },
     {
       name: "description",
-      content:
-        "ข้อมูลรถตะไล สายการเดินรถ จุดจอด และประวัติการเดินทาง",
+      content: "ข้อมูลรถตะไล สายการเดินรถ จุดจอด และประวัติการเดินทาง",
     },
   ];
 }
@@ -105,7 +96,9 @@ export default function CarDetailPage() {
   }, [car, setBreadcrumb]);
 
   const isDeleted = car ? car.deletedAt !== null : false;
-  const carRoute = car?.routeId ? routes.find((r) => r.id === car.routeId) : null;
+  const carRoute = car?.routeId
+    ? routes.find((r) => r.id === car.routeId)
+    : null;
 
   // --- Actions ---
 
@@ -245,7 +238,8 @@ export default function CarDetailPage() {
           ไม่พบข้อมูลรถตะไล
         </h2>
         <p className="max-w-sm text-sm text-muted-foreground">
-          {loadError ?? "รถตะไลที่เลือกไม่พบในระบบ (อาจถูกลบหรือใช้ URL ไม่ถูกต้อง)"}
+          {loadError ??
+            "รถตะไลที่เลือกไม่พบในระบบ (อาจถูกลบหรือใช้ URL ไม่ถูกต้อง)"}
         </p>
         <Button asChild variant="outline" className="mt-2">
           <Link to="/admin/cars">กลับหน้ารายการรถตะไล</Link>
@@ -260,7 +254,10 @@ export default function CarDetailPage() {
       {isDeleted && (
         <div className="flex items-center justify-between gap-4 rounded-lg border border-amber-500/30 bg-amber-50 p-4 dark:bg-amber-900/20">
           <div className="flex items-center gap-3">
-            <Badge variant="outline" className="gap-1 border-amber-500/40 text-amber-700 dark:text-amber-400">
+            <Badge
+              variant="outline"
+              className="gap-1 border-amber-500/40 text-amber-700 dark:text-amber-400"
+            >
               ถูกลบแล้ว
             </Badge>
             <span className="text-sm text-foreground">
@@ -285,9 +282,6 @@ export default function CarDetailPage() {
       {/* Page header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary text-base font-bold font-mono text-primary-foreground shadow-sm">
-            {car.carNumber}
-          </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="truncate text-xl font-bold tracking-tight md:text-2xl">
@@ -309,7 +303,12 @@ export default function CarDetailPage() {
           >
             MQTT Credentials
           </Button>
-          <Button variant="outline" size="sm" onClick={handleOpenEdit} className="h-8">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleOpenEdit}
+            className="h-8"
+          >
             แก้ไขข้อมูล
           </Button>
           {!isDeleted ? (
@@ -335,7 +334,10 @@ export default function CarDetailPage() {
 
       {/* Tabs */}
       <Tabs defaultValue="overview">
-        <TabsList variant="line" className="w-full justify-start overflow-x-auto">
+        <TabsList
+          variant="line"
+          className="w-full justify-start overflow-x-auto"
+        >
           <TabsTrigger value="overview">ข้อมูลทั่วไป</TabsTrigger>
           <TabsTrigger value="live-map">Live Map</TabsTrigger>
           <TabsTrigger value="stops">จุดจอด</TabsTrigger>
@@ -369,7 +371,8 @@ export default function CarDetailPage() {
                 </div>
               ) : (
                 <p className="text-sm italic text-muted-foreground">
-                  รถนี้ยังไม่ได้ assign สายการเดินรถ — กด "แก้ไขข้อมูล" เพื่อเลือกสาย
+                  รถนี้ยังไม่ได้ assign สายการเดินรถ — กด "แก้ไขข้อมูล"
+                  เพื่อเลือกสาย
                 </p>
               )}
             </CardContent>
@@ -418,7 +421,7 @@ export default function CarDetailPage() {
         </TabsContent>
 
         <TabsContent value="live-map" className="pt-4">
-          <div className="relative h-[420px] overflow-hidden rounded-xl border bg-card shadow-sm md:h-[560px]">
+          <div className="relative h-[80vh] overflow-hidden rounded-xl border bg-card shadow-sm ">
             <Suspense
               fallback={
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/60">

@@ -165,8 +165,9 @@ export default function AssignmentDriverComponent() {
   const driverOptions = users
     .filter((u) => u.role === "driver")
     .map((u) => ({ value: u.id, label: u.email }));
+
   const carOptions = cars
-    .filter((c) => c.deletedAt === null)
+    .filter((cx) => cx.deletedAt === null)
     .map((c) => ({ value: c.id, label: c.carNumber }));
 
   // Filter shifts

@@ -119,7 +119,7 @@ export default function CarDetailMap({ car }: CarDetailMapProps) {
   }, [car?.id, car?.routeId]);
 
   return (
-    <div className="relative w-full h-full min-h-[380px] rounded-md overflow-hidden border border-gray-200">
+    <div className="relative w-full h-full min-h-[60vh] rounded-md overflow-hidden border border-gray-200">
       {/* Map */}
       <MapContainer
         center={KUKPS_CENTER}
