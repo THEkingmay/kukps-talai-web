@@ -11,10 +11,6 @@ const SECTION_LABELS: Record<string, string> = {
   eta: "ตำแหน่งรถเรียลไทม์",
 };
 
-/**
- * Vercel-style top bar: breadcrumb on the left,
- * theme/notifications/profile controls on the right.
- */
 export default function TopBar() {
   const { pathname } = useLocation();
   const { breadcrumb } = useAdminShell();
@@ -37,9 +33,7 @@ export default function TopBar() {
             aria-label="breadcrumb"
             className="flex min-w-0 items-center gap-1.5 text-sm"
           >
-            <span className="hidden text-muted-foreground md:block">
-              Admin
-            </span>
+            <span className="hidden text-muted-foreground md:block">Admin</span>
             {sectionLabel && (
               <>
                 <span className="hidden text-muted-foreground/50 md:block">

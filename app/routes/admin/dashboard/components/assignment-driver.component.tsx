@@ -23,7 +23,11 @@ import { AssignmentDriverTable } from "./assignment-driver/AssignmentDriverTable
 import { AssignmentDriverSheet } from "./assignment-driver/AssignmentDriverSheet";
 import type { AssignmentFormData } from "./assignment-driver/AssignmentDriverForm";
 
-import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
 import { Badge } from "~/components/ui/badge";
 import {
   Command,
@@ -161,7 +165,9 @@ export default function AssignmentDriverComponent() {
   const driverOptions = users
     .filter((u) => u.role === "driver")
     .map((u) => ({ value: u.id, label: u.email }));
-  const carOptions = cars.map((c) => ({ value: c.id, label: c.carNumber }));
+  const carOptions = cars
+    .filter((c) => c.deletedAt === null)
+    .map((c) => ({ value: c.id, label: c.carNumber }));
 
   // Filter shifts
   const filteredShifts = extendedShifts.filter((shift) => {
@@ -179,7 +185,8 @@ export default function AssignmentDriverComponent() {
     const start = new Date(shift.startTime).getTime();
     const end = new Date(shift.endTime).getTime();
 
-    if (statusFilter === "active" && !(start <= now && end >= now)) return false;
+    if (statusFilter === "active" && !(start <= now && end >= now))
+      return false;
     if (statusFilter === "upcoming" && !(start > now)) return false;
     if (statusFilter === "past" && !(end < now)) return false;
 
@@ -193,7 +200,8 @@ export default function AssignmentDriverComponent() {
     return true;
   });
 
-  const getDriverEmail = (id: string) => users.find((u) => u.id === id)?.email || id;
+  const getDriverEmail = (id: string) =>
+    users.find((u) => u.id === id)?.email || id;
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -202,15 +210,14 @@ export default function AssignmentDriverComponent() {
     setDriverFilter(undefined);
   };
 
-  const hasAnyFilter = searchTerm || statusFilter !== "all" || dateFilter || driverFilter;
+  const hasAnyFilter =
+    searchTerm || statusFilter !== "all" || dateFilter || driverFilter;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">
-            มอบหมายงานคนขับ
-          </h2>
+          <h2 className="text-2xl font-bold tracking-tight">มอบหมายงานคนขับ</h2>
           <p className="text-muted-foreground text-sm">
             จัดการตารางงานและผูกรถให้กับคนขับแต่ละช่วงเวลา
           </p>
@@ -240,7 +247,7 @@ export default function AssignmentDriverComponent() {
             />
             <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-2.5 pointer-events-none" />
           </div>
-          
+
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-full sm:w-[150px] h-9">
               <SelectValue placeholder="สถานะทั้งหมด" />
@@ -261,15 +268,28 @@ export default function AssignmentDriverComponent() {
                 {(dateFilter || driverFilter) && (
                   <>
                     <span className="mx-2 h-4 w-[1px] bg-border" />
-                    <Badge variant="secondary" className="px-1 font-normal lg:hidden">
+                    <Badge
+                      variant="secondary"
+                      className="px-1 font-normal lg:hidden"
+                    >
                       {(dateFilter ? 1 : 0) + (driverFilter ? 1 : 0)}
                     </Badge>
                     <div className="hidden space-x-1 lg:flex">
                       {driverFilter && (
-                        <Badge variant="secondary" className="rounded-sm px-1 font-normal">คนขับ</Badge>
+                        <Badge
+                          variant="secondary"
+                          className="rounded-sm px-1 font-normal"
+                        >
+                          คนขับ
+                        </Badge>
                       )}
                       {dateFilter && (
-                        <Badge variant="secondary" className="rounded-sm px-1 font-normal">วันที่</Badge>
+                        <Badge
+                          variant="secondary"
+                          className="rounded-sm px-1 font-normal"
+                        >
+                          วันที่
+                        </Badge>
                       )}
                     </div>
                   </>
@@ -277,57 +297,95 @@ export default function AssignmentDriverComponent() {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[340px] p-0" align="start">
-               <div className="p-4 space-y-4">
-                 <div className="space-y-2">
-                   <h4 className="text-sm font-medium leading-none">คนขับ</h4>
-                   <Command className="border rounded-md">
-                     <CommandInput placeholder="ค้นหาคนขับ..." className="h-9" />
-                     <CommandList>
-                       <CommandEmpty>ไม่พบคนขับ</CommandEmpty>
-                       <CommandGroup className="max-h-[140px] overflow-auto">
-                         {driverOptions.map((driver) => (
-                           <CommandItem
-                             key={driver.value}
-                             value={driver.label}
-                             onSelect={() => {
-                               setDriverFilter(driverFilter === driver.value ? undefined : driver.value);
-                             }}
-                           >
-                             <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border", driverFilter === driver.value ? "bg-primary border-primary text-primary-foreground" : "border-primary opacity-50 [&_svg]:invisible")}>
-                               <Check className="h-4 w-4" />
-                             </div>
-                             {driver.label}
-                           </CommandItem>
-                         ))}
-                       </CommandGroup>
-                     </CommandList>
-                   </Command>
-                 </div>
+              <div className="p-4 space-y-4">
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium leading-none">คนขับ</h4>
+                  <Command className="border rounded-md">
+                    <CommandInput placeholder="ค้นหาคนขับ..." className="h-9" />
+                    <CommandList>
+                      <CommandEmpty>ไม่พบคนขับ</CommandEmpty>
+                      <CommandGroup className="max-h-[140px] overflow-auto">
+                        {driverOptions.map((driver) => (
+                          <CommandItem
+                            key={driver.value}
+                            value={driver.label}
+                            onSelect={() => {
+                              setDriverFilter(
+                                driverFilter === driver.value
+                                  ? undefined
+                                  : driver.value,
+                              );
+                            }}
+                          >
+                            <div
+                              className={cn(
+                                "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border",
+                                driverFilter === driver.value
+                                  ? "bg-primary border-primary text-primary-foreground"
+                                  : "border-primary opacity-50 [&_svg]:invisible",
+                              )}
+                            >
+                              <Check className="h-4 w-4" />
+                            </div>
+                            {driver.label}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </div>
 
-                 <div className="space-y-2">
-                   <h4 className="text-sm font-medium leading-none">ช่วงเวลา</h4>
-                   <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="h-8 text-xs flex-1" onClick={() => setDateFilter({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) })}>เดือนนี้</Button>
-                      <Button variant="outline" size="sm" className="h-8 text-xs flex-1" onClick={() => {
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium leading-none">ช่วงเวลา</h4>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs flex-1"
+                      onClick={() =>
+                        setDateFilter({
+                          from: startOfMonth(new Date()),
+                          to: endOfMonth(new Date()),
+                        })
+                      }
+                    >
+                      เดือนนี้
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs flex-1"
+                      onClick={() => {
                         const lastMonth = subMonths(new Date(), 1);
-                        setDateFilter({ from: startOfMonth(lastMonth), to: endOfMonth(lastMonth) });
-                      }}>เดือนที่แล้ว</Button>
-                   </div>
-                   <div className="border rounded-md p-2 flex justify-center">
-                     <Calendar
-                       mode="range"
-                       selected={dateFilter}
-                       onSelect={setDateFilter}
-                       numberOfMonths={1}
-                     />
-                   </div>
-                 </div>
-               </div>
+                        setDateFilter({
+                          from: startOfMonth(lastMonth),
+                          to: endOfMonth(lastMonth),
+                        });
+                      }}
+                    >
+                      เดือนที่แล้ว
+                    </Button>
+                  </div>
+                  <div className="border rounded-md p-2 flex justify-center">
+                    <Calendar
+                      mode="range"
+                      selected={dateFilter}
+                      onSelect={setDateFilter}
+                      numberOfMonths={1}
+                    />
+                  </div>
+                </div>
+              </div>
             </PopoverContent>
           </Popover>
 
           {hasAnyFilter && (
-            <Button variant="ghost" size="sm" className="h-9 px-2 text-muted-foreground" onClick={clearFilters}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 px-2 text-muted-foreground"
+              onClick={clearFilters}
+            >
               ล้าง
             </Button>
           )}
@@ -337,18 +395,34 @@ export default function AssignmentDriverComponent() {
         {(dateFilter || driverFilter) && (
           <div className="flex flex-wrap items-center gap-2">
             {driverFilter && (
-              <Badge variant="secondary" className="h-7 px-2 rounded-md border-dashed font-normal">
-                <span className="text-muted-foreground mr-1">คนขับ:</span> {getDriverEmail(driverFilter)}
-                <button className="ml-1 hover:bg-muted/50 rounded-full p-0.5" onClick={() => setDriverFilter(undefined)}>
+              <Badge
+                variant="secondary"
+                className="h-7 px-2 rounded-md border-dashed font-normal"
+              >
+                <span className="text-muted-foreground mr-1">คนขับ:</span>{" "}
+                {getDriverEmail(driverFilter)}
+                <button
+                  className="ml-1 hover:bg-muted/50 rounded-full p-0.5"
+                  onClick={() => setDriverFilter(undefined)}
+                >
                   <X className="h-3 w-3" />
                 </button>
               </Badge>
             )}
             {dateFilter?.from && (
-              <Badge variant="secondary" className="h-7 px-2 rounded-md border-dashed font-normal">
-                <span className="text-muted-foreground mr-1">วันที่:</span> {format(dateFilter.from, "dd/MM/yyyy")} 
-                {dateFilter.to ? ` - ${format(dateFilter.to, "dd/MM/yyyy")}` : ""}
-                <button className="ml-1 hover:bg-muted/50 rounded-full p-0.5" onClick={() => setDateFilter(undefined)}>
+              <Badge
+                variant="secondary"
+                className="h-7 px-2 rounded-md border-dashed font-normal"
+              >
+                <span className="text-muted-foreground mr-1">วันที่:</span>{" "}
+                {format(dateFilter.from, "dd/MM/yyyy")}
+                {dateFilter.to
+                  ? ` - ${format(dateFilter.to, "dd/MM/yyyy")}`
+                  : ""}
+                <button
+                  className="ml-1 hover:bg-muted/50 rounded-full p-0.5"
+                  onClick={() => setDateFilter(undefined)}
+                >
                   <X className="h-3 w-3" />
                 </button>
               </Badge>

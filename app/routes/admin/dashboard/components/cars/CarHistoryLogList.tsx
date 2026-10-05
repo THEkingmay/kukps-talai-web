@@ -66,14 +66,16 @@ export default function CarHistoryLogList({
           disabled={isLoading}
           className="h-8"
         >
-          <RefreshCw className={`w-3.5 h-3.5 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+          <RefreshCw
+            className={`w-3.5 h-3.5 mr-2 ${isLoading ? "animate-spin" : ""}`}
+          />
           รีเฟรช
         </Button>
       </div>
 
       {/* Table Container */}
       <div className="bg-background">
-        <div className="max-h-[280px] lg:max-h-[340px] overflow-y-auto relative">
+        <div className="max-h-[65vh] overflow-y-auto relative">
           <Table className="text-xs font-mono">
             <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
               <TableRow>
@@ -92,7 +94,10 @@ export default function CarHistoryLogList({
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={4}
+                    className="h-32 text-center text-muted-foreground"
+                  >
                     <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary/60" />
                     <span>กำลังโหลดประวัติ...</span>
                   </TableCell>
@@ -115,7 +120,10 @@ export default function CarHistoryLogList({
                 </TableRow>
               ) : logs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={4}
+                    className="h-32 text-center text-muted-foreground"
+                  >
                     <MapPin className="w-8 h-8 opacity-20 mx-auto mb-3" />
                     <p className="font-sans text-sm font-medium">
                       ไม่พบประวัติการเดินทาง
@@ -132,7 +140,9 @@ export default function CarHistoryLogList({
                   return (
                     <TableRow
                       key={log.id}
-                      className={isLatest ? "bg-primary/5 hover:bg-primary/10" : ""}
+                      className={
+                        isLatest ? "bg-primary/5 hover:bg-primary/10" : ""
+                      }
                     >
                       <TableCell className="text-center text-muted-foreground">
                         {isLatest ? (
@@ -149,7 +159,10 @@ export default function CarHistoryLogList({
                         <div className="flex items-center gap-2">
                           {formatDate(log.createdAt)}
                           {isLatest && (
-                            <Badge variant="default" className="h-4 px-1.5 text-[10px] leading-none py-0 uppercase">
+                            <Badge
+                              variant="default"
+                              className="h-4 px-1.5 text-[10px] leading-none py-0 uppercase"
+                            >
                               ล่าสุด
                             </Badge>
                           )}

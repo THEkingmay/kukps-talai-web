@@ -19,11 +19,6 @@ interface CarRouteStopsProps {
   onManage: () => void;
 }
 
-/**
- * Read-only stop list for a car's assigned route.
- * Editing (add/rename/delete points) happens in the shared points editor
- * modal opened via the "จัดการจุดจอด" button.
- */
 export default function CarRouteStops({
   routeId,
   routeName,
@@ -85,7 +80,7 @@ export default function CarRouteStops({
 
       {/* Table */}
       <div className="bg-background">
-        <div className="max-h-[280px] lg:max-h-[420px] overflow-y-auto relative">
+        <div className="max-h-[65vh] overflow-y-auto relative">
           <Table className="text-xs font-mono">
             <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
               <TableRow>
@@ -100,7 +95,10 @@ export default function CarRouteStops({
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={6}
+                    className="h-32 text-center text-muted-foreground"
+                  >
                     <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary/60" />
                     <span>กำลังโหลดจุดจอด...</span>
                   </TableCell>
@@ -123,7 +121,10 @@ export default function CarRouteStops({
                 </TableRow>
               ) : points.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={6}
+                    className="h-32 text-center text-muted-foreground"
+                  >
                     <MapPin className="w-8 h-8 opacity-20 mx-auto mb-3" />
                     <p className="font-sans text-sm font-medium">
                       สายรถนี้ยังไม่มีจุดจอด

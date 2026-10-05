@@ -18,6 +18,10 @@ export default [
       route("admin/routes", "routes/admin/routes/page.tsx"),
       route("admin/routes/:routeId", "routes/admin/routes/$routeId.tsx"),
       route("admin/assignments", "routes/admin/assignments/page.tsx"),
+      route(
+        "admin/assignments/:driverId",
+        "routes/admin/assignments/$driverId.tsx",
+      ),
       route("admin/eta", "routes/admin/eta/page.tsx"),
     ]),
   ]),

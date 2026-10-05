@@ -4,10 +4,6 @@ import { AdminShellProvider } from "./ShellContext";
 import TopBar from "./TopBar";
 import Sidebar from "./Sidebar";
 
-/**
- * Vercel-style admin shell: top bar (breadcrumb + controls),
- * section sidebar, scrollable content, global WS alerts.
- */
 export default function AdminShellLayout() {
   return (
     <AdminShellProvider>

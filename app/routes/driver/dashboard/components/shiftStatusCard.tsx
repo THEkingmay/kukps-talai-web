@@ -106,14 +106,8 @@ export default function ShiftStatusCard({
   const endTime = new Date(shift.endTime);
 
   return (
-    <Card
-      className={
-        isDriving
-          ? "border-emerald-500/30 shadow-sm ring-1 ring-emerald-500/20"
-          : "shadow-none"
-      }
-    >
-      <CardContent className="hidden md:inline p-5">
+    <Card>
+      <CardContent className="p-5">
         {/* Status row */}
         <div className="flex items-center justify-between gap-3">
           {isDriving ? (
@@ -122,7 +116,7 @@ export default function ShiftStatusCard({
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
               </span>
-              <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+              <span className="text-sm font-medium text-foreground">
                 กำลังเดินทาง
               </span>
             </div>
@@ -135,41 +129,44 @@ export default function ShiftStatusCard({
             </div>
           )}
           <span className="whitespace-nowrap text-sm tabular-nums text-muted-foreground">
-            <span className="sm:inline">
-              {formatDate(startTime)} - {formatDate(endTime)}
-            </span>
+            {formatDate(startTime)} - {formatDate(endTime)}
           </span>
         </div>
 
-        <div className="mt-1 text-xs text-muted-foreground">
+        <div className="mt-1.5 text-xs text-muted-foreground">
           {route?.name ?? "ไม่ระบุสายรถ"} · รถ {car?.carNumber ?? "-"}
         </div>
 
-        {/* Live elapsed time */}
-        {isDriving && (
-          <div className="mt-4">
-            <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              ขับมาแล้ว
+        {currentDriving ? (
+          <>
+            <div className="mt-5">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                  ขับมาแล้ว
+                </span>
+                <span className="text-[11px] tabular-nums text-muted-foreground">
+                  เริ่ม {format(new Date(currentDriving.startedAt), "HH:mm")}
+                </span>
+              </div>
+              <div className="mt-1.5 text-4xl font-medium tracking-tight tabular-nums text-foreground">
+                {formatElapsed(elapsedMs)}
+              </div>
             </div>
-            <div className="mt-1 text-3xl font-semibold tracking-tight tabular-nums text-foreground">
-              {formatElapsed(elapsedMs)}
-            </div>
-          </div>
-        )}
 
-        {/* Action */}
-        <div className="mt-4">
-          {isFetching ? (
-            <Button size="lg" className="h-11 w-full" disabled>
-              <Loader2 className="animate-spin" /> กำลังโหลด...
-            </Button>
-          ) : isDriving ? (
-            isConfirmingEnd ? (
-              <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3">
-                <p className="text-sm text-foreground">
-                  คุณขับมาแล้ว {formatElapsed(elapsedMs)} — จะหยุดงานตอนนี้ ไหม?
+            {isConfirmingEnd ? (
+              <div className="mt-5">
+                <p className="text-sm font-medium text-foreground">
+                  จะหยุดงานตอนนี้ไหม?
                 </p>
-                <div className="mt-3 flex gap-2">
+                <div className="mt-2.5 flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="h-11 flex-1"
+                    onClick={() => setIsConfirmingEnd(false)}
+                    disabled={isPending}
+                  >
+                    ยกเลิก
+                  </Button>
                   <Button
                     variant="destructive"
                     className="h-11 flex-1"
@@ -180,16 +177,8 @@ export default function ShiftStatusCard({
                       <Loader2 className="animate-spin" />
                     ) : (
                       <OctagonX />
-                    )}{" "}
+                    )}
                     หยุดงาน
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="h-11 flex-1"
-                    onClick={() => setIsConfirmingEnd(false)}
-                    disabled={isPending}
-                  >
-                    ยกเลิก
                   </Button>
                 </div>
               </div>
@@ -197,127 +186,34 @@ export default function ShiftStatusCard({
               <Button
                 variant="outline"
                 size="lg"
-                className="h-11 w-full"
+                className="mt-5 h-11 w-full"
                 onClick={() => setIsConfirmingEnd(true)}
               >
-                <OctagonX /> หยุดงาน
+                <OctagonX />
+                หยุดงาน
               </Button>
-            )
-          ) : (
-            <Button
-              size="lg"
-              className="h-11 w-full"
-              onClick={handleStart}
-              disabled={isPending}
-            >
-              {isPending ? <Loader2 className="animate-spin" /> : <Play />}{" "}
-              เริ่มงาน
-            </Button>
-          )}
-        </div>
-      </CardContent>
-      <CardContent className="inline md:hidden p-5">
-        {/* Status row */}
-        <div className="flex flex-col items-center justify-between gap-3">
-          {isDriving ? (
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-              </span>
-              <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                กำลังเดินทาง
-              </span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-muted-foreground/40" />
-              <span className="text-sm font-medium text-foreground">
-                พร้อมเริ่มงาน
-              </span>
-            </div>
-          )}
-          <span className="whitespace-nowrap text-sm tabular-nums text-muted-foreground">
-            <span className="sm:inline">
-              {formatDate(startTime)} - {formatDate(endTime)}
-            </span>
-          </span>
-        </div>
-
-        <div className="mt-1 text-xs text-center text-muted-foreground">
-          {route?.name ?? "ไม่ระบุสายรถ"} · รถ {car?.carNumber ?? "-"}
-        </div>
-
-        {/* Live elapsed time */}
-        {isDriving && (
-          <div className="mt-4 text-center">
-            <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              ขับมาแล้ว
-            </div>
-            <div className="mt-1 text-3xl font-semibold tracking-tight tabular-nums text-foreground">
-              {formatElapsed(elapsedMs)}
-            </div>
+            )}
+          </>
+        ) : (
+          <div className="mt-5">
+            {isFetching ? (
+              <Button size="lg" className="h-11 w-full" disabled>
+                <Loader2 className="animate-spin" />
+                กำลังโหลด...
+              </Button>
+            ) : (
+              <Button
+                size="lg"
+                className="h-11 w-full"
+                onClick={handleStart}
+                disabled={isPending}
+              >
+                {isPending ? <Loader2 className="animate-spin" /> : <Play />}
+                เริ่มงาน
+              </Button>
+            )}
           </div>
         )}
-
-        {/* Action */}
-        <div className="mt-4">
-          {isFetching ? (
-            <Button size="lg" className="h-11 w-full" disabled>
-              <Loader2 className="animate-spin" /> กำลังโหลด...
-            </Button>
-          ) : isDriving ? (
-            isConfirmingEnd ? (
-              <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3">
-                <p className="text-sm text-foreground">
-                  คุณขับมาแล้ว {formatElapsed(elapsedMs)} — จะหยุดงานตอนนี้ ไหม?
-                </p>
-                <div className="mt-3 flex gap-2">
-                  <Button
-                    variant="destructive"
-                    className="h-11 flex-1"
-                    onClick={handleEndConfirm}
-                    disabled={isPending}
-                  >
-                    {isPending ? (
-                      <Loader2 className="animate-spin" />
-                    ) : (
-                      <OctagonX />
-                    )}{" "}
-                    หยุดงาน
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="h-11 flex-1"
-                    onClick={() => setIsConfirmingEnd(false)}
-                    disabled={isPending}
-                  >
-                    ยกเลิก
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <Button
-                variant="outline"
-                size="lg"
-                className="h-11 w-full"
-                onClick={() => setIsConfirmingEnd(true)}
-              >
-                <OctagonX /> หยุดงาน
-              </Button>
-            )
-          ) : (
-            <Button
-              size="lg"
-              className="h-11 w-full"
-              onClick={handleStart}
-              disabled={isPending}
-            >
-              {isPending ? <Loader2 className="animate-spin" /> : <Play />}{" "}
-              เริ่มงาน
-            </Button>
-          )}
-        </div>
       </CardContent>
     </Card>
   );

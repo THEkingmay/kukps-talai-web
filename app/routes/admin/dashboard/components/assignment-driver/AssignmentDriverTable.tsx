@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Link } from "react-router";
 import { format, isBefore, isAfter } from "date-fns";
 import { th } from "date-fns/locale";
 import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
@@ -94,7 +95,10 @@ export function AssignmentDriverTable({
     if (assignments.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+          <TableCell
+            colSpan={6}
+            className="h-24 text-center text-muted-foreground"
+          >
             ไม่พบข้อมูลการมอบหมายงาน
           </TableCell>
         </TableRow>
@@ -111,9 +115,13 @@ export function AssignmentDriverTable({
       return (
         <TableRow key={shift.id}>
           <TableCell>
-            <div className="font-medium">
+            <Link
+              to={`/admin/assignments/${shift.driverId}`}
+              className="font-bold text-foreground hover:underline"
+            >
               {shift.driverObj?.email || shift.driverId}
-            </div>
+            </Link>
+
             <div className="text-xs text-muted-foreground">
               ID: {shift.driverId.slice(0, 8)}...
             </div>
@@ -168,9 +176,7 @@ export function AssignmentDriverTable({
             <TableHead className="w-[80px]"></TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {renderContent()}
-        </TableBody>
+        <TableBody>{renderContent()}</TableBody>
       </Table>
     </div>
   );
