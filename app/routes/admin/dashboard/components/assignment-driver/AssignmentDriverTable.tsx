@@ -2,7 +2,7 @@ import * as React from "react";
 import { Link } from "react-router";
 import { format, isBefore, isAfter } from "date-fns";
 import { th } from "date-fns/locale";
-import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -28,6 +28,9 @@ interface ExtendedShift extends CarDriverShift {
   carObj?: ResponseCarData;
 }
 
+type SortColumn = "driver" | "car" | "startTime" | "endTime" | "status";
+type SortDirection = "asc" | "desc";
+
 interface AssignmentDriverTableProps {
   assignments: ExtendedShift[];
   onEdit: (shift: CarDriverShift) => void;
@@ -50,6 +53,8 @@ export function AssignmentDriverTable({
   isLoading,
 }: AssignmentDriverTableProps) {
   const { confirm } = useDialog();
+  const [sortColumn, setSortColumn] = React.useState<SortColumn>("startTime");
+  const [sortDirection, setSortDirection] = React.useState<SortDirection>("desc");
 
   const getStatus = (start: Date, end: Date) => {
     const now = new Date();
@@ -65,6 +70,59 @@ export function AssignmentDriverTable({
     }
   };
 
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  const sortedAssignments = React.useMemo(() => {
+    return [...assignments].sort((a, b) => {
+      let comparison = 0;
+
+      switch (sortColumn) {
+        case "driver":
+          comparison = (a.driverObj?.email || a.driverId).localeCompare(
+            b.driverObj?.email || b.driverId
+          );
+          break;
+        case "car":
+          comparison = (a.carObj?.carNumber || a.carId).localeCompare(
+            b.carObj?.carNumber || b.carId
+          );
+          break;
+        case "startTime":
+          comparison = new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+          break;
+        case "endTime":
+          comparison = new Date(a.endTime).getTime() - new Date(b.endTime).getTime();
+          break;
+        case "status": {
+          const statusA = getStatus(a.startTime, a.endTime).label;
+          const statusB = getStatus(b.startTime, b.endTime).label;
+          comparison = statusA.localeCompare(statusB);
+          break;
+        }
+      }
+
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
+  }, [assignments, sortColumn, sortDirection]);
+
+  const SortIcon = ({ column }: { column: SortColumn }) => {
+    if (sortColumn !== column) {
+      return <ArrowUpDown className="h-4 w-4 text-muted-foreground" />;
+    }
+    return sortDirection === "asc" ? (
+      <ArrowUp className="h-4 w-4 text-foreground" />
+    ) : (
+      <ArrowDown className="h-4 w-4 text-foreground" />
+    );
+  };
+
   const handleDelete = (id: string) => {
     confirm({
       title: "ยืนยันการลบ",
@@ -75,7 +133,7 @@ export function AssignmentDriverTable({
     });
   };
 
-  const renderContent = () => {
+  const renderContent = (data: ExtendedShift[]) => {
     if (isLoading) {
       return (
         <TableSkeleton
@@ -92,7 +150,7 @@ export function AssignmentDriverTable({
       );
     }
 
-    if (assignments.length === 0) {
+    if (data.length === 0) {
       return (
         <TableRow>
           <TableCell
@@ -105,7 +163,7 @@ export function AssignmentDriverTable({
       );
     }
 
-    return assignments.map((shift) => {
+    return data.map((shift) => {
       const status = getStatus(shift.startTime, shift.endTime);
       let statusText = "";
       if (status.label === "Upcoming") statusText = "งานในอนาคต";
@@ -168,15 +226,40 @@ export function AssignmentDriverTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>คนขับรถ</TableHead>
-            <TableHead>รถ (ป้ายทะเบียน)</TableHead>
-            <TableHead>เวลาเริ่มงาน</TableHead>
-            <TableHead>เวลาสิ้นสุด</TableHead>
-            <TableHead>สถานะ</TableHead>
+            <TableHead className="cursor-pointer select-none hover:bg-muted/50" onClick={() => handleSort("driver")}>
+              <div className="flex items-center gap-1">
+                คนขับรถ
+                <SortIcon column="driver" />
+              </div>
+            </TableHead>
+            <TableHead className="cursor-pointer select-none hover:bg-muted/50" onClick={() => handleSort("car")}>
+              <div className="flex items-center gap-1">
+                รถ (ป้ายทะเบียน)
+                <SortIcon column="car" />
+              </div>
+            </TableHead>
+            <TableHead className="cursor-pointer select-none hover:bg-muted/50" onClick={() => handleSort("startTime")}>
+              <div className="flex items-center gap-1">
+                เวลาเริ่มงาน
+                <SortIcon column="startTime" />
+              </div>
+            </TableHead>
+            <TableHead className="cursor-pointer select-none hover:bg-muted/50" onClick={() => handleSort("endTime")}>
+              <div className="flex items-center gap-1">
+                เวลาสิ้นสุด
+                <SortIcon column="endTime" />
+              </div>
+            </TableHead>
+            <TableHead className="cursor-pointer select-none hover:bg-muted/50" onClick={() => handleSort("status")}>
+              <div className="flex items-center gap-1">
+                สถานะ
+                <SortIcon column="status" />
+              </div>
+            </TableHead>
             <TableHead className="w-[80px]"></TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>{renderContent()}</TableBody>
+        <TableBody>{renderContent(sortedAssignments)}</TableBody>
       </Table>
     </div>
   );

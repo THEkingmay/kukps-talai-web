@@ -69,11 +69,15 @@ export async function endDriving(
 }
 
 /** GET /driving-logs/current — Driver ดูงานที่กำลังทำอยู่ */
-export async function getCurrentDriving(): Promise<
-  ActionResult<{ data: DrivingLog | null }>
-> {
+/** GET /driving-logs/current?driverId={userId} — Admin ดูงานที่กำลังทำอยู่ของ driver */
+
+export async function getCurrentDriving(
+  driverId?: string,
+): Promise<ActionResult<{ data: DrivingLog | null }>> {
   try {
-    const res = await apiClient("/driving-logs/current");
+    const res = await apiClient(
+      `/driving-logs/current${driverId ? `?driverId=${driverId}` : ""}`,
+    );
     return { success: true, data: res.data };
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -119,11 +123,13 @@ export async function getMyLogs(): Promise<
 }
 
 //  Admin ดู driving logs ทั้งหมด */
-export async function getAll(): Promise<
-  ActionResult<{ data: GetAlllogType[] }>
-> {
+export async function getAll(
+  driverId?: string,
+): Promise<ActionResult<{ data: GetAlllogType[] }>> {
   try {
-    const res = await apiClient(`/driving-logs`);
+    const res = await apiClient(
+      `/driving-logs${driverId ? `?driverId=${driverId}` : ""}`,
+    );
     return { success: true, data: res.data };
   } catch (error) {
     if (axios.isAxiosError(error)) {

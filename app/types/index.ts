@@ -44,14 +44,21 @@ export interface RoutePoint {
 }
 
 export type ResponseCarData = {
+  id: string;
+  createdAt: Date;
+  deletedAt: Date | null;
+  updatedBy: string | null;
+  updatedAt: Date;
   routeId: string | null;
   carNumber: string;
   status: "active" | "inactive";
-  createdAt: Date;
-  id: string;
-  updatedBy: string | null;
-  updatedAt: Date;
-  deletedAt: string | null;
+  driverData?: {
+    id: string | null;
+    firstName: string | null;
+    lastName: string | null;
+    profileImageUrl: string | null;
+    email: string | null;
+  } | null;
 };
 export interface CarHistoryLog {
   id: string;

@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState, useEffect, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import type { ResponseCarData, Route } from "~/types";
+import type { ResponseCarData, Route, DrivingLog } from "~/types";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { useDialog } from "~/components/providers/DialogProvider";
 import {
   getCarById,
@@ -9,8 +10,10 @@ import {
   restoreCar,
 } from "~/actions/car.action";
 import { getRoutes } from "~/actions/route.action";
-import { formatDate } from "~/helper";
+import { getCurrentDriving } from "~/actions/driving-log.action";
+import { formatElapsed } from "~/routes/driver/dashboard/components/shiftStatusCard";
 
+import { formatDate } from "~/helper";
 import { CarStatusBadge } from "../dashboard/components/cars/CarTable";
 import CarHistoryLogList from "../dashboard/components/cars/CarHistoryLogList";
 import CarRouteStops from "../dashboard/components/cars/CarRouteStops";
@@ -46,12 +49,15 @@ export default function CarDetailPage() {
   const navigate = useNavigate();
   const { alert, confirm } = useDialog();
   const { setBreadcrumb } = useAdminShell();
+  const [now, setNow] = useState(() => Date.now());
 
   const [car, setCar] = useState<ResponseCarData | null>(null);
   const [routes, setRoutes] = useState<Route[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  const [currentDriving, setCurrentDriving] = useState<DrivingLog | null>(null);
+  const isDriving = !!currentDriving;
   // Modals / actions
   const [editingCar, setEditingCar] = useState<ResponseCarData | null>(null);
   const [editCarNumber, setEditCarNumber] = useState<string>("");
@@ -65,6 +71,8 @@ export default function CarDetailPage() {
     if (!carId) return;
     setIsLoading(true);
     setLoadError(null);
+    // clear stale driving state so a refetch (restore, driver change) can't show an outdated shift
+    setCurrentDriving(null);
     try {
       const [carRes, routesRes] = await Promise.all([
         getCarById(carId),
@@ -72,6 +80,14 @@ export default function CarDetailPage() {
       ]);
       if (carRes.success) {
         setCar(carRes.data.data);
+        if (carRes.data.data.driverData?.id) {
+          const drivingLogRes = await getCurrentDriving(
+            carRes.data.data.driverData.id,
+          );
+          if (drivingLogRes.success) {
+            setCurrentDriving(drivingLogRes.data.data);
+          }
+        }
       } else {
         setLoadError(carRes.error || "ไม่พบข้อมูลรถตะไล");
       }
@@ -89,6 +105,11 @@ export default function CarDetailPage() {
     fetchCar();
   }, [fetchCar]);
 
+  useEffect(() => {
+    if (!isDriving) return;
+    const timer = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(timer);
+  }, [isDriving]);
   // Breadcrumb: "รถตะไล / <carNumber>"
   useEffect(() => {
     setBreadcrumb(car?.carNumber ?? null);
@@ -416,6 +437,93 @@ export default function CarDetailPage() {
                   </span>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm text-muted-foreground">
+                คนขับรถที่รับผิดชอบปัจจุบัน
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {car.driverData ? (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10 border-muted">
+                        {car.driverData.profileImageUrl ? (
+                          <AvatarImage
+                            src={car.driverData.profileImageUrl}
+                            alt={car.driverData.email || "User"}
+                            className="hover:scale-[1.02] transition-transform"
+                          />
+                        ) : (
+                          <AvatarFallback className="bg-muted hover:bg-muted/80 transition-colors">
+                            {car.driverData.firstName?.[0] || "U"}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                      <div>
+                        <p className="font-semibold text-base text-foreground">
+                          {car.driverData.firstName} {car.driverData.lastName}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {car.driverData.email}
+                        </p>
+                      </div>
+                    </div>
+                    <Link
+                      to={`/admin/assignments/${car.driverData.id}`}
+                      className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                    >
+                      ดูประวัติการมอบหมายงาน
+                    </Link>
+                  </>
+                ) : (
+                  <div className="text-center py-6">
+                    <div className="flex items-center justify-center mb-2">
+                      <Avatar className="h-8 w-8 border-muted">
+                        <AvatarFallback className="bg-muted text-muted-foreground">
+                          ?
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      ไม่มีข้อมูลคนขับรถที่รับผิดชอบปัจจุบัน
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      โปรดตรวจสอบการมอบหมายงานในระบบ
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm text-muted-foreground">
+                สถานะการทำงานปัจจุบัน
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {currentDriving ? (
+                <div className="space-y-3">
+                  <p className="text-xs text-muted-foreground">
+                    เริ่มทำงาน: {formatDate(currentDriving.startedAt)}
+                  </p>
+                  <p className="font-semibold text-base text-foreground">
+                    ทำงานมาแล้ว{" "}
+                    {formatElapsed(
+                      now - new Date(currentDriving.startedAt).getTime(),
+                    )}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  ยังไม่ได้กดเริ่มงาน
+                </p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
