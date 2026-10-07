@@ -10,6 +10,7 @@ import {
   restoreCar,
 } from "~/actions/car.action";
 import { getRoutes } from "~/actions/route.action";
+import { getRoutePointsByRouteId } from "~/actions/route-points.action";
 import { getCurrentDriving } from "~/actions/driving-log.action";
 import { formatElapsed } from "~/routes/driver/dashboard/components/shiftStatusCard";
 
@@ -26,7 +27,27 @@ import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { Loader2, SearchX } from "lucide-react";
+
+import {
+  Loader2,
+  SearchX,
+  Clock,
+  User,
+  Shield,
+  CheckCircle,
+  Info,
+  ExternalLink,
+  RefreshCw,
+  Car,
+  Settings,
+  Wifi,
+  Database,
+  Activity,
+  MapPin as MapPinIcon,
+  Route as RouteIcon,
+  Copy,
+  Check,
+} from "lucide-react";
 import { VercelSpinner } from "~/components/ui/Loading";
 
 // Leaflet uses `window` — keep it off the SSR path (same as the old detail modal).
@@ -57,6 +78,7 @@ export default function CarDetailPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const [currentDriving, setCurrentDriving] = useState<DrivingLog | null>(null);
+  const [routeStopCount, setRouteStopCount] = useState<number>(0);
   const isDriving = !!currentDriving;
   // Modals / actions
   const [editingCar, setEditingCar] = useState<ResponseCarData | null>(null);
@@ -120,6 +142,23 @@ export default function CarDetailPage() {
   const carRoute = car?.routeId
     ? routes.find((r) => r.id === car.routeId)
     : null;
+
+  // Count real stops for the assigned route (routes API doesn't include stops)
+  useEffect(() => {
+    let cancelled = false;
+    if (!car?.routeId) {
+      setRouteStopCount(0);
+      return;
+    }
+    getRoutePointsByRouteId(car.routeId).then((res) => {
+      if (!cancelled && res.success) {
+        setRouteStopCount(res.data.data?.length ?? 0);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [car?.routeId]);
 
   // --- Actions ---
 
@@ -366,168 +405,212 @@ export default function CarDetailPage() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6 pt-4">
-          {/* Assigned route */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm text-muted-foreground">
-                สายการเดินรถปัจจุบัน
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {carRoute ? (
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="font-mono text-xs">
-                      {carRoute.name}
-                    </Badge>
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {carRoute.id}
-                    </span>
-                  </div>
-                  <Button variant="outline" size="sm" asChild className="h-8">
-                    <Link to={`/admin/routes/${carRoute.id}`}>
-                      ดูรายละเอียดสายรถ →
+          {/* Assigned Route Card */}
+          <Card className="border-border/50 transition-shadow ">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <RouteIcon className="h-4 w-4 text-muted-foreground/70" />
+                  สายการเดินรถที่กำหนด
+                </CardTitle>
+                {carRoute && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    asChild
+                    className="h-8 px-3"
+                  >
+                    <Link
+                      to={`/admin/routes/${carRoute.id}`}
+                      className="flex items-center gap-1"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      ดูรายละเอียด
                     </Link>
                   </Button>
-                </div>
-              ) : (
-                <p className="text-sm italic text-muted-foreground">
-                  รถนี้ยังไม่ได้ assign สายการเดินรถ — กด "แก้ไขข้อมูล"
-                  เพื่อเลือกสาย
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* General info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>ข้อมูลทั่วไป</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="divide-y text-sm">
-                <div className="flex items-center justify-between gap-4 py-2.5">
-                  <span className="text-muted-foreground">รหัสระบบ (ID)</span>
-                  <span className="truncate pl-4 font-mono font-semibold">
-                    {car.id}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-4 py-2.5">
-                  <span className="text-muted-foreground">สถานะ</span>
-                  <span>
-                    <CarStatusBadge status={car.status} isDeleted={isDeleted} />
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-4 py-2.5">
-                  <span className="text-muted-foreground">ผู้แก้ไขล่าสุด</span>
-                  <span className="font-mono font-semibold">
-                    {car.updatedBy || "System Admin"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-4 py-2.5">
-                  <span className="text-muted-foreground">สร้างเมื่อ</span>
-                  <span className="font-semibold">
-                    {formatDate(car.createdAt)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-4 py-2.5">
-                  <span className="text-muted-foreground">อัปเดตล่าสุด</span>
-                  <span className="font-semibold">
-                    {formatDate(car.updatedAt)}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm text-muted-foreground">
-                คนขับรถที่รับผิดชอบปัจจุบัน
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {car.driverData ? (
-                  <>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10 border-muted">
-                        {car.driverData.profileImageUrl ? (
-                          <AvatarImage
-                            src={car.driverData.profileImageUrl}
-                            alt={car.driverData.email || "User"}
-                            className="hover:scale-[1.02] transition-transform"
-                          />
-                        ) : (
-                          <AvatarFallback className="bg-muted hover:bg-muted/80 transition-colors">
-                            {car.driverData.firstName?.[0] || "U"}
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
-                      <div>
-                        <p className="font-semibold text-base text-foreground">
-                          {car.driverData.firstName} {car.driverData.lastName}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {car.driverData.email}
-                        </p>
-                      </div>
-                    </div>
-                    <Link
-                      to={`/admin/assignments/${car.driverData.id}`}
-                      className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
-                    >
-                      ดูประวัติการมอบหมายงาน
-                    </Link>
-                  </>
-                ) : (
-                  <div className="text-center py-6">
-                    <div className="flex items-center justify-center mb-2">
-                      <Avatar className="h-8 w-8 border-muted">
-                        <AvatarFallback className="bg-muted text-muted-foreground">
-                          ?
-                        </AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      ไม่มีข้อมูลคนขับรถที่รับผิดชอบปัจจุบัน
-                    </p>
-                    <p className="text-[10px] text-muted-foreground mt-1">
-                      โปรดตรวจสอบการมอบหมายงานในระบบ
-                    </p>
-                  </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm text-muted-foreground">
-                สถานะการทำงานปัจจุบัน
-              </CardTitle>
             </CardHeader>
-            <CardContent>
-              {currentDriving ? (
-                <div className="space-y-3">
-                  <p className="text-xs text-muted-foreground">
-                    เริ่มทำงาน: {formatDate(currentDriving.startedAt)}
-                  </p>
-                  <p className="font-semibold text-base text-foreground">
-                    ทำงานมาแล้ว{" "}
-                    {formatElapsed(
-                      now - new Date(currentDriving.startedAt).getTime(),
-                    )}
-                  </p>
+            <CardContent className="pt-0">
+              {carRoute ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg border border-border/50">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <RouteIcon className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-foreground truncate">
+                        {carRoute.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground font-mono">
+                        {carRoute.id}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <Badge variant="secondary" className="text-xs gap-1">
+                        <MapPinIcon className="h-3 w-3" />
+                        {routeStopCount} จุดหยุด
+                      </Badge>
+                    </div>
+                  </div>
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">
-                  ยังไม่ได้กดเริ่มงาน
-                </p>
+                <div className="flex flex-col items-center justify-center gap-3 py-8 text-center">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/50 text-muted-foreground/50">
+                    <RouteIcon className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      ยังไม่ได้กำหนดสายการเดินรถ
+                    </p>
+                    <p className="text-xs text-muted-foreground/70 mt-1">
+                      กด "แก้ไขข้อมูล" เพื่อเลือกสายรถ
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleOpenEdit}
+                    className="w-full sm:w-auto"
+                  >
+                    <Settings className="h-3.5 w-3.5 mr-1.5" />
+                    ตั้งค่าสายรถ
+                  </Button>
+                </div>
               )}
             </CardContent>
           </Card>
-        </TabsContent>
 
+          {/* General Info Grid */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <InfoCard
+              icon={<Database className="h-4 w-4" />}
+              label="รหัสระบบ (ID)"
+              value={car.id}
+              mono
+              copyable
+            />
+            <InfoCard
+              icon={<Car className="h-4 w-4" />}
+              label="สถานะการเคลื่อนที่"
+              value={
+                <CarStatusBadge status={car.status} isDeleted={isDeleted} />
+              }
+            />
+            <InfoCard
+              icon={<User className="h-4 w-4" />}
+              label="ผู้แก้ไขล่าสุด"
+              value={car.updatedBy || "System Admin"}
+              mono
+            />
+            <InfoCard
+              icon={<Clock className="h-4 w-4" />}
+              label="สร้างเมื่อ"
+              value={formatDate(car.createdAt)}
+            />
+            <InfoCard
+              icon={<RefreshCw className="h-4 w-4" />}
+              label="อัปเดตล่าสุด"
+              value={formatDate(car.updatedAt)}
+            />
+
+            <InfoCard
+              icon={<Wifi className="h-4 w-4" />}
+              label="MQTT Topic"
+              value={`car/${car.id}`}
+              mono
+              copyable
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4 ">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm text-muted-foreground">
+                  คนขับรถที่รับผิดชอบปัจจุบัน
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {car.driverData ? (
+                    <>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10 border-muted">
+                          {car.driverData.profileImageUrl ? (
+                            <AvatarImage
+                              src={car.driverData.profileImageUrl}
+                              alt={car.driverData.email || "User"}
+                              className="hover:scale-[1.02] transition-transform"
+                            />
+                          ) : (
+                            <AvatarFallback className="bg-muted hover:bg-muted/80 transition-colors">
+                              {car.driverData.firstName?.[0] || "U"}
+                            </AvatarFallback>
+                          )}
+                        </Avatar>
+                        <div>
+                          <p className="font-semibold text-base text-foreground">
+                            {car.driverData.firstName} {car.driverData.lastName}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {car.driverData.email}
+                          </p>
+                        </div>
+                      </div>
+                      <Link
+                        to={`/admin/assignments/${car.driverData.id}`}
+                        className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                      >
+                        ดูประวัติการมอบหมายงาน
+                      </Link>
+                    </>
+                  ) : (
+                    <div className="text-center py-6">
+                      <div className="flex items-center justify-center mb-2">
+                        <Avatar className="h-8 w-8 border-muted">
+                          <AvatarFallback className="bg-muted text-muted-foreground">
+                            ?
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        ไม่มีข้อมูลคนขับรถที่รับผิดชอบปัจจุบัน
+                      </p>
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        โปรดตรวจสอบการมอบหมายงานในระบบ
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm text-muted-foreground">
+                  สถานะการทำงานปัจจุบัน
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {currentDriving ? (
+                  <div className="space-y-3">
+                    <p className="text-xs text-muted-foreground">
+                      เริ่มทำงาน: {formatDate(currentDriving.startedAt)}
+                    </p>
+                    <p className="font-semibold text-base text-foreground">
+                      ทำงานมาแล้ว{" "}
+                      {formatElapsed(
+                        now - new Date(currentDriving.startedAt).getTime(),
+                      )}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    ยังไม่ได้กดเริ่มงาน
+                  </p>
+                )}
+              </CardContent>
+            </Card>{" "}
+          </div>
+        </TabsContent>
         <TabsContent value="live-map" className="pt-4">
           <div className="relative h-[80vh] overflow-hidden rounded-xl border bg-card shadow-sm ">
             <Suspense
@@ -596,5 +679,85 @@ export default function CarDetailPage() {
         onClose={() => setPointsRoute(null)}
       />
     </div>
+  );
+}
+
+type InfoCardBadgeVariant = React.ComponentProps<typeof Badge>["variant"];
+
+interface InfoCardProps {
+  icon: React.ReactNode;
+  label: string;
+  value: React.ReactNode;
+  mono?: boolean;
+  copyable?: boolean;
+  badge?: InfoCardBadgeVariant;
+  badgeIcon?: React.ReactNode;
+}
+
+function InfoCard({
+  icon,
+  label,
+  value,
+  mono,
+  copyable,
+  badge,
+  badgeIcon,
+}: InfoCardProps) {
+  const [copied, setCopied] = useState(false);
+  const textValue = typeof value === "string" ? value : null;
+
+  const handleCopy = async () => {
+    if (!textValue) return;
+    try {
+      await navigator.clipboard.writeText(textValue);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // clipboard unavailable (permissions / non-secure context) — fail silently
+    }
+  };
+
+  return (
+    <Card className="border-border/50">
+      <CardContent className="flex items-start gap-3 p-4">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted/50 text-muted-foreground">
+          {icon}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs text-muted-foreground">{label}</p>
+          <div className="mt-1 flex items-center gap-1.5">
+            {badge ? (
+              <Badge variant={badge} className="gap-1">
+                {badgeIcon}
+                {value}
+              </Badge>
+            ) : (
+              <p
+                className={`truncate text-sm font-medium text-foreground ${
+                  mono ? "font-mono text-xs" : ""
+                }`}
+              >
+                {value}
+              </p>
+            )}
+            {copyable && textValue && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 shrink-0 text-muted-foreground hover:text-foreground"
+                onClick={handleCopy}
+                aria-label={`คัดลอก${label}`}
+              >
+                {copied ? (
+                  <Check className="h-3.5 w-3.5 text-green-600" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

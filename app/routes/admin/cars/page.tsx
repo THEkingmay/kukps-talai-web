@@ -25,8 +25,7 @@ export function meta() {
     { title: "รถตะไล — KUKPS smart talai" },
     {
       name: "description",
-      content:
-        "จัดการข้อมูลรถตะไลประจำสาย และข้อมูลการเดินรถเบื้องต้น",
+      content: "จัดการข้อมูลรถตะไลประจำสาย และข้อมูลการเดินรถเบื้องต้น",
     },
   ];
 }
@@ -63,9 +62,7 @@ export default function CarsListPage() {
 
   // Prevent background scrolling when any modal is active
   const isAnyModalOpen =
-    isCreateModalOpen ||
-    Boolean(editingCar) ||
-    Boolean(credentialCarId);
+    isCreateModalOpen || Boolean(editingCar) || Boolean(credentialCarId);
 
   useEffect(() => {
     setBreadcrumb(null);
@@ -90,11 +87,7 @@ export default function CarsListPage() {
       const [carRes, routeRes] = await Promise.all([getCars(), getRoutes()]);
 
       if (carRes.success) {
-        setCars(
-          carRes.data.data.sort((a, b) =>
-            a.createdAt > b.createdAt ? -1 : 1,
-          ) || [],
-        );
+        setCars(carRes.data.data);
       } else {
         setError(carRes.error || "ดึงข้อมูลยานพาหนะไม่สำเร็จ");
       }

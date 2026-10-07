@@ -24,6 +24,28 @@ export async function getAll(): Promise<ActionResult<{ data: User[] }>> {
   }
 }
 
+export async function getById(
+  id: string,
+): Promise<ActionResult<{ data: User }>> {
+  try {
+    const response = await apiClient.get(`/users/${id}`);
+    return { success: true, data: response.data };
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      return {
+        success: false,
+        error:
+          err.response?.data?.message ?? err.message ?? "ดึงข้อมูลไม่สำเร็จ",
+      };
+    }
+
+    return {
+      success: false,
+      error: "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ",
+    };
+  }
+}
+
 export async function restoreUser(
   id: string,
 ): Promise<ActionResult<{ message: string }>> {
