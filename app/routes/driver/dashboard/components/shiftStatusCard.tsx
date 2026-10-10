@@ -4,12 +4,7 @@ import {
   getCurrentDriving,
   startDriving,
 } from "~/actions/driving-log.action";
-import type {
-  CarDriverShift,
-  DrivingLog,
-  ResponseCarData,
-  Route,
-} from "~/types";
+import type { CarDriverShift, DrivingLog } from "~/types";
 import { Card, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { useDialog } from "~/components/providers/DialogProvider";
@@ -27,15 +22,9 @@ export function formatElapsed(ms: number) {
 
 interface ShiftStatusCardProps {
   shift: CarDriverShift;
-  car?: ResponseCarData;
-  route?: Route;
 }
 
-export default function ShiftStatusCard({
-  shift,
-  car,
-  route,
-}: ShiftStatusCardProps) {
+export default function ShiftStatusCard({ shift }: ShiftStatusCardProps) {
   const { alert } = useDialog();
   const [currentDriving, setCurrentDriving] = useState<DrivingLog | null>(null);
   const [isFetching, setIsFetching] = useState(true);
@@ -134,7 +123,8 @@ export default function ShiftStatusCard({
         </div>
 
         <div className="mt-1.5 text-xs text-muted-foreground">
-          {route?.name ?? "ไม่ระบุสายรถ"} · รถ {car?.carNumber ?? "-"}
+          {shift.moreData.routeName ?? "ไม่ระบุสายรถ"} · รถ{" "}
+          {shift.moreData.carNumber ?? "-"}
         </div>
 
         {currentDriving ? (

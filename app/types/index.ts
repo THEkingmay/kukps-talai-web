@@ -81,6 +81,10 @@ export interface CarDriverShift {
     isEditable: boolean;
     message: string;
   }; // จาก backend: ประเมินว่าลบ/แก้ไขได้หรือไม่ พร้อมเหตุผล
+  moreData: {
+    carNumber: string | null;
+    routeName: string | null;
+  };
 }
 
 export interface SessionUserType {

@@ -2,13 +2,7 @@ import { useEffect, useState } from "react";
 import Navbar from "~/components/layout/Navbar";
 import { useAuth } from "~/components/providers/AuthProvider";
 import { getByDriverId } from "~/actions/assignment-driver.action";
-import { getCars } from "~/actions/car.action";
-import { getRoutes } from "~/actions/route.action";
-import {
-  getMyLogs,
-  type GetDrivingLogType,
-} from "~/actions/driving-log.action";
-import type { CarDriverShift, ResponseCarData, Route } from "~/types";
+import type { CarDriverShift } from "~/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Card, CardContent } from "~/components/ui/card";
 import {
@@ -25,19 +19,10 @@ import Loading from "~/components/ui/Loading";
 import { useDialog } from "~/components/providers/DialogProvider";
 import ShiftStatusCard from "./components/shiftStatusCard";
 
-const formatHours = (ms: number) => {
-  if (ms <= 0) return "0 ชม.";
-  const hours = ms / 3_600_000;
-  return `${hours.toFixed(1).replace(/\.0$/, "")} ชม.`;
-};
-
 export default function DriverDashboardPage() {
   const { user } = useAuth();
   const { alert } = useDialog();
   const [shifts, setShifts] = useState<CarDriverShift[]>([]);
-  const [cars, setCars] = useState<Record<string, ResponseCarData>>({});
-  const [routes, setRoutes] = useState<Record<string, Route>>({});
-  const [myLogs, setMyLogs] = useState<GetDrivingLogType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -46,35 +31,10 @@ export default function DriverDashboardPage() {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const [shiftsRes, carsRes, routesRes, logsRes] = await Promise.all([
-          getByDriverId(user.id),
-          getCars(),
-          getRoutes(),
-          getMyLogs(),
-        ]);
+        const shiftsRes = await getByDriverId(user.id);
 
         if (shiftsRes.success) {
           setShifts(shiftsRes.data.data);
-        }
-
-        if (carsRes.success) {
-          const carMap: Record<string, ResponseCarData> = {};
-          carsRes.data.data.forEach((car) => {
-            carMap[car.id] = car;
-          });
-          setCars(carMap);
-        }
-
-        if (routesRes.success) {
-          const routeMap: Record<string, Route> = {};
-          routesRes.data.data.forEach((route) => {
-            routeMap[route.id] = route;
-          });
-          setRoutes(routeMap);
-        }
-
-        if (logsRes.success) {
-          setMyLogs(logsRes.data.data);
         }
       } catch {
         alert({
@@ -110,10 +70,6 @@ export default function DriverDashboardPage() {
     }),
   );
   const activeShift = activeShifts[0];
-  const activeCar = activeShift ? cars[activeShift.carId] : undefined;
-  const activeRoute = activeCar?.routeId
-    ? routes[activeCar.routeId]
-    : undefined;
 
   // งานที่จะถึง (Upcoming)
   const upcomingShifts = shifts
@@ -174,21 +130,6 @@ export default function DriverDashboardPage() {
     }),
   ).length;
 
-  const drivingMsThisMonth = myLogs
-    .filter(({ log }) =>
-      isWithinInterval(new Date(log.startedAt), {
-        start: monthStart,
-        end: nextMonthStart,
-      }),
-    )
-    .reduce(
-      (acc, { log }) =>
-        acc +
-        (new Date(log.endedAt ?? now).getTime() -
-          new Date(log.startedAt).getTime()),
-      0,
-    );
-
   const ShiftCard = ({
     shift,
     status,
@@ -198,8 +139,6 @@ export default function DriverDashboardPage() {
   }) => {
     const startTime = new Date(shift.startTime);
     const endTime = new Date(shift.endTime);
-    const car = cars[shift.carId];
-    const route = car?.routeId ? routes[car.routeId] : null;
 
     // Check if it's a multi-day shift
     const isMultiDay =
@@ -226,10 +165,10 @@ export default function DriverDashboardPage() {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div className="min-w-0">
               <div className="truncate text-sm font-medium text-foreground">
-                {route?.name || "ไม่ระบุสายรถ"}
+                {shift.moreData.routeName || "ไม่ระบุสายรถ"}
               </div>
               <div className="mt-0.5 text-xs text-muted-foreground">
-                รถ {car?.carNumber ?? "-"} · {dateLabel}
+                รถ {shift.moreData.carNumber ?? "-"} · {dateLabel}
               </div>
             </div>
             <div className="shrink-0 sm:text-right">
@@ -265,11 +204,7 @@ export default function DriverDashboardPage() {
         {/* Active shift status + start/end action */}
         {activeShift && (
           <div className="mb-6">
-            <ShiftStatusCard
-              shift={activeShift}
-              car={activeCar}
-              route={activeRoute}
-            />
+            <ShiftStatusCard shift={activeShift} />
           </div>
         )}
 
