@@ -72,7 +72,10 @@ export default function CarTable({
             />
           ) : filteredCars.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+              <TableCell
+                colSpan={5}
+                className="h-24 text-center text-muted-foreground"
+              >
                 ไม่พบข้อมูลรถตะไลที่ตรงกับเงื่อนไขการค้นหา
               </TableCell>
             </TableRow>
@@ -85,7 +88,10 @@ export default function CarTable({
               const isDeleted = car.deletedAt !== null;
 
               return (
-                <TableRow key={car.id} className={isDeleted ? "opacity-60 grayscale" : ""}>
+                <TableRow
+                  key={car.id}
+                  className={isDeleted ? "opacity-60 grayscale" : ""}
+                >
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded bg-muted text-muted-foreground flex items-center justify-center border shrink-0">
@@ -104,13 +110,18 @@ export default function CarTable({
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="max-w-[150px] truncate" title={routeName}>
+                  <TableCell
+                    className="max-w-[150px] truncate"
+                    title={routeName}
+                  >
                     {car.routeId ? (
                       <Badge variant="secondary" className="font-mono text-xs">
                         {routeName}
                       </Badge>
                     ) : (
-                      <span className="text-muted-foreground text-xs italic">{routeName}</span>
+                      <span className="text-muted-foreground text-xs italic">
+                        {routeName}
+                      </span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -122,7 +133,10 @@ export default function CarTable({
                   <TableCell className="text-right">
                     {isDeleted ? (
                       <div className="flex items-center justify-end gap-2">
-                        <Badge variant="outline" className="text-muted-foreground gap-1">
+                        <Badge
+                          variant="outline"
+                          className="text-muted-foreground gap-1"
+                        >
                           <Lock className="w-3 h-3" />
                           ถูกลบแล้ว
                         </Badge>
@@ -204,7 +218,13 @@ export default function CarTable({
   );
 }
 
-export function CarStatusBadge({ status, isDeleted }: { status: string, isDeleted: boolean }) {
+export function CarStatusBadge({
+  status,
+  isDeleted,
+}: {
+  status: string;
+  isDeleted: boolean;
+}) {
   if (isDeleted) {
     return (
       <Badge variant="outline" className="text-muted-foreground gap-1">
@@ -215,16 +235,19 @@ export function CarStatusBadge({ status, isDeleted }: { status: string, isDelete
   }
   if (status === "active") {
     return (
-      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/30">
+      <Badge
+        variant="outline"
+        className="bg-green-50 text-green-700 border-green-200 gap-1 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/30"
+      >
         <CheckCircle2 className="w-3 h-3 animate-pulse" />
-        พร้อมใช้งาน
+        กำลังเคลี่อนที่
       </Badge>
     );
   }
   return (
     <Badge variant="outline" className="text-muted-foreground gap-1">
       <XCircle className="w-3 h-3" />
-      ปิดใช้งาน
+      ปิดการใช้งาน
     </Badge>
   );
 }

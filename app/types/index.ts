@@ -77,6 +77,10 @@ export interface CarDriverShift {
   createdAt: Date;
   updatedBy: string;
   updatedAt: Date;
+  editOption: {
+    isEditable: boolean;
+    message: string;
+  }; // จาก backend: ประเมินว่าลบ/แก้ไขได้หรือไม่ พร้อมเหตุผล
 }
 
 export interface SessionUserType {

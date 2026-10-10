@@ -1,5 +1,5 @@
 import * as React from "react"
-import { format } from "date-fns"
+import { format, startOfToday } from "date-fns"
 import { th } from "date-fns/locale"
 import { Calendar as CalendarIcon } from "lucide-react"
 
@@ -17,10 +17,12 @@ interface DateTimePickerProps {
   value?: Date
   onChange: (date: Date | undefined) => void
   disabled?: boolean
+  /** ปิดไม่ให้เลือกวัน/เวลาที่ย้อนหลัง (ก่อนเวลาปัจจุบัน) */
+  disablePast?: boolean
   placeholder?: string
 }
 
-export function DateTimePicker({ value, onChange, disabled, placeholder = "เลือกวันและเวลา" }: DateTimePickerProps) {
+export function DateTimePicker({ value, onChange, disabled, disablePast, placeholder = "เลือกวันและเวลา" }: DateTimePickerProps) {
   const [date, setDate] = React.useState<Date | undefined>(value)
   const [time, setTime] = React.useState<string>(value ? format(value, "HH:mm") : "")
 
@@ -67,6 +69,12 @@ export function DateTimePicker({ value, onChange, disabled, placeholder = "เ�
     return `${dayMonth} ${year}, ${timeVal}`
   }
 
+  const now = new Date()
+  const isSelectedToday = date
+    ? date.toDateString() === now.toDateString()
+    : false
+  const minTime = isSelectedToday ? format(now, "HH:mm") : "00:00"
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -88,6 +96,7 @@ export function DateTimePicker({ value, onChange, disabled, placeholder = "เ�
           selected={date}
           onSelect={handleDateSelect}
           locale={th}
+          disabled={disablePast ? { before: startOfToday() } : undefined}
         />
         <div className="p-3 border-t border-border flex items-center justify-between gap-2">
           <span className="text-sm font-medium">เวลา</span>
@@ -95,6 +104,7 @@ export function DateTimePicker({ value, onChange, disabled, placeholder = "เ�
             type="time" 
             value={time}
             onChange={handleTimeChange}
+            min={disablePast ? minTime : undefined}
             className="w-[120px]" 
           />
         </div>

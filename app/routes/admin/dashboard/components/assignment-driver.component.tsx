@@ -92,6 +92,13 @@ export default function AssignmentDriverComponent() {
   };
 
   const handleOpenEdit = (shift: CarDriverShift) => {
+    if (!shift.editOption.isEditable) {
+      alert({
+        title: "ไม่สามารถแก้ไขได้",
+        description: shift.editOption.message,
+      });
+      return;
+    }
     setEditingData({
       id: shift.id,
       driverId: shift.driverId,
@@ -137,6 +144,14 @@ export default function AssignmentDriverComponent() {
   };
 
   const handleDelete = async (id: string) => {
+    const shift = shifts.find((s) => s.id === id);
+    if (shift && !shift.editOption.isEditable) {
+      alert({
+        title: "ไม่สามารถลบได้",
+        description: shift.editOption.message,
+      });
+      return;
+    }
     setIsLoading(true);
     const result = await deleteById(id);
     if (result.success) {

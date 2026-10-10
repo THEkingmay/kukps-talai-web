@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState, useEffect, useCallback } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import type { ResponseCarData, Route, DrivingLog } from "~/types";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { useDialog } from "~/components/providers/DialogProvider";
@@ -49,6 +49,7 @@ import {
   Check,
 } from "lucide-react";
 import { VercelSpinner } from "~/components/ui/Loading";
+import DeletedOverlay from "~/components/DeletedOverlay";
 
 // Leaflet uses `window` — keep it off the SSR path (same as the old detail modal).
 const CarDetailMap = lazy(
@@ -67,7 +68,6 @@ export function meta() {
 
 export default function CarDetailPage() {
   const { carId } = useParams<{ carId: string }>();
-  const navigate = useNavigate();
   const { alert, confirm } = useDialog();
   const { setBreadcrumb } = useAdminShell();
   const [now, setNow] = useState(() => Date.now());
@@ -222,7 +222,8 @@ export default function CarDetailPage() {
               title: "ลบสำเร็จ",
               description: "ลบรถตะไลออกจากระบบเรียบร้อยแล้ว",
             });
-            navigate("/admin/cars", { replace: true });
+            // อยู่หน้าเดิม — DeletedOverlay จะโชว์เองหลัง refetch
+            await fetchCar();
           } else {
             alert({ title: "ลบไม่สำเร็จ", description: res.error });
           }
@@ -309,38 +310,20 @@ export default function CarDetailPage() {
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-6 lg:p-8">
-      {/* Deleted banner */}
+    <div className="relative space-y-6 p-4 md:p-6 lg:p-8">
       {isDeleted && (
-        <div className="flex items-center justify-between gap-4 rounded-lg border border-amber-500/30 bg-amber-50 p-4 dark:bg-amber-900/20">
-          <div className="flex items-center gap-3">
-            <Badge
-              variant="outline"
-              className="gap-1 border-amber-500/40 text-amber-700 dark:text-amber-400"
-            >
-              ถูกลบแล้ว
-            </Badge>
-            <span className="text-sm text-foreground">
-              รถตะไลนี้ถูกตั้งค่าสถานะว่าลบแล้ว — ข้อมูลยังคงแสดงอยู่
-            </span>
-          </div>
-          <Button
-            size="sm"
-            onClick={handleRestore}
-            disabled={actionPending}
-            className="shrink-0"
-          >
-            {actionPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              "กู้คืนรถ"
-            )}
-          </Button>
-        </div>
+        <DeletedOverlay
+          title="รถตะไลคันนี้ถูกลบแล้ว"
+          description="ข้อมูลยังถูกเก็บไว้ในระบบ — กู้คืนเพื่อให้ใช้งานได้อีกครั้ง หรือกลับไปหน้ารายการรถตะไล"
+          onRestore={handleRestore}
+          restoreLabel="กู้คืนรถ"
+          restorePending={actionPending}
+          backTo="/admin/cars"
+          backLabel="← กลับหน้ารายการรถ"
+        />
       )}
-
       {/* Page header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      <div className={`flex flex-col gap-4 sm:flex-row sm:items-center`}>
         <div className="flex min-w-0 items-center gap-3">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">

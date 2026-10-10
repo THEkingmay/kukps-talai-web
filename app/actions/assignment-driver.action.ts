@@ -27,27 +27,6 @@ export async function getAll(): Promise<
     };
   }
 }
-export async function getById(
-  id: string,
-): Promise<ActionResult<{ data: CarDriverShift }>> {
-  try {
-    const response = await apiClient.get(`/assignment-driver/${id}`);
-    return { success: true, data: response.data };
-  } catch (err) {
-    if (axios.isAxiosError(err)) {
-      return {
-        success: false,
-        error:
-          err.response?.data?.message ?? err.message ?? "ไม่สามารถดึงข้อมูลได้",
-      };
-    }
-
-    return {
-      success: false,
-      error: "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ",
-    };
-  }
-}
 
 export async function getByDriverId(
   id: string,

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState, useEffect, useCallback } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import type { Route, ResponseCarData, RoutePoint } from "~/types";
 import { useDialog } from "~/components/providers/DialogProvider";
 import {
@@ -19,7 +19,6 @@ import RoutePointModal from "../dashboard/components/routes/RoutePoint.component
 import { useAdminShell } from "../shell/ShellContext";
 
 import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -36,6 +35,7 @@ import {
 } from "~/components/ui/table";
 import { Loader2, SearchX } from "lucide-react";
 import { VercelSpinner } from "~/components/ui/Loading";
+import DeletedOverlay from "~/components/DeletedOverlay";
 
 // Leaflet uses `window` — keep it off the SSR path.
 const RouteLiveMap = lazy(() => import("../dashboard/components/routes/RouteLiveMap"));
@@ -52,7 +52,6 @@ export function meta() {
 
 export default function RouteDetailPage() {
   const { routeId } = useParams<{ routeId: string }>();
-  const navigate = useNavigate();
   const { alert, confirm } = useDialog();
   const { setBreadcrumb } = useAdminShell();
 
@@ -170,7 +169,8 @@ export default function RouteDetailPage() {
               title: "ลบสำเร็จ",
               description: "ลบเส้นทางออกจากระบบเรียบร้อยแล้ว",
             });
-            navigate("/admin/routes", { replace: true });
+            // อยู่หน้าเดิม — DeletedOverlay จะโชว์เองหลัง refetch
+            await fetchRoute();
           } else {
             alert({ title: "ลบไม่สำเร็จ", description: res.error });
           }
@@ -258,26 +258,17 @@ export default function RouteDetailPage() {
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-6 lg:p-8">
-      {/* Deleted banner */}
+    <div className="relative space-y-6 p-4 md:p-6 lg:p-8">
       {isDeleted && (
-        <div className="flex items-center justify-between gap-4 rounded-lg border border-amber-500/30 bg-amber-50 p-4 dark:bg-amber-900/20">
-          <div className="flex items-center gap-3">
-            <Badge variant="outline" className="gap-1 border-amber-500/40 text-amber-700 dark:text-amber-400">
-              ถูกลบแล้ว
-            </Badge>
-            <span className="text-sm text-foreground">
-              สายการเดินรถนี้ถูกตั้งค่าสถานะว่าลบแล้ว — ข้อมูลยังคงแสดงอยู่
-            </span>
-          </div>
-          <Button size="sm" onClick={handleRestore} disabled={actionPending} className="shrink-0">
-            {actionPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              "กู้คืนสายรถ"
-            )}
-          </Button>
-        </div>
+        <DeletedOverlay
+          title="สายการเดินรถนี้ถูกลบแล้ว"
+          description="ข้อมูลยังถูกเก็บไว้ในระบบ — กู้คืนเพื่อให้ใช้งานได้อีกครั้ง หรือกลับไปหน้ารายการสายการเดินรถ"
+          onRestore={handleRestore}
+          restoreLabel="กู้คืนสายรถ"
+          restorePending={actionPending}
+          backTo="/admin/routes"
+          backLabel="← กลับหน้ารายการสายรถ"
+        />
       )}
 
       {/* Page header */}

@@ -57,10 +57,7 @@ export function meta() {
 }
 
 const driverName = (user: User) => {
-  const name = [user.firstName, user.lastName]
-    .filter(Boolean)
-    .join(" ")
-    .trim();
+  const name = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
   return name || user.email;
 };
 
@@ -121,13 +118,15 @@ export default function DriverAssignmentsPage() {
       }
 
       setDriver(driverRes.data.data);
-      setShifts(shiftsRes.success ? shiftsRes.data.data ?? [] : []);
+      setShifts(shiftsRes.success ? (shiftsRes.data.data ?? []) : []);
       setLogs(
         logsRes.success
-          ? (logsRes.data.data ?? []).filter((item) => item.driverId === driverId)
+          ? (logsRes.data.data ?? []).filter(
+              (item) => item.driverId === driverId,
+            )
           : [],
       );
-      setCars(carsRes.success ? carsRes.data.data ?? [] : []);
+      setCars(carsRes.success ? (carsRes.data.data ?? []) : []);
 
       const currentRes = await getCurrentDriving(driverId);
       if (currentRes.success) setCurrentDriving(currentRes.data.data);
@@ -204,7 +203,7 @@ export default function DriverAssignmentsPage() {
     });
 
   const currentShift = currentDriving
-    ? shifts.find((shift) => shift.id === currentDriving.shiftId) ?? null
+    ? (shifts.find((shift) => shift.id === currentDriving.shiftId) ?? null)
     : null;
 
   if (isLoading) {
@@ -287,9 +286,7 @@ export default function DriverAssignmentsPage() {
                   <p className="text-xs text-muted-foreground">
                     เริ่ม {formatDate(currentDriving.startedAt)}
                     {currentShift
-                      ? ` · รถ ${
-                          carNumberById.get(currentShift.carId) ?? "-"
-                        }`
+                      ? ` · รถ ${carNumberById.get(currentShift.carId) ?? "-"}`
                       : ""}
                   </p>
                 </div>
@@ -445,7 +442,7 @@ export default function DriverAssignmentsPage() {
                           <TableCell colSpan={6} className="bg-muted/30 p-0">
                             <div className="px-4 py-3">
                               <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                ประวัติการกดเริ่ม–หยุดงาน
+                                ประวัติการกดเริ่ม–หยุดงาน ({shift.id})
                               </p>
                               {shiftLogs.length === 0 ? (
                                 <p className="py-2 text-sm text-muted-foreground">

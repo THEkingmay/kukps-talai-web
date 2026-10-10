@@ -56,6 +56,16 @@ export function AssignmentDriverForm({
       return;
     }
 
+    const now = new Date();
+    if (formData.startTime < now || formData.endTime < now) {
+      setConflictError(
+        formData.id
+          ? "ไม่สามารถแก้ไขเวลาที่น้อยกว่าปัจจุบันได้"
+          : "ไม่สามารถเพิ่มงานในเวลาที่น้อยกว่าปัจจุบันได้",
+      );
+      return;
+    }
+
     if (formData.startTime >= formData.endTime) {
       setConflictError("End time must be after start time.");
       return;
@@ -169,6 +179,7 @@ export function AssignmentDriverForm({
               value={formData.startTime}
               onChange={(val) => setFormData((p) => ({ ...p, startTime: val }))}
               disabled={isSubmitting}
+              disablePast
               placeholder="เลือกวัน-เวลาเริ่มงาน"
             />
           </div>
@@ -181,6 +192,7 @@ export function AssignmentDriverForm({
               value={formData.endTime}
               onChange={(val) => setFormData((p) => ({ ...p, endTime: val }))}
               disabled={isSubmitting}
+              disablePast
               placeholder="เลือกวัน-เวลาสิ้นสุดงาน"
             />
           </div>

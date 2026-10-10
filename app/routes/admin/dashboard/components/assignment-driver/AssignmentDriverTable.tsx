@@ -2,7 +2,7 @@ import * as React from "react";
 import { Link } from "react-router";
 import { format, isBefore, isAfter } from "date-fns";
 import { th } from "date-fns/locale";
-import { MoreHorizontal, Edit, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Lock } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -20,6 +20,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 import type { CarDriverShift, User, ResponseCarData } from "~/types";
 import { useDialog } from "~/components/providers/DialogProvider";
 
@@ -195,26 +200,42 @@ export function AssignmentDriverTable({
             <Badge variant={status.variant}>{statusText}</Badge>
           </TableCell>
           <TableCell align="right">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEdit(shift)}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  แก้ไข
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onClick={() => handleDelete(shift.id)}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  ลบ
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="flex items-center justify-end gap-1">
+              {!shift.editOption.isEditable && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-flex text-muted-foreground">
+                      <Lock className="h-4 w-4" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>{shift.editOption.message}</TooltipContent>
+                </Tooltip>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    disabled={!shift.editOption.isEditable}
+                    onClick={() => onEdit(shift)}
+                  >
+                    <Edit className="mr-2 h-4 w-4" />
+                    แก้ไข
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    disabled={!shift.editOption.isEditable}
+                    className="text-destructive focus:text-destructive"
+                    onClick={() => handleDelete(shift.id)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    ลบ
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </TableCell>
         </TableRow>
       );

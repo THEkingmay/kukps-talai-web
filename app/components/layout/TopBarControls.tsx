@@ -17,6 +17,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import NotificationsComponent from "~/components/layout/NotificationsComponent";
+import DriverDrivingComponent from "./DriverDrivingComponent";
 
 /**
  * Right-hand cluster of an admin/driver top bar:
@@ -47,13 +48,17 @@ export default function TopBarControls() {
     <>
       <div className="flex flex-1 items-center justify-end gap-3 px-4 sm:px-6 lg:px-8">
         <ModeToggle />
+        <DriverDrivingComponent />
         <NotificationsComponent />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
               <Avatar className="h-8 w-8 border">
                 {user?.profileImageUrl && (
-                  <AvatarImage src={user.profileImageUrl} alt={user?.email || "User"} />
+                  <AvatarImage
+                    src={user.profileImageUrl}
+                    alt={user?.email || "User"}
+                  />
                 )}
                 <AvatarFallback className="bg-primary/10 text-primary font-mono text-xs">
                   {userInitial}
