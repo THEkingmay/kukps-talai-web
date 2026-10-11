@@ -148,3 +148,36 @@ export async function getAll(
     };
   }
 }
+
+export async function getActiveAll(): Promise<ActionResult<{
+  data: {
+    log: DrivingLog,
+    driverId: string,
+    driverName: string,
+    driverPhone: string,
+    profileImageUrl: string | null,
+    carId: string,
+    carNumber: string,
+  }[]
+}>> {
+  try {
+    const res = await apiClient(`/driving-logs/active/all`);
+    return { success: true, data: res.data };
+  }
+  catch (error) {
+    if (axios.isAxiosError(error)) {
+      return {
+        success: false,
+        error:
+          error.response?.data?.message ??
+          error.message ??
+          "เกิดข้อผิดพลาดในการดึงข้อมูล",
+      };
+    }
+
+    return {
+      success: false,
+      error: "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ",
+    };
+  }
+}
