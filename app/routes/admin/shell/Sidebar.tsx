@@ -33,7 +33,6 @@ const NAV_ITEMS: NavItem[] = [
     label: "การจัดการงานผู้ขับรถ",
     icon: CalendarClock,
   },
-  { to: "/admin/eta", label: "ดูตำแหน่งรถแบบเรียลไทม์", icon: MapPinned },
 ];
 
 export default function Sidebar() {

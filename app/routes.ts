@@ -22,7 +22,6 @@ export default [
         "admin/assignments/:driverId",
         "routes/admin/assignments/$driverId.tsx",
       ),
-      route("admin/eta", "routes/admin/eta/page.tsx"),
     ]),
   ]),
   layout("routes/auth/layout.tsx", [
@@ -32,5 +31,4 @@ export default [
   layout("routes/driver/layout.tsx", [
     route("driver/dashboard", "routes/driver/dashboard/page.tsx"),
   ]),
-  layout("routes/eta/layout.tsx", [route("eta", "routes/eta/page.tsx")]),
 ] satisfies RouteConfig;

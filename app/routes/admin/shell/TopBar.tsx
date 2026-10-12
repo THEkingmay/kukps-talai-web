@@ -8,7 +8,6 @@ const SECTION_LABELS: Record<string, string> = {
   cars: "รถตะไล",
   routes: "สายการเดินรถ",
   assignments: "การจัดการงานผู้ขับรถ",
-  eta: "ตำแหน่งรถเรียลไทม์",
 };
 
 export default function TopBar() {
