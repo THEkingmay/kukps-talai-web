@@ -500,7 +500,7 @@ export default function CarDetailPage() {
             <InfoCard
               icon={<Wifi className="h-4 w-4" />}
               label="MQTT Topic"
-              value={`car/${car.id}`}
+              value={`cars/${car.id}`}
               mono
               copyable
             />
@@ -716,9 +716,8 @@ function InfoCard({
               </Badge>
             ) : (
               <p
-                className={`truncate text-sm font-medium text-foreground ${
-                  mono ? "font-mono text-xs" : ""
-                }`}
+                className={`truncate text-sm font-medium text-foreground ${mono ? "font-mono text-xs" : ""
+                  }`}
               >
                 {value}
               </p>
