@@ -1,28 +1,105 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Navbar from "~/components/layout/Navbar";
 import { useAuth } from "~/components/providers/AuthProvider";
 import { getByDriverId } from "~/actions/assignment-driver.action";
-import type { CarDriverShift } from "~/types";
+import {
+  getCurrentDriving,
+  getMyLogs,
+  type GetDrivingLogType,
+} from "~/actions/driving-log.action";
+import type { CarDriverShift, DrivingLog } from "~/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Card, CardContent } from "~/components/ui/card";
+import { Badge } from "~/components/ui/badge";
+import { Skeleton } from "~/components/ui/skeleton";
 import {
   isAfter,
   isBefore,
+  isSameDay,
   isToday,
   isTomorrow,
   isWithinInterval,
-  format,
 } from "date-fns";
-import { th } from "date-fns/locale";
-import { CalendarDays, Clock } from "lucide-react";
-import Loading from "~/components/ui/Loading";
+import { BusFront, CalendarDays, Clock, History } from "lucide-react";
 import { useDialog } from "~/components/providers/DialogProvider";
-import ShiftStatusCard from "./components/shiftStatusCard";
+import {
+  formatShiftWindow,
+  formatThaiDate,
+  formatThaiDay,
+  formatThaiFullDate,
+  formatThaiMonthYear,
+  formatThaiTime,
+  formatTimeWindow,
+} from "~/helper";
+import ShiftStatusCard, { formatElapsed } from "./components/shiftStatusCard";
+
+const activeLogBadgeClass =
+  "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400";
+const overdueBadgeClass =
+  "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400";
+
+const logStatus = (log: DrivingLog) =>
+  log.status === "active"
+    ? {
+        label: "กำลังขับ",
+        variant: "outline" as const,
+        className: activeLogBadgeClass,
+      }
+    : {
+        label: "สิ้นสุดแล้ว",
+        variant: "secondary" as const,
+        className: undefined,
+      };
+
+function EmptyState({
+  icon,
+  title,
+  description,
+}: {
+  icon: ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center px-6 py-12 text-center sm:py-16">
+      <div className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+        {icon}
+      </div>
+      <p className="mt-3 text-sm font-medium text-foreground">{title}</p>
+      <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+        {description}
+      </p>
+    </div>
+  );
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="flex min-h-screen flex-col bg-background">
+      <Navbar />
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16 pt-8 md:px-8">
+        <div className="mb-6 space-y-2">
+          <Skeleton className="h-6 w-36" />
+          <Skeleton className="h-4 w-56" />
+        </div>
+        <Skeleton className="mb-6 h-60 w-full rounded-xl" />
+        <Skeleton className="mb-4 h-11 w-full rounded-lg" />
+        <div className="space-y-2">
+          <Skeleton className="h-24 w-full rounded-xl" />
+          <Skeleton className="h-24 w-full rounded-xl" />
+          <Skeleton className="h-24 w-full rounded-xl" />
+        </div>
+      </main>
+    </div>
+  );
+}
 
 export default function DriverDashboardPage() {
   const { user } = useAuth();
   const { alert } = useDialog();
   const [shifts, setShifts] = useState<CarDriverShift[]>([]);
+  const [currentDriving, setCurrentDriving] = useState<DrivingLog | null>(null);
+  const [logs, setLogs] = useState<GetDrivingLogType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -31,10 +108,20 @@ export default function DriverDashboardPage() {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const shiftsRes = await getByDriverId(user.id);
+        const [shiftsRes, currentRes, logsRes] = await Promise.all([
+          getByDriverId(user.id),
+          getCurrentDriving(),
+          getMyLogs(),
+        ]);
 
         if (shiftsRes.success) {
           setShifts(shiftsRes.data.data);
+        }
+        if (currentRes.success) {
+          setCurrentDriving(currentRes.data.data);
+        }
+        if (logsRes.success) {
+          setLogs(logsRes.data.data);
         }
       } catch {
         alert({
@@ -50,14 +137,7 @@ export default function DriverDashboardPage() {
   }, [user?.id, alert]);
 
   if (isLoading) {
-    return (
-      <div className="flex flex-col min-h-screen bg-background">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <Loading />
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   const now = new Date();
@@ -71,7 +151,64 @@ export default function DriverDashboardPage() {
   );
   const activeShift = activeShifts[0];
 
-  // งานที่จะถึง (Upcoming)
+  // กะของ log ที่ยัง active อยู่ — อาจเป็นกะที่เลยเวลาสิ้นสุดไปแล้วก็ได้
+  const drivingShift = currentDriving
+    ? (shifts.find((shift) => shift.id === currentDriving.shiftId) ?? null)
+    : null;
+  const statusShift = drivingShift ?? activeShift;
+  const isOverdue = drivingShift
+    ? isBefore(new Date(drivingShift.endTime), now)
+    : false;
+
+  // จำนวนครั้งที่กดงาน และกะที่ยังมี log ค้างอยู่
+  const logCountByShift = new Map<string, number>();
+  const shiftsWithActiveLog = new Set<string>();
+  logs.forEach(({ log }) => {
+    logCountByShift.set(
+      log.shiftId,
+      (logCountByShift.get(log.shiftId) ?? 0) + 1,
+    );
+    if (log.status === "active") {
+      shiftsWithActiveLog.add(log.shiftId);
+    }
+  });
+
+  // ประวัติการกดเริ่ม–หยุดงาน จัดกลุ่มตามกะ (ใหม่ → เก่า)
+  const shiftById = new Map(shifts.map((shift) => [shift.id, shift]));
+  const logGroups = Array.from(
+    logs.reduce((acc, item) => {
+      const list = acc.get(item.log.shiftId) ?? [];
+      list.push(item);
+      acc.set(item.log.shiftId, list);
+      return acc;
+    }, new Map<string, GetDrivingLogType[]>()),
+  )
+    .map(([shiftId, items]) => {
+      const shift = shiftById.get(shiftId) ?? null;
+      const sortedLogs = [...items].sort(
+        (a, b) =>
+          new Date(a.log.startedAt).getTime() -
+          new Date(b.log.startedAt).getTime(),
+      );
+      const startTime = shift
+        ? new Date(shift.startTime)
+        : new Date(items[0].shiftStartTime);
+      const endTime = shift
+        ? new Date(shift.endTime)
+        : new Date(items[0].shiftEndTime);
+
+      return {
+        shiftId,
+        logs: sortedLogs,
+        startTime,
+        endTime,
+        carNumber: shift?.moreData.carNumber ?? null,
+        routeName: shift?.moreData.routeName ?? null,
+      };
+    })
+    .sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
+
+  // งานถัดไป (Upcoming)
   const upcomingShifts = shifts
     .filter((shift) => isAfter(new Date(shift.startTime), now))
     .sort(
@@ -79,7 +216,7 @@ export default function DriverDashboardPage() {
         new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
     );
 
-  // ประวัติ (Past)
+  // งานที่ผ่านมา (Past)
   const pastShifts = shifts
     .filter((shift) => isBefore(new Date(shift.endTime), now))
     .sort(
@@ -87,7 +224,7 @@ export default function DriverDashboardPage() {
         new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
     );
 
-  // Group upcoming by date
+  // จัดกลุ่มงานถัดไปตามวัน
   const groupedUpcoming = upcomingShifts.reduce(
     (acc, shift) => {
       const d = new Date(shift.startTime);
@@ -97,7 +234,7 @@ export default function DriverDashboardPage() {
       } else if (isTomorrow(d)) {
         key = "พรุ่งนี้";
       } else {
-        key = format(d, "d MMM yyyy", { locale: th });
+        key = formatThaiDay(d);
       }
 
       if (!acc[key]) acc[key] = [];
@@ -107,28 +244,16 @@ export default function DriverDashboardPage() {
     {} as Record<string, CarDriverShift[]>,
   );
 
-  // Group past by month/year for history tab
+  // จัดกลุ่มงานที่ผ่านมาตามเดือน/ปี
   const groupedPast = pastShifts.reduce(
     (acc, shift) => {
-      const d = new Date(shift.startTime);
-      const key = format(d, "MMMM yyyy", { locale: th });
+      const key = formatThaiMonthYear(new Date(shift.startTime));
       if (!acc[key]) acc[key] = [];
       acc[key].push(shift);
       return acc;
     },
     {} as Record<string, CarDriverShift[]>,
   );
-
-  // Monthly stats
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-
-  const shiftsThisMonth = shifts.filter((shift) =>
-    isWithinInterval(new Date(shift.startTime), {
-      start: monthStart,
-      end: nextMonthStart,
-    }),
-  ).length;
 
   const ShiftCard = ({
     shift,
@@ -139,47 +264,59 @@ export default function DriverDashboardPage() {
   }) => {
     const startTime = new Date(shift.startTime);
     const endTime = new Date(shift.endTime);
+    const logCount = logCountByShift.get(shift.id) ?? 0;
+    const hasActiveLog = shiftsWithActiveLog.has(shift.id);
 
-    // Check if it's a multi-day shift
-    const isMultiDay =
-      startTime.getDate() !== endTime.getDate() ||
-      startTime.getMonth() !== endTime.getMonth() ||
-      startTime.getFullYear() !== endTime.getFullYear();
-
-    const timeLabel = isMultiDay
-      ? `${format(startTime, "d MMM, HH:mm", { locale: th })} – ${format(endTime, "d MMM, HH:mm", { locale: th })}`
-      : `${format(startTime, "HH:mm")} – ${format(endTime, "HH:mm")}`;
-
-    const dateLabel =
-      status === "upcoming"
-        ? isToday(startTime)
-          ? "วันนี้"
-          : isTomorrow(startTime)
-            ? "พรุ่งนี้"
-            : format(startTime, "d MMM", { locale: th })
-        : format(startTime, "d MMM", { locale: th });
+    const badge = hasActiveLog
+      ? {
+          label: "ยังไม่ปิดงาน",
+          variant: "outline" as const,
+          className: overdueBadgeClass,
+        }
+      : status === "past"
+        ? {
+            label: "เสร็จสิ้น",
+            variant: "secondary" as const,
+            className: undefined,
+          }
+        : {
+            label: "รอเริ่ม",
+            variant: "outline" as const,
+            className: undefined,
+          };
 
     return (
-      <Card className="shadow-none">
-        <CardContent className="p-4">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-            <div className="min-w-0">
-              <div className="truncate text-sm font-medium text-foreground">
-                {shift.moreData.routeName || "ไม่ระบุสายรถ"}
-              </div>
-              <div className="mt-0.5 text-xs text-muted-foreground">
-                รถ {shift.moreData.carNumber ?? "-"} · {dateLabel}
-              </div>
-            </div>
-            <div className="shrink-0 sm:text-right">
-              <div className="text-sm font-medium tabular-nums text-foreground">
-                {timeLabel}
-              </div>
+      <Card className="py-0 shadow-none">
+        <CardContent className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium text-foreground">
+              {shift.moreData.routeName || "ไม่ระบุสายรถ"}
+            </p>
+            <p className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground">
+              <BusFront className="size-3.5 shrink-0" />
+              <span>รถ {shift.moreData.carNumber ?? "-"}</span>
               {status === "past" && (
-                <div className="mt-0.5 text-[11px] text-muted-foreground">
-                  เสร็จสิ้น
-                </div>
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span>{formatThaiDate(startTime)}</span>
+                </>
               )}
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between gap-2 sm:shrink-0 sm:flex-col sm:items-end sm:gap-1.5 sm:text-right">
+            <p className="font-mono text-sm font-medium tabular-nums text-foreground">
+              {formatTimeWindow(startTime, endTime)}
+            </p>
+            <div className="flex items-center gap-1.5">
+              {status === "past" && logCount > 0 && (
+                <span className="text-[11px] tabular-nums text-muted-foreground">
+                  กด {logCount} ครั้ง
+                </span>
+              )}
+              <Badge variant={badge.variant} className={badge.className}>
+                {badge.label}
+              </Badge>
             </div>
           </div>
         </CardContent>
@@ -188,46 +325,66 @@ export default function DriverDashboardPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
-      <main className="flex-1 px-4 pb-16 pt-8 md:px-8 max-w-2xl mx-auto w-full">
-        {/* Header */}
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16 pt-8 md:px-8">
         <div className="mb-6">
           <h1 className="text-xl font-semibold tracking-tight text-foreground">
-            ตารางงานของฉัน
+            งานของฉัน
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {format(now, "EEEE d MMMM yyyy", { locale: th })}
+            {formatThaiFullDate(now)}
           </p>
         </div>
 
-        {/* Active shift status + start/end action */}
-        {activeShift && (
+        {/* สถานะงานปัจจุบัน + ปุ่มเริ่ม/หยุดงาน */}
+        {statusShift && (
           <div className="mb-6">
-            <ShiftStatusCard shift={activeShift} />
+            <ShiftStatusCard
+              key={statusShift.id}
+              shift={statusShift}
+              currentDriving={drivingShift ? currentDriving : null}
+              overdue={isOverdue}
+              onCurrentDrivingChange={setCurrentDriving}
+            />
           </div>
         )}
 
-        {/* Upcoming and History */}
         <Tabs defaultValue="upcoming" className="w-full">
           <TabsList
             variant="line"
-            className="grid h-auto w-full grid-cols-2 gap-0 border-b border-border p-0"
+            className="grid h-auto w-full grid-cols-3 gap-0 border-b border-border p-0 group-data-horizontal/tabs:h-auto"
           >
-            <TabsTrigger value="upcoming">งานที่จะถึง</TabsTrigger>
-            <TabsTrigger value="history">ประวัติย้อนหลัง</TabsTrigger>
+            <TabsTrigger
+              value="upcoming"
+              className="h-11 whitespace-normal text-center text-[13px] leading-tight sm:text-sm"
+            >
+              งานถัดไป
+            </TabsTrigger>
+            <TabsTrigger
+              value="history"
+              className="h-11 whitespace-normal text-center text-[13px] leading-tight sm:text-sm"
+            >
+              งานที่ผ่านมา
+            </TabsTrigger>
+            <TabsTrigger
+              value="logs"
+              className="h-11 whitespace-normal text-center text-[13px] leading-tight sm:text-sm"
+            >
+              ประวัติการกด
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent
             value="upcoming"
-            className="space-y-8 outline-none animate-in fade-in-50 duration-300"
+            className="space-y-6 outline-none animate-in fade-in-50 duration-300"
           >
             {Object.keys(groupedUpcoming).length > 0 ? (
               (
                 Object.entries(groupedUpcoming) as [string, CarDriverShift[]][]
               ).map(([dateLabel, shiftsInDate]) => (
-                <div key={dateLabel} className="space-y-4">
-                  <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <div key={dateLabel} className="space-y-2">
+                  <h3 className="text-xs font-medium tracking-wide text-muted-foreground">
                     {dateLabel}
                   </h3>
                   <div className="space-y-2">
@@ -241,25 +398,24 @@ export default function DriverDashboardPage() {
                   </div>
                 </div>
               ))
-            ) : !activeShift ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <CalendarDays className="mb-3 h-5 w-5 text-muted-foreground/40" />
-                <p className="text-sm text-muted-foreground">
-                  คุณยังไม่มีงานที่กำลังจะถึง
-                </p>
-              </div>
-            ) : null}
+            ) : (
+              <EmptyState
+                icon={<CalendarDays className="size-5" />}
+                title="ยังไม่มีงานถัดไป"
+                description="ตารางงานใหม่จะแสดงที่นี่เมื่อผู้ดูแลมอบหมาย"
+              />
+            )}
           </TabsContent>
 
           <TabsContent
             value="history"
-            className="space-y-8 outline-none animate-in fade-in-50 duration-300"
+            className="space-y-6 outline-none animate-in fade-in-50 duration-300"
           >
             {Object.keys(groupedPast).length > 0 ? (
               (Object.entries(groupedPast) as [string, CarDriverShift[]][]).map(
                 ([monthLabel, shiftsInMonth]) => (
-                  <div key={monthLabel} className="space-y-4">
-                    <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  <div key={monthLabel} className="space-y-2">
+                    <h3 className="text-xs font-medium tracking-wide text-muted-foreground">
                       {monthLabel}
                     </h3>
                     <div className="space-y-2">
@@ -271,12 +427,91 @@ export default function DriverDashboardPage() {
                 ),
               )
             ) : (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <Clock className="mb-3 h-5 w-5 text-muted-foreground/40" />
-                <p className="text-sm text-muted-foreground">
-                  งานที่จบไปแล้วจะแสดงที่นี่
-                </p>
-              </div>
+              <EmptyState
+                icon={<Clock className="size-5" />}
+                title="ยังไม่มีงานที่ผ่านมา"
+                description="งานที่จบแล้วจะแสดงที่นี่"
+              />
+            )}
+          </TabsContent>
+
+          <TabsContent
+            value="logs"
+            className="space-y-4 outline-none animate-in fade-in-50 duration-300"
+          >
+            {logGroups.length === 0 ? (
+              <EmptyState
+                icon={<History className="size-5" />}
+                title="ยังไม่มีประวัติการกดงาน"
+                description="เมื่อคุณกดเริ่มหรือหยุดงาน รายการจะแสดงที่นี่"
+              />
+            ) : (
+              logGroups.map((group) => (
+                <div
+                  key={group.shiftId}
+                  className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10"
+                >
+                  <div className="flex items-start justify-between gap-3 border-b bg-muted/30 px-4 py-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {group.routeName ?? "ไม่ระบุสายรถ"}
+                      </p>
+                      <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">
+                        รถ {group.carNumber ?? "-"} ·{" "}
+                        {formatShiftWindow(group.startTime, group.endTime)}
+                      </p>
+                    </div>
+                    <Badge variant="secondary" className="shrink-0">
+                      {group.logs.length} ครั้ง
+                    </Badge>
+                  </div>
+
+                  <ul className="divide-y">
+                    {group.logs.map(({ log }) => {
+                      const start = new Date(log.startedAt);
+                      const end = log.endedAt ? new Date(log.endedAt) : null;
+                      const duration = end
+                        ? end.getTime() - start.getTime()
+                        : now.getTime() - start.getTime();
+                      const status = logStatus(log);
+                      const showDate =
+                        !isSameDay(start, group.startTime) ||
+                        (end !== null && !isSameDay(start, end));
+
+                      return (
+                        <li
+                          key={log.id}
+                          className="flex items-center justify-between gap-3 px-4 py-3"
+                        >
+                          <div className="min-w-0">
+                            <p className="font-mono text-sm tabular-nums text-foreground">
+                              {formatThaiTime(start)} –{" "}
+                              {end ? formatThaiTime(end) : "ปัจจุบัน"}
+                            </p>
+                            {showDate && (
+                              <p className="mt-0.5 text-xs text-muted-foreground">
+                                {formatThaiDate(start)}
+                                {end && ` – ${formatThaiDate(end)}`}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex shrink-0 items-center gap-2">
+                            <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                              {formatElapsed(duration)}
+                            </span>
+                            <Badge
+                              variant={status.variant}
+                              className={status.className}
+                            >
+                              {status.label}
+                            </Badge>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))
             )}
           </TabsContent>
         </Tabs>
