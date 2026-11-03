@@ -107,7 +107,7 @@ export default function AuthPage() {
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
         </div>
-        
+
         <div className="z-10 flex items-center gap-2 font-medium">
           <div className="flex h-8 w-8 items-center justify-center rounded-md bg-white text-zinc-950">
             <Bus className="h-5 w-5" />
@@ -117,11 +117,12 @@ export default function AuthPage() {
 
         <div className="z-10 flex flex-col gap-4">
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-white">
-            Smart Mobility <br/> for KUKPS.
-          </h1>
-          <p className="text-zinc-400 text-lg max-w-md">
-            ระบบควบคุมและบริหารจัดการรถตะลัยอัจฉริยะ มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตกำแพงแสน
-          </p>
+            Kasetsart University
+            <br />
+            KamphaengSaen Campus
+            <br />
+            Talai ETA
+          </h1>{" "}
         </div>
 
         <div className="z-10 text-sm text-zinc-500">
@@ -138,7 +139,7 @@ export default function AuthPage() {
             </div>
             TalaiETA
           </div>
-          
+
           <div className="flex flex-col gap-6">
             <Card className="border-0 shadow-none sm:border sm:shadow-sm">
               <CardHeader className="text-center">
