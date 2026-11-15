@@ -2,7 +2,7 @@ import { useState } from "react";
 import { LogOut, User } from "lucide-react";
 import { useAuth } from "~/components/providers/AuthProvider";
 import { useDialog } from "~/components/providers/DialogProvider";
-import { UserProfileSheet } from "~/components/layout/UserProfileSheet";
+import { UserProfileSheet } from "./UserProfileSheet";
 
 import { ModeToggle } from "~/components/mode-toggle";
 import {
@@ -16,7 +16,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
-import NotificationsComponent from "~/components/layout/NotificationsComponent";
+import NotificationsComponent from "./NotificationsComponent";
 import DriverDrivingComponent from "./DriverDrivingComponent";
 
 /**
