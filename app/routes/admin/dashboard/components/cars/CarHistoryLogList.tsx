@@ -1,6 +1,3 @@
-import { useEffect, useState, useCallback } from "react";
-import type { CarHistoryLog } from "~/types";
-import { getCarLogsByCarId } from "~/actions/car-history-log.action";
 import { RefreshCw, AlertCircle, MapPin, Clock, Loader2 } from "lucide-react";
 import {
   Table,
@@ -12,6 +9,7 @@ import {
 } from "~/components/ui/table";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { useCarHistoryLogs } from "~/routes/admin/dashboard/hooks/useCarHistoryLogs";
 
 interface CarHistoryLogListProps {
   carId: string;
@@ -22,32 +20,7 @@ export default function CarHistoryLogList({
   carId,
   formatDate,
 }: CarHistoryLogListProps) {
-  const [logs, setLogs] = useState<CarHistoryLog[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchLogs = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res = await getCarLogsByCarId(carId, 100);
-      if (res.success) {
-        setLogs(res.data.data || []);
-      } else {
-        setError(res.error || "ไม่สามารถดึงข้อมูลประวัติการเดินทางได้");
-      }
-    } catch {
-      setError("เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [carId]);
-
-  useEffect(() => {
-    if (carId) {
-      fetchLogs();
-    }
-  }, [carId, fetchLogs]);
+  const history = useCarHistoryLogs({ carId });
 
   return (
     <div className="flex flex-col h-full">
@@ -55,19 +28,19 @@ export default function CarHistoryLogList({
       <div className="flex items-center justify-between p-3 bg-muted/50 border-b">
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="font-mono">
-            {logs.length} รายการล่าสุด (100 ล่าสุด)
+            {history.logs.length} รายการล่าสุด (100 ล่าสุด)
           </Badge>
         </div>
 
         <Button
           variant="outline"
           size="sm"
-          onClick={fetchLogs}
-          disabled={isLoading}
+          onClick={history.refresh}
+          disabled={history.isLoading}
           className="h-8"
         >
           <RefreshCw
-            className={`w-3.5 h-3.5 mr-2 ${isLoading ? "animate-spin" : ""}`}
+            className={`w-3.5 h-3.5 mr-2 ${history.isLoading ? "animate-spin" : ""}`}
           />
           รีเฟรช
         </Button>
@@ -92,7 +65,7 @@ export default function CarHistoryLogList({
             </TableHeader>
 
             <TableBody>
-              {isLoading ? (
+              {history.isLoading ? (
                 <TableRow>
                   <TableCell
                     colSpan={4}
@@ -102,15 +75,15 @@ export default function CarHistoryLogList({
                     <span>กำลังโหลดประวัติ...</span>
                   </TableCell>
                 </TableRow>
-              ) : error ? (
+              ) : history.error ? (
                 <TableRow>
                   <TableCell colSpan={4} className="h-32 text-center">
                     <div className="inline-flex items-center gap-2 p-3 rounded-md bg-destructive/10 text-destructive border border-destructive/20">
                       <AlertCircle className="w-4 h-4 shrink-0" />
-                      <span>{error}</span>
+                      <span>{history.error}</span>
                       <button
                         type="button"
-                        onClick={fetchLogs}
+                        onClick={history.refresh}
                         className="ml-2 font-bold underline hover:text-destructive/80"
                       >
                         ลองอีกครั้ง
@@ -118,7 +91,7 @@ export default function CarHistoryLogList({
                     </div>
                   </TableCell>
                 </TableRow>
-              ) : logs.length === 0 ? (
+              ) : history.logs.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={4}
@@ -134,7 +107,7 @@ export default function CarHistoryLogList({
                   </TableCell>
                 </TableRow>
               ) : (
-                logs.map((log, index) => {
+                history.logs.map((log, index) => {
                   const isLatest = index === 0;
 
                   return (

@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
+import { useLockScrollableAncestors } from "~/hooks/useLockScrollableAncestors";
 import { Loader2, Trash2 } from "lucide-react";
 
 interface DeletedOverlayProps {
@@ -34,38 +35,7 @@ export default function DeletedOverlay({
   onBack,
 }: DeletedOverlayProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // shell ของ admin เลื่อน scroll ที่ wrapper `overflow-auto` ไม่ใช่ body
-    // → ล็อกทุก ancestor ที่ scroll ได้ระหว่าง overlay เปิดอยู่
-    const scrollables: HTMLElement[] = [];
-    let node = containerRef.current?.parentElement ?? null;
-    while (node && node !== document.body) {
-      const style = window.getComputedStyle(node);
-      if (
-        /(auto|scroll|overlay)/.test(
-          `${style.overflow}${style.overflowX}${style.overflowY}`,
-        )
-      ) {
-        scrollables.push(node);
-      }
-      node = node.parentElement;
-    }
-
-    const previous = scrollables.map((el) => el.style.overflow);
-    scrollables.forEach((el) => {
-      el.style.overflow = "hidden";
-    });
-    const previousBodyOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      scrollables.forEach((el, i) => {
-        el.style.overflow = previous[i];
-      });
-      document.body.style.overflow = previousBodyOverflow;
-    };
-  }, []);
+  useLockScrollableAncestors(containerRef);
 
   return (
     <>

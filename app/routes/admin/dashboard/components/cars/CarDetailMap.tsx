@@ -8,11 +8,9 @@ import {
   Polyline,
 } from "react-leaflet";
 import L from "leaflet";
-import type { ResponseCarData, RoutePoint } from "~/types";
-import { getRoutePointsByRouteId } from "~/actions/route-points.action";
-import { useWebsocket } from "~/components/providers/WebsocketProvider";
+import type { ResponseCarData } from "~/types";
+import { useCarDetailMap } from "~/routes/admin/dashboard/hooks/useCarDetailMap";
 
-const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:3000";
 const KUKPS_CENTER: [number, number] = [14.02372, 99.97487];
 
 // Active vehicle marker — Pulsing dot using Tailwind classes
@@ -56,67 +54,8 @@ interface CarDetailMapProps {
   car: ResponseCarData | null;
 }
 
-function formatTime(date: Date) {
-  return date.toLocaleTimeString("th-TH", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  });
-}
-
 export default function CarDetailMap({ car }: CarDetailMapProps) {
-  const { currentLocation } = useWebsocket();
-
-  const loc = currentLocation?.find((l) => l.carId === car?.id);
-  const position: [number, number] | null = loc ? [loc.lat, loc.lng] : null;
-  const isActive = loc?.status === "active";
-  const lastSeen = loc ? new Date(loc.createdAt) : null;
-
-  const [routePoints, setRoutePoints] = useState<RoutePoint[]>([]);
-  let routeStops = routePoints.filter((r) => r.name !== null && r.name !== "");
-  let filteredRoutePoints: { text: string; lat: number; lng: number }[] = [];
-  let hasPosition: { lat: number; lng: number }[] = [];
-  for (let i = 0; i < routeStops.length; i++) {
-    // ไม่เคยมี
-    if (
-      !hasPosition.find(
-        (p) => p.lat === routeStops[i].lat && p.lng === routeStops[i].lng,
-      ) &&
-      routeStops[i].name
-    ) {
-      hasPosition.push({ lat: routeStops[i].lat, lng: routeStops[i].lng });
-      filteredRoutePoints.push({
-        text: routeStops[i].name!,
-        lat: routeStops[i].lat,
-        lng: routeStops[i].lng,
-      });
-    } else if (
-      // ซ้ำ
-      hasPosition.find(
-        (p) => p.lat === routeStops[i].lat && p.lng === routeStops[i].lng,
-      ) &&
-      routeStops[i].name
-    ) {
-      let idx = hasPosition.findIndex(
-        (p) => p.lat === routeStops[i].lat && p.lng === routeStops[i].lng,
-      );
-      filteredRoutePoints[idx].text += "," + routeStops[i].name;
-    }
-  }
-
-  useEffect(() => {
-    const fetchRoutePoints = async () => {
-      if (car?.id && car.routeId) {
-        const response = await getRoutePointsByRouteId(car.routeId);
-        setRoutePoints(response.success ? response.data.data : []);
-      }
-    };
-
-    if (car?.id && car.routeId) {
-      fetchRoutePoints();
-    }
-  }, [car?.id, car?.routeId]);
+  const detailMap = useCarDetailMap({ car });
 
   return (
     <div className="relative w-full h-full min-h-[60vh] rounded-md overflow-hidden border border-gray-200">
@@ -136,31 +75,31 @@ export default function CarDetailMap({ car }: CarDetailMapProps) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {position && (
+        {detailMap.position && (
           <>
-            <Marker position={position} icon={markerIcon}>
+            <Marker position={detailMap.position} icon={markerIcon}>
               <Popup>
                 <div className="font-mono text-xs text-gray-700 space-y-1 min-w-[160px]">
                   <p className="font-semibold text-gray-900 text-[11px] uppercase tracking-wider">
                     ตำแหน่งรถล่าสุด
                   </p>
                   <p className="text-gray-500">
-                    {position[0]}, {position[1]}
+                    {detailMap.position[0]}, {detailMap.position[1]}
                   </p>
-                  {lastSeen && (
+                  {detailMap.lastSeenLabel && (
                     <p className="text-gray-400 text-[10px]">
-                      {formatTime(lastSeen)}
+                      {detailMap.lastSeenLabel}
                     </p>
                   )}
                 </div>
               </Popup>
             </Marker>
-            <FlyTo position={position} />
+            <FlyTo position={detailMap.position} />
           </>
         )}
-        {routePoints.length > 0 && (
+        {detailMap.routePoints.length > 0 && (
           <Polyline
-            positions={routePoints.map((p) => [p.lat, p.lng])}
+            positions={detailMap.routePoints.map((p) => [p.lat, p.lng])}
             pathOptions={{
               color: "var(--primary)",
               weight: 4,
@@ -168,8 +107,8 @@ export default function CarDetailMap({ car }: CarDetailMapProps) {
             }}
           />
         )}
-        {filteredRoutePoints.length > 0 &&
-          filteredRoutePoints.map((p, i) => (
+        {detailMap.filteredRoutePoints.length > 0 &&
+          detailMap.filteredRoutePoints.map((p, i) => (
             <Marker key={i} position={[p.lat, p.lng]} icon={stopIcon}>
               <Popup>
                 <div className="font-mono text-xs text-gray-700 min-w-[120px]">
@@ -184,7 +123,7 @@ export default function CarDetailMap({ car }: CarDetailMapProps) {
       </MapContainer>
 
       {/* No-signal overlay */}
-      {!position && (
+      {!detailMap.position && (
         <div className="absolute inset-0 z-[999] pointer-events-none flex flex-col items-center justify-center gap-2">
           <div className="bg-background/90 border border-border rounded-md px-5 py-3.5 shadow-sm flex flex-col items-center gap-1.5">
             <svg
@@ -214,43 +153,45 @@ export default function CarDetailMap({ car }: CarDetailMapProps) {
 
       {/* Status bar */}
       <div className="absolute bottom-0 left-0 right-0 z-[1000] border-t border-border bg-background/95 backdrop-blur-sm px-3 py-2 flex items-center gap-3">
-        {loc ? (
+        {detailMap.loc ? (
           <>
             {/* Status badge */}
             <span
               className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold uppercase tracking-wider border shrink-0 ${
-                isActive
+                detailMap.isActive
                   ? "bg-primary/10 text-primary border-primary/20"
                   : "bg-muted text-muted-foreground border-border"
               }`}
             >
               <span
                 className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                  isActive ? "bg-primary animate-pulse" : "bg-muted-foreground"
+                  detailMap.isActive
+                    ? "bg-primary animate-pulse"
+                    : "bg-muted-foreground"
                 }`}
               />
-              {isActive ? "Active" : "Inactive"}
+              {detailMap.isActive ? "Active" : "Inactive"}
             </span>
 
             {/* Divider */}
             <span className="w-px h-3 bg-border shrink-0" />
 
             {/* Coordinates */}
-            {position && (
+            {detailMap.position && (
               <>
                 <span className="text-[10px] font-mono text-muted-foreground tabular-nums hidden sm:block">
-                  {position[0]}, {position[1]}
+                  {detailMap.position[0]}, {detailMap.position[1]}
                 </span>
                 <span className="w-px h-3 bg-border shrink-0 hidden sm:block" />
               </>
             )}
 
             {/* Last update time */}
-            {lastSeen && (
+            {detailMap.lastSeenLabel && (
               <span className="text-[10px] font-mono text-muted-foreground flex items-center gap-1">
                 อัปเดต{" "}
                 <span className="font-semibold text-foreground">
-                  {formatTime(lastSeen)}
+                  {detailMap.lastSeenLabel}
                 </span>
               </span>
             )}
@@ -262,7 +203,7 @@ export default function CarDetailMap({ car }: CarDetailMapProps) {
         )}
 
         {/* Route indicator — right side */}
-        {routePoints.length > 0 && (
+        {detailMap.routePoints.length > 0 && (
           <span className="ml-auto inline-flex items-center gap-1 text-[10px] font-mono text-muted-foreground">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -277,7 +218,7 @@ export default function CarDetailMap({ car }: CarDetailMapProps) {
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
             </svg>
             <span className="text-primary font-semibold">
-              {routePoints.length}
+              {detailMap.routePoints.length}
             </span>{" "}
             จุด
           </span>

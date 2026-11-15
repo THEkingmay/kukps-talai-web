@@ -1,14 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
-import type { ResponseCarData, Route, CarStatus } from "~/types";
-import { useDialog } from "~/components/providers/DialogProvider";
-import {
-  getCars,
-  createCar,
-  updateCar,
-  deleteCar,
-  restoreCar,
-} from "~/actions/car.action";
-import { getRoutes } from "~/actions/route.action";
+import { useEffect } from "react";
 
 import CarMetrics from "../dashboard/components/cars/CarMetrics";
 import CarSearchToolbar from "../dashboard/components/cars/CarSearchToolbar";
@@ -17,8 +7,7 @@ import CreateCarModal from "../dashboard/components/cars/CreateCarModal";
 import EditCarModal from "../dashboard/components/cars/EditCarModal";
 import CredentialModal from "../dashboard/components/cars/CredentialModal";
 import { useAdminShell } from "../shell/ShellContext";
-
-type StatusFilter = "all" | CarStatus | "deleted";
+import { useCarsList } from "./hooks/useCarsList";
 
 export function meta() {
   return [
@@ -31,332 +20,53 @@ export function meta() {
 }
 
 export default function CarsListPage() {
-  const { alert, confirm } = useDialog();
   const { setBreadcrumb } = useAdminShell();
-  const [cars, setCars] = useState<ResponseCarData[]>([]);
-  const [routes, setRoutes] = useState<Route[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Search & Filter
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [routeFilter, setRouteFilter] = useState<string>("all");
-
-  // Modal States
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
-  const [editingCar, setEditingCar] = useState<ResponseCarData | null>(null);
-
-  // Create Form State
-  const [newCarNumber, setNewCarNumber] = useState<string>("");
-  const [newRouteId, setNewRouteId] = useState<string>("");
-
-  // Edit Form State
-  const [editCarNumber, setEditCarNumber] = useState<string>("");
-  const [editRouteId, setEditRouteId] = useState<string>("");
-
-  // Action Pending States
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [credentialCarId, setCredentialCarId] = useState<string | null>(null);
-
-  // Prevent background scrolling when any modal is active
-  const isAnyModalOpen =
-    isCreateModalOpen || Boolean(editingCar) || Boolean(credentialCarId);
+  const cars = useCarsList();
 
   useEffect(() => {
     setBreadcrumb(null);
   }, [setBreadcrumb]);
 
-  useEffect(() => {
-    if (isAnyModalOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isAnyModalOpen]);
-
-  // Fetch Cars & Routes
-  const fetchFleetData = async (showToast = false) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const [carRes, routeRes] = await Promise.all([getCars(), getRoutes()]);
-
-      if (carRes.success) {
-        setCars(carRes.data.data);
-      } else {
-        setError(carRes.error || "ดึงข้อมูลยานพาหนะไม่สำเร็จ");
-      }
-
-      if (routeRes.success) {
-        setRoutes(routeRes.data.data || []);
-      }
-
-      if (showToast && carRes.success) {
-        alert({
-          title: "อัปเดตข้อมูลรถตะไลสำเร็จ",
-          description: "อัปเดตข้อมูลรถตะไลสำเร็จเรียบร้อยแล้ว",
-        });
-      }
-    } catch {
-      setError("เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchFleetData(false);
-  }, []);
-
-  // Map Route IDs to Route Names for easy lookup
-  const routeNameMap = useMemo(() => {
-    const map: Record<string, string> = {};
-    routes.forEach((r) => {
-      map[r.id] = r.name;
-    });
-    return map;
-  }, [routes]);
-
-  // Compute Metrics Summary
-  const metrics = useMemo(() => {
-    return {
-      total: cars.length,
-      active: cars.filter((c) => c.status === "active" && c.deletedAt === null)
-        .length,
-      inactive: cars.filter(
-        (c) => c.status !== "active" && c.deletedAt === null,
-      ).length,
-      deleted: cars.filter((c) => c.deletedAt !== null).length,
-    };
-  }, [cars]);
-
-  // Create Car Handler
-  const handleCreateSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCarNumber.trim() || !newRouteId) return;
-
-    setIsSubmitting(true);
-    try {
-      const res = await createCar({
-        routeId: newRouteId,
-        carNumber: newCarNumber.trim(),
-      });
-
-      if (res.success) {
-        alert({
-          title: "เพิ่มรถตะไลสำเร็จ",
-          description: `สร้างรถหมายเลข "${newCarNumber.trim()}" เรียบร้อยแล้ว`,
-        });
-        setNewCarNumber("");
-        setNewRouteId("");
-        setIsCreateModalOpen(false);
-        fetchFleetData(false);
-      } else {
-        alert({
-          title: "เพิ่มรถไม่สำเร็จ",
-          description: res.error.includes("duplicate key value")
-            ? "หมายเลขรถนี้มีอยู่แล้ว"
-            : res.error,
-        });
-      }
-    } catch {
-      alert({
-        title: "เกิดข้อผิดพลาด",
-        description: "ไม่สามารถบันทึกข้อมูลรถตะไลได้",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Open Edit Modal
-  const handleOpenEdit = (car: ResponseCarData) => {
-    setEditingCar(car);
-    setEditCarNumber(car.carNumber);
-    setEditRouteId(car.routeId || "");
-  };
-
-  // Update Car Handler
-  const handleUpdateSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingCar || !editCarNumber.trim() || !editRouteId) return;
-
-    setIsSubmitting(true);
-    try {
-      const res = await updateCar(editingCar.id, {
-        id: editingCar.id,
-        createdAt:
-          typeof editingCar.createdAt === "string"
-            ? editingCar.createdAt
-            : editingCar.createdAt?.toISOString() || new Date().toISOString(),
-        routeId: editRouteId,
-        carNumber: editCarNumber.trim(),
-        status: editingCar.status,
-      });
-
-      if (res.success) {
-        alert({
-          title: "บันทึกการแก้ไขสำเร็จ",
-          description: `อัปเดตข้อมูล "${editCarNumber.trim()}" เรียบร้อยแล้ว`,
-        });
-        setEditingCar(null);
-        fetchFleetData(false);
-      } else {
-        alert({
-          title: "แก้ไขไม่สำเร็จ",
-          description: res.error,
-        });
-      }
-    } catch {
-      alert({
-        title: "เกิดข้อผิดพลาด",
-        description: "ไม่สามารถบันทึกการแก้ไขข้อมูลได้",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Delete Car Handler
-  const handleDeleteCar = async (carToDelete: ResponseCarData) => {
-    confirm({
-      title: "ยืนยันการลบรถตะไล?",
-      description: `คุณต้องการลบ ${carToDelete.carNumber} (ID: ${carToDelete.id}) ใช่หรือไม่?`,
-      confirmText: "ยืนยันลบ",
-      cancelText: "ยกเลิก",
-      onConfirm: async () => {
-        setDeletingId(carToDelete.id);
-        try {
-          const res = await deleteCar(carToDelete.id);
-          if (res.success) {
-            alert({
-              title: "ลบสำเร็จ",
-              description: "ลบรถตะไลออกจากระบบเรียบร้อยแล้ว",
-            });
-            fetchFleetData(false);
-          } else {
-            alert({
-              title: "ลบไม่สำเร็จ",
-              description: res.error,
-            });
-          }
-        } catch {
-          alert({
-            title: "เกิดข้อผิดพลาด",
-            description: "ไม่สามารถลบรถตะไลได้",
-          });
-        } finally {
-          setDeletingId(null);
-        }
-      },
-    });
-  };
-
-  // Restore Car Handler
-  const handleRestoreCar = async (carToRestore: ResponseCarData) => {
-    confirm({
-      title: "ยืนยันการกู้คืนรถตะไล?",
-      description: `คุณต้องการกู้คืน ${carToRestore.carNumber} ใช่หรือไม่?`,
-      confirmText: "ยืนยันกู้คืน",
-      cancelText: "ยกเลิก",
-      onConfirm: async () => {
-        setDeletingId(carToRestore.id);
-        try {
-          const res = await restoreCar(carToRestore.id);
-          if (res.success) {
-            alert({
-              title: "กู้คืนสำเร็จ",
-              description: "กู้คืนรถตะไลกลับสู่ระบบเรียบร้อยแล้ว",
-            });
-            fetchFleetData(false);
-          } else {
-            alert({
-              title: "กู้คืนไม่สำเร็จ",
-              description: res.error,
-            });
-          }
-        } catch {
-          alert({
-            title: "เกิดข้อผิดพลาด",
-            description: "ไม่สามารถกู้คืนรถตะไลได้",
-          });
-        } finally {
-          setDeletingId(null);
-        }
-      },
-    });
-  };
-
-  const filteredCars = useMemo(() => {
-    return cars.filter((car) => {
-      if (
-        searchQuery !== "" &&
-        !car.carNumber.includes(searchQuery) &&
-        !car.id.includes(searchQuery)
-      )
-        return false;
-      if (routeFilter !== "all" && car.routeId !== routeFilter) return false;
-
-      if (statusFilter === "deleted") {
-        if (car.deletedAt === null) return false;
-      } else if (statusFilter !== "all") {
-        if (car.status !== statusFilter || car.deletedAt !== null) return false;
-      } else {
-        // "all" shows everything including deleted cars.
-      }
-      return true;
-    });
-  }, [cars, searchQuery, statusFilter, routeFilter]);
-
   return (
     <div className="space-y-6 p-4 md:p-6 lg:p-8">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">รถตะไล</h2>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             จัดการข้อมูลรถตะไลประจำสาย และข้อมูลการเดินรถเบื้องต้น
           </p>
         </div>
-      </div>
+      </header>
 
-      {/* 1. Metrics Overview */}
       <CarMetrics
-        total={metrics.total}
-        active={metrics.active}
-        inactive={metrics.inactive}
-        deleted={metrics.deleted}
-        isLoading={isLoading}
+        total={cars.metrics.total}
+        active={cars.metrics.active}
+        inactive={cars.metrics.inactive}
+        deleted={cars.metrics.deleted}
+        isLoading={cars.isLoading}
       />
 
-      {/* Main Container */}
-      <div className="bg-background border rounded-md shadow-sm overflow-hidden">
+      <div className="overflow-hidden rounded-md border bg-background shadow-sm">
         <CarSearchToolbar
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          statusFilter={statusFilter}
-          onStatusFilterChange={setStatusFilter}
-          routeFilter={routeFilter}
-          onRouteFilterChange={setRouteFilter}
-          routes={routes}
-          isLoading={isLoading}
-          onRefresh={() => fetchFleetData(false)}
-          onOpenCreateModal={() => setIsCreateModalOpen(true)}
+          searchQuery={cars.searchQuery}
+          onSearchChange={cars.setSearchQuery}
+          statusFilter={cars.statusFilter}
+          onStatusFilterChange={cars.setStatusFilter}
+          routeFilter={cars.routeFilter}
+          onRouteFilterChange={cars.setRouteFilter}
+          routes={cars.routes}
+          isLoading={cars.isLoading}
+          onRefresh={cars.refresh}
+          onOpenCreateModal={cars.openCreateModal}
         />
 
-        {/* Fleet Content */}
         <div className="p-0">
-          {error && (
-            <div className="m-4 p-4 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center justify-between">
-              <span>{error}</span>
+          {cars.error && (
+            <div className="m-4 flex items-center justify-between rounded-md border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+              <span>{cars.error}</span>
               <button
-                onClick={() => fetchFleetData(false)}
-                className="underline font-semibold hover:text-destructive/80"
+                onClick={cars.refresh}
+                className="font-semibold underline hover:text-destructive/80"
               >
                 ลองอีกครั้ง
               </button>
@@ -364,48 +74,47 @@ export default function CarsListPage() {
           )}
 
           <CarTable
-            cars={cars}
-            filteredCars={filteredCars}
-            routeNameMap={routeNameMap}
-            isLoading={isLoading}
-            deletingId={deletingId}
-            onOpenEdit={handleOpenEdit}
-            onDelete={handleDeleteCar}
-            onRestore={handleRestoreCar}
-            onOpenCredential={setCredentialCarId}
+            cars={cars.cars}
+            filteredCars={cars.filteredCars}
+            routeNameMap={cars.routeNameMap}
+            isLoading={cars.isLoading}
+            deletingId={cars.deletingId}
+            onOpenEdit={cars.openEditModal}
+            onDelete={cars.requestDelete}
+            onRestore={cars.requestRestore}
+            onOpenCredential={cars.openCredentials}
           />
         </div>
       </div>
+
       <CredentialModal
-        isOpen={Boolean(credentialCarId)}
-        carId={credentialCarId || ""}
-        onClose={() => setCredentialCarId(null)}
+        isOpen={Boolean(cars.credentialCarId)}
+        carId={cars.credentialCarId || ""}
+        onClose={cars.closeCredentials}
       />
 
-      {/* Create Modal */}
       <CreateCarModal
-        isOpen={isCreateModalOpen}
-        carNumber={newCarNumber}
-        routeId={newRouteId}
-        routes={routes}
-        isSubmitting={isSubmitting}
-        onChangeCarNumber={setNewCarNumber}
-        onChangeRouteId={setNewRouteId}
-        onSubmit={handleCreateSubmit}
-        onClose={() => setIsCreateModalOpen(false)}
+        isOpen={cars.isCreateModalOpen}
+        carNumber={cars.newCarNumber}
+        routeId={cars.newRouteId}
+        routes={cars.routes}
+        isSubmitting={cars.isSubmitting}
+        onChangeCarNumber={cars.setNewCarNumber}
+        onChangeRouteId={cars.setNewRouteId}
+        onSubmit={cars.submitCreate}
+        onClose={cars.closeCreateModal}
       />
 
-      {/* Edit Modal */}
       <EditCarModal
-        car={editingCar}
-        carNumber={editCarNumber}
-        routeId={editRouteId}
-        routes={routes}
-        isSubmitting={isSubmitting}
-        onChangeCarNumber={setEditCarNumber}
-        onChangeRouteId={setEditRouteId}
-        onSubmit={handleUpdateSubmit}
-        onClose={() => setEditingCar(null)}
+        car={cars.editingCar}
+        carNumber={cars.editCarNumber}
+        routeId={cars.editRouteId}
+        routes={cars.routes}
+        isSubmitting={cars.isSubmitting}
+        onChangeCarNumber={cars.setEditCarNumber}
+        onChangeRouteId={cars.setEditRouteId}
+        onSubmit={cars.submitUpdate}
+        onClose={cars.closeEditModal}
       />
     </div>
   );

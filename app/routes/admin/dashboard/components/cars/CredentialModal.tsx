@@ -1,16 +1,4 @@
-import { useState, useEffect } from "react";
-import {
-  KeyRound,
-  X,
-  Copy,
-  Check,
-  Eye,
-  EyeOff,
-  Loader2,
-  RefreshCw,
-} from "lucide-react";
-import apiClient from "~/configs/axios";
-import { useDialog } from "~/components/providers/DialogProvider";
+import { KeyRound, Eye, EyeOff, Loader2, RefreshCw } from "lucide-react";
 
 import {
   Dialog,
@@ -21,6 +9,8 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
+import { useMqttCredentials } from "~/routes/admin/dashboard/hooks/useMqttCredentials";
+import CredentialField from "./CredentialField";
 
 interface CredentialModalProps {
   isOpen: boolean;
@@ -33,91 +23,7 @@ export default function CredentialModal({
   carId,
   onClose,
 }: CredentialModalProps) {
-  const [credentials, setCredentials] = useState<{
-    carMqttUsername: string;
-    decryptedMqttPassword: string;
-  } | null>(null);
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
-  const [copiedField, setCopiedField] = useState<string | null>(null);
-  const { confirm, alert } = useDialog();
-
-  const fetchCredentials = async () => {
-    if (!carId) return;
-    try {
-      setIsLoading(true);
-      setError(null);
-      const res = await apiClient.get(`/cars/mqtt-credentials/${carId}`);
-      if (res.data.success) {
-        setCredentials(res.data.data);
-      } else {
-        setError(res.data.message || "Failed to load credentials");
-      }
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message || "ไม่สามารถโหลดข้อมูล Credentials ได้",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchCredentials();
-      setShowPassword(false);
-      setCopiedField(null);
-    } else {
-      setCredentials(null);
-      setError(null);
-    }
-  }, [isOpen, carId]);
-
-  const username = credentials?.carMqttUsername || "";
-  const password = credentials?.decryptedMqttPassword || "";
-
-  function handleCopy(value: string, field: string) {
-    if (!value) return;
-    navigator.clipboard.writeText(value);
-    setCopiedField(field);
-    setTimeout(() => setCopiedField(null), 1500);
-  }
-
-  async function handleReset() {
-    confirm({
-      title: "รีเซ็ต Credentials",
-      description:
-        "คุณแน่ใจหรือไม่ว่าต้องการรีเซ็ต MQTT Credentials สำหรับรถคันนี้? ข้อมูลเก่าจะใช้ไม่ได้อีกต่อไป",
-      confirmText: "รีเซ็ตเลย",
-      cancelText: "ยกเลิก",
-      variant: "destructive",
-      onConfirm: async () => {
-        try {
-          setIsLoading(true);
-          const res = await apiClient.post(
-            `/cars/mqtt-credentials/${carId}/reset`,
-          );
-          if (res.data.success) {
-            fetchCredentials();
-            alert({
-              title: "รีเซ็ตข้อมูลสำเร็จ",
-              description: "รีเซ็ตข้อมูล Credentials เรียบร้อยแล้ว",
-            });
-          }
-        } catch (err: any) {
-          alert({
-            title: "เกิดข้อผิดพลาด",
-            description:
-              err.response?.data?.message || "ไม่สามารถรีเซ็ต Credentials ได้",
-          });
-        } finally {
-          setIsLoading(false);
-        }
-      },
-    });
-  }
+  const mqtt = useMqttCredentials({ isOpen, carId });
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -137,19 +43,19 @@ export default function CredentialModal({
         </DialogHeader>
 
         <div className="space-y-4 pt-4">
-          {isLoading ? (
+          {mqtt.isLoading ? (
             <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
               <Loader2 className="mb-2 h-6 w-6 animate-spin" />
               <span className="text-xs font-medium uppercase tracking-wider">
                 กำลังโหลด...
               </span>
             </div>
-          ) : error ? (
+          ) : mqtt.error ? (
             <div className="py-6 text-center">
-              <p className="text-sm font-medium">{error}</p>
+              <p className="text-sm font-medium">{mqtt.error}</p>
               <Button
                 variant="link"
-                onClick={fetchCredentials}
+                onClick={mqtt.refetch}
                 className="mt-2"
               >
                 ลองอีกครั้ง
@@ -160,30 +66,32 @@ export default function CredentialModal({
               <CredentialField
                 label="Car ID"
                 value={carId}
-                isCopied={copiedField === "carId"}
-                onCopy={() => handleCopy(carId, "carId")}
+                isCopied={mqtt.copiedField === "carId"}
+                onCopy={() => mqtt.copyField(carId, "carId")}
               />
               <CredentialField
                 label="Username"
-                value={username}
-                isCopied={copiedField === "username"}
-                onCopy={() => handleCopy(username, "username")}
+                value={mqtt.username}
+                isCopied={mqtt.copiedField === "username"}
+                onCopy={() => mqtt.copyField(mqtt.username, "username")}
               />
               <CredentialField
                 label="Password"
-                value={showPassword ? password : "••••••••••••"}
-                isCopied={copiedField === "password"}
-                onCopy={() => handleCopy(password, "password")}
+                value={mqtt.showPassword ? mqtt.password : "••••••••••••"}
+                isCopied={mqtt.copiedField === "password"}
+                onCopy={() => mqtt.copyField(mqtt.password, "password")}
                 trailing={
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8"
-                    onClick={() => setShowPassword((p) => !p)}
-                    aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+                    onClick={mqtt.togglePassword}
+                    aria-label={
+                      mqtt.showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"
+                    }
                   >
-                    {showPassword ? (
+                    {mqtt.showPassword ? (
                       <EyeOff className="h-4 w-4" />
                     ) : (
                       <Eye className="h-4 w-4" />
@@ -195,12 +103,12 @@ export default function CredentialModal({
           )}
         </div>
 
-        <DialogFooter className="border-t pt-4 flex flex-row items-center justify-between sm:justify-between">
+        <DialogFooter className="flex flex-row items-center justify-between border-t pt-4 sm:justify-between">
           <Button
             type="button"
             variant="destructive"
-            onClick={handleReset}
-            disabled={isLoading || !credentials}
+            onClick={mqtt.requestReset}
+            disabled={mqtt.isLoading || !mqtt.credentials}
             className="gap-2"
           >
             <RefreshCw className="h-4 w-4" />
@@ -212,49 +120,5 @@ export default function CredentialModal({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function CredentialField({
-  label,
-  value,
-  isCopied,
-  onCopy,
-  trailing,
-}: {
-  label: string;
-  value: string;
-  isCopied: boolean;
-  onCopy: () => void;
-  trailing?: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3">
-      <div className="flex-1 min-w-0">
-        <span className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-          {label}
-        </span>
-        <span className="block truncate font-mono text-sm font-semibold select-all">
-          {value || "—"}
-        </span>
-      </div>
-      <div className="flex shrink-0 items-center gap-1">
-        {trailing}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={onCopy}
-          aria-label={`คัดลอก ${label}`}
-        >
-          {isCopied ? (
-            <Check className="h-4 w-4 text-green-500" />
-          ) : (
-            <Copy className="h-4 w-4" />
-          )}
-        </Button>
-      </div>
-    </div>
   );
 }

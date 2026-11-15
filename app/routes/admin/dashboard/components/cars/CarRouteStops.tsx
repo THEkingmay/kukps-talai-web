@@ -1,6 +1,3 @@
-import { useState, useEffect, useCallback } from "react";
-import type { RoutePoint } from "~/types";
-import { getRoutePointsByRouteId } from "~/actions/route-points.action";
 import { RefreshCw, MapPin, AlertCircle, Loader2 } from "lucide-react";
 import {
   Table,
@@ -12,6 +9,7 @@ import {
 } from "~/components/ui/table";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { useCarRouteStops } from "~/routes/admin/dashboard/hooks/useCarRouteStops";
 
 interface CarRouteStopsProps {
   routeId: string;
@@ -24,30 +22,7 @@ export default function CarRouteStops({
   routeName,
   onManage,
 }: CarRouteStopsProps) {
-  const [points, setPoints] = useState<RoutePoint[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchPoints = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res = await getRoutePointsByRouteId(routeId);
-      if (res.success) {
-        setPoints([...res.data.data].sort((a, b) => a.sequence - b.sequence));
-      } else {
-        setError(res.error || "ไม่สามารถดึงข้อมูลจุดจอดได้");
-      }
-    } catch {
-      setError("เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [routeId]);
-
-  useEffect(() => {
-    fetchPoints();
-  }, [fetchPoints]);
+  const stops = useCarRouteStops({ routeId });
 
   return (
     <div className="flex flex-col h-full">
@@ -55,19 +30,19 @@ export default function CarRouteStops({
       <div className="flex items-center justify-between p-3 bg-muted/50 border-b">
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="font-mono">
-            {points.length} จุด · {routeName}
+            {stops.points.length} จุด · {routeName}
           </Badge>
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={fetchPoints}
-            disabled={isLoading}
+            onClick={stops.refresh}
+            disabled={stops.isLoading}
             className="h-8"
           >
             <RefreshCw
-              className={`w-3.5 h-3.5 mr-2 ${isLoading ? "animate-spin" : ""}`}
+              className={`w-3.5 h-3.5 mr-2 ${stops.isLoading ? "animate-spin" : ""}`}
             />
             รีเฟรช
           </Button>
@@ -93,7 +68,7 @@ export default function CarRouteStops({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? (
+              {stops.isLoading ? (
                 <TableRow>
                   <TableCell
                     colSpan={6}
@@ -103,15 +78,15 @@ export default function CarRouteStops({
                     <span>กำลังโหลดจุดจอด...</span>
                   </TableCell>
                 </TableRow>
-              ) : error ? (
+              ) : stops.error ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-32 text-center">
                     <div className="inline-flex items-center gap-2 p-3 rounded-md bg-destructive/10 text-destructive border border-destructive/20">
                       <AlertCircle className="w-4 h-4 shrink-0" />
-                      <span>{error}</span>
+                      <span>{stops.error}</span>
                       <button
                         type="button"
-                        onClick={fetchPoints}
+                        onClick={stops.refresh}
                         className="ml-2 font-bold underline hover:text-destructive/80"
                       >
                         ลองอีกครั้ง
@@ -119,7 +94,7 @@ export default function CarRouteStops({
                     </div>
                   </TableCell>
                 </TableRow>
-              ) : points.length === 0 ? (
+              ) : stops.points.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={6}
@@ -135,7 +110,7 @@ export default function CarRouteStops({
                   </TableCell>
                 </TableRow>
               ) : (
-                points.map((point, index) => (
+                stops.points.map((point, index) => (
                   <TableRow key={point.id}>
                     <TableCell className="text-center text-muted-foreground">
                       {index + 1}

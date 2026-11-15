@@ -1,0 +1,41 @@
+import { Link } from "react-router";
+import { Button } from "~/components/ui/button";
+import { VercelSpinner } from "~/components/ui/Loading";
+import { SearchX } from "lucide-react";
+
+/** Loading placeholder shown before the route payload arrives. */
+export function RouteDetailLoading() {
+  return (
+    <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 p-8">
+      <VercelSpinner />
+      <p className="text-sm font-medium text-muted-foreground">
+        กำลังโหลดข้อมูลสายการเดินรถ...
+      </p>
+    </div>
+  );
+}
+
+interface RouteDetailErrorProps {
+  loadError: string | null;
+}
+
+/** Not-found / load-error state for the route detail page. */
+export function RouteDetailError({ loadError }: RouteDetailErrorProps) {
+  return (
+    <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 p-8 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
+        <SearchX className="h-6 w-6" />
+      </div>
+      <h2 className="text-lg font-semibold tracking-tight">
+        ไม่พบข้อมูลสายการเดินรถ
+      </h2>
+      <p className="max-w-sm text-sm text-muted-foreground">
+        {loadError ??
+          "สายการเดินรถที่เลือกไม่พบในระบบ (อาจถูกลบหรือใช้ URL ไม่ถูกต้อง)"}
+      </p>
+      <Button asChild variant="outline" className="mt-2">
+        <Link to="/admin/routes">กลับหน้ารายการสายการเดินรถ</Link>
+      </Button>
+    </div>
+  );
+}

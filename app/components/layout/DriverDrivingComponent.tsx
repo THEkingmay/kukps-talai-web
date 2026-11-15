@@ -1,174 +1,26 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { CarFront, ChevronRight, Clock, Phone } from "lucide-react";
-import { format } from "date-fns";
-import { cn } from "cn";
+import { CarFront, ChevronRight } from "lucide-react";
 
-import { useAuth } from "../providers/AuthProvider";
-import { Popover, PopoverTrigger, PopoverContent } from "../ui/popover";
-import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Skeleton } from "../ui/skeleton";
+import { Popover, PopoverTrigger, PopoverContent } from "~/components/ui/popover";
+import { Button } from "~/components/ui/button";
+import { Badge } from "~/components/ui/badge";
+import { Skeleton } from "~/components/ui/skeleton";
+import { useActiveDrivers } from "~/hooks/useActiveDrivers";
+import DriverRow, { LiveDot } from "./driver-driving/DriverRow";
 
-import { getActiveAll } from "~/actions/driving-log.action";
-import type { DrivingLog } from "~/types";
-
-type ActiveDriver = {
-  log: DrivingLog;
-  driverId: string;
-  driverName: string;
-  driverPhone: string;
-  profileImageUrl: string | null;
-  carId: string;
-  carNumber: string;
-};
-
-const LIVE_TICK_MS = 30_000;
-
-// Full breakdown of time driven (days / hours / minutes) — never hides a unit.
-function formatDrivenTime(ms: number) {
-  const totalMinutes = Math.max(0, Math.floor(ms / 60_000));
-  const days = Math.floor(totalMinutes / (60 * 24));
-  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
-  const minutes = totalMinutes % 60;
-
-  return [
-    days > 0 ? `${days} วัน` : null,
-    hours > 0 ? `${hours} ชม.` : null,
-    `${minutes} นาที`,
-  ]
-    .filter(Boolean)
-    .join(" ");
-}
-
-function driverInitials(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  const first = parts[0].charAt(0);
-  const last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : "";
-  return (first + last).toUpperCase();
-}
-
-function LiveDot({ className }: { className?: string }) {
-  return (
-    <span className={cn("relative flex size-2", className)}>
-      <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-75" />
-      <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
-    </span>
-  );
-}
-
-function DriverRow({ driver, now }: { driver: ActiveDriver; now: number }) {
-  const startedAt = new Date(driver.log.startedAt).getTime();
-  const elapsed = Math.max(0, now - startedAt);
-
-  return (
-    <li>
-      <Link
-        to={`/admin/assignments/${driver.driverId}`}
-        className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none"
-      >
-        <div className="relative shrink-0">
-          <Avatar>
-            {driver.profileImageUrl && (
-              <AvatarImage
-                src={driver.profileImageUrl}
-                alt={driver.driverName}
-              />
-            )}
-            <AvatarFallback className="text-xs font-medium">
-              {driverInitials(driver.driverName)}
-            </AvatarFallback>
-          </Avatar>
-          <span className="absolute -right-0.5 -bottom-0.5 flex size-3 items-center justify-center rounded-full bg-background">
-            <span className="size-2 rounded-full bg-emerald-500" />
-          </span>
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium leading-tight">
-            {driver.driverName}
-          </p>
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-1 whitespace-nowrap">
-              <CarFront className="size-3 shrink-0" />
-              {driver.carNumber}
-            </span>
-            {driver.driverPhone && (
-              <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                <Phone className="size-3 shrink-0" />
-                {driver.driverPhone}
-              </span>
-            )}
-            <span className="inline-flex items-center gap-1 whitespace-nowrap">
-              <Clock className="size-3 shrink-0" />
-              เริ่ม {format(startedAt, "HH:mm")}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex shrink-0 items-center">
-          <span className="text-sm font-medium tabular-nums leading-none">
-            {formatDrivenTime(elapsed)}
-          </span>
-        </div>
-
-        <ChevronRight className="size-4 shrink-0 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5 group-hover:text-muted-foreground" />
-      </Link>
-    </li>
-  );
-}
-
+/** Admin top-bar popover: drivers who are currently on a shift. */
 export default function DriverDrivingComponent() {
-  const { user } = useAuth();
-  const isAdmin = !!user && ["superadmin", "admin"].includes(user.role);
-
-  const [activeLogs, setActiveLogs] = useState<ActiveDriver[]>([]);
-  const [isLoading, setIsLoading] = useState(isAdmin);
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    if (!isAdmin) return;
-
-    async function fetchActiveLogs() {
-      try {
-        const result = await getActiveAll();
-        if (result.success) {
-          setActiveLogs(result.data.data);
-        } else {
-          console.error("Error fetching active driving logs:", result.error);
-        }
-      } catch (error) {
-        console.error("Error fetching active driving logs:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchActiveLogs();
-  }, [isAdmin]);
-
-  // live ticker — keep elapsed time fresh while drivers are on the road
-  useEffect(() => {
-    if (activeLogs.length === 0) return;
-    const timer = window.setInterval(() => setNow(Date.now()), LIVE_TICK_MS);
-    return () => window.clearInterval(timer);
-  }, [activeLogs.length]);
+  const { isAdmin, activeLogs, isLoading, now, count, hasActive } =
+    useActiveDrivers();
 
   if (!isAdmin) return null;
-
-  const count = activeLogs.length;
-  const hasActive = count > 0;
 
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative rounded-full">
           <CarFront className="size-4" />
-          {hasActive && (
-            <LiveDot className="absolute top-1.5 right-1.5" />
-          )}
+          {hasActive && <LiveDot className="absolute right-1.5 top-1.5" />}
           <span className="sr-only">คนขับที่กำลังขับอยู่</span>
         </Button>
       </PopoverTrigger>
@@ -190,7 +42,10 @@ export default function DriverDrivingComponent() {
             </h2>
           </div>
           {hasActive && (
-            <Badge variant="secondary" className="h-5 rounded-full px-1.5 tabular-nums">
+            <Badge
+              variant="secondary"
+              className="h-5 rounded-full px-1.5 tabular-nums"
+            >
               {count}
             </Badge>
           )}

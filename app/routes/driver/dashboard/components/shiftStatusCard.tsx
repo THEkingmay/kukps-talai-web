@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
-import { endDriving, startDriving } from "~/actions/driving-log.action";
 import type { CarDriverShift, DrivingLog } from "~/types";
 import { Card, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import { useDialog } from "~/components/providers/DialogProvider";
-import { formatShiftWindow, formatThaiTime } from "~/helper";
+import {
+  formatElapsed,
+  formatShiftWindow,
+  formatThaiTime,
+} from "~/helper";
+import { useShiftStatusCard } from "~/routes/driver/dashboard/hooks/useShiftStatusCard";
 import {
   BusFront,
   Loader2,
@@ -14,19 +16,20 @@ import {
   TriangleAlert,
 } from "lucide-react";
 
-export function formatElapsed(ms: number) {
-  const totalMinutes = Math.max(0, Math.floor(ms / 60_000));
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  if (hours > 0) return `${hours} ชม. ${minutes} นาที`;
-  return `${minutes} นาที`;
-}
-
 interface ShiftStatusCardProps {
   shift: CarDriverShift;
   currentDriving: DrivingLog | null;
   overdue?: boolean;
-  onCurrentDrivingChange: (log: DrivingLog | null) => void;
+  /**
+   * แจ้ง parent เมื่อสถานะการขับเปลี่ยน
+   * - `log` = log ที่กำลัง active (กดเริ่มงาน) หรือ null (กดหยุดงาน)
+   * - `endedLog` = log ที่เพิ่งปิดไปแล้ว ส่งมาเฉพาะตอนกดหยุดงาน
+   *   เพื่อให้ parent อัปเดตประวัติได้ทันทีโดยไม่ต้องรอ fetch ใหม่
+   */
+  onCurrentDrivingChange: (
+    log: DrivingLog | null,
+    endedLog?: DrivingLog,
+  ) => void;
 }
 
 export default function ShiftStatusCard({
@@ -35,60 +38,25 @@ export default function ShiftStatusCard({
   overdue = false,
   onCurrentDrivingChange,
 }: ShiftStatusCardProps) {
-  const { alert } = useDialog();
-  const [isPending, setIsPending] = useState(false);
-  const [isConfirmingEnd, setIsConfirmingEnd] = useState(false);
-  const [now, setNow] = useState(() => Date.now());
-
-  const isDriving = !!currentDriving;
-
-  // live ticker — refresh elapsed time every 30s while driving
-  useEffect(() => {
-    if (!isDriving) return;
-    const timer = window.setInterval(() => setNow(Date.now()), 30_000);
-    return () => window.clearInterval(timer);
-  }, [isDriving]);
-
-  const handleStart = async () => {
-    setIsPending(true);
-    const res = await startDriving(shift.id);
-    setIsPending(false);
-    if (res.success) {
-      onCurrentDrivingChange(res.data.data);
-      setNow(Date.now());
-    } else {
-      alert({
-        title: "เริ่มงานไม่สำเร็จ",
-        description: res.error,
-      });
-    }
-  };
-
-  const handleEndConfirm = async () => {
-    if (!currentDriving) return;
-    setIsPending(true);
-    const res = await endDriving(currentDriving.id);
-    setIsPending(false);
-    if (res.success) {
-      onCurrentDrivingChange(null);
-      setIsConfirmingEnd(false);
-    } else {
-      alert({
-        title: "หยุดงานไม่สำเร็จ",
-        description: res.error,
-      });
-    }
-  };
-
-  const elapsedMs = currentDriving
-    ? now - new Date(currentDriving.startedAt).getTime()
-    : 0;
-
-  const startTime = new Date(shift.startTime);
-  const endTime = new Date(shift.endTime);
-
-  const routeName = shift.moreData.routeName ?? "ไม่ระบุสายรถ";
-  const carNumber = shift.moreData.carNumber ?? "-";
+  const {
+    isDriving,
+    isPending,
+    isConfirmingEnd,
+    elapsedMs,
+    startTime,
+    endTime,
+    routeName,
+    carNumber,
+    start,
+    confirmEnd,
+    requestEnd,
+    cancelEnd,
+  } = useShiftStatusCard({
+    shift,
+    currentDriving,
+    overdue,
+    onCurrentDrivingChange,
+  });
 
   return (
     <Card className="py-0 shadow-none">
@@ -164,7 +132,7 @@ export default function ShiftStatusCard({
                   <Button
                     variant="outline"
                     className="h-11 flex-1"
-                    onClick={() => setIsConfirmingEnd(false)}
+                    onClick={cancelEnd}
                     disabled={isPending}
                   >
                     ยกเลิก
@@ -172,7 +140,7 @@ export default function ShiftStatusCard({
                   <Button
                     variant="destructive"
                     className="h-11 flex-1"
-                    onClick={handleEndConfirm}
+                    onClick={confirmEnd}
                     disabled={isPending}
                   >
                     {isPending ? (
@@ -189,7 +157,7 @@ export default function ShiftStatusCard({
                 variant="outline"
                 size="lg"
                 className="mt-4 h-11 w-full"
-                onClick={() => setIsConfirmingEnd(true)}
+                onClick={requestEnd}
               >
                 <OctagonX />
                 หยุดงาน
@@ -201,7 +169,7 @@ export default function ShiftStatusCard({
             <Button
               size="lg"
               className="h-11 w-full"
-              onClick={handleStart}
+              onClick={start}
               disabled={isPending}
             >
               {isPending ? <Loader2 className="animate-spin" /> : <Play />}

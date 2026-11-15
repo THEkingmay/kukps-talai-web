@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useState, type ReactNode } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   Dialog,
   DialogContent,
@@ -43,19 +50,27 @@ export function DialogProvider({ children }: { children: ReactNode }) {
   const [options, setOptions] = useState<ConfirmOptions | DialogOptions | null>(null);
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  const alert = (opts: DialogOptions) => {
+  // `alert` / `confirm` must keep a stable identity: hooks use them inside
+  // useCallback/useEffect dependency lists, and a fresh function on every
+  // render would re-trigger data fetching whenever a dialog opens or closes.
+  const alert = useCallback((opts: DialogOptions) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setType("alert");
     setOptions(opts);
     setIsOpen(true);
-  };
+  }, []);
 
-  const confirm = (opts: ConfirmOptions) => {
+  const confirm = useCallback((opts: ConfirmOptions) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setType("confirm");
     setOptions(opts);
     setIsOpen(true);
-  };
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({ alert, confirm }),
+    [alert, confirm],
+  );
 
   const handleClose = () => {
     setIsOpen(false);
@@ -78,7 +93,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <DialogContext.Provider value={{ alert, confirm }}>
+    <DialogContext.Provider value={contextValue}>
       {children}
       <Dialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
         <DialogContent>

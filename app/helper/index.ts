@@ -106,6 +106,43 @@ export const formatTimeWindow = (
   return `${startDay} ${formatThaiTime(start)} – ${endDay} ${formatThaiTime(end)}`;
 };
 
+/** 5_400_000 → "1 ชม. 30 นาที" (ใช้กับตัวนับเวลาทำงาน) */
+export const formatElapsed = (ms: number) => {
+  const totalMinutes = Math.max(0, Math.floor(ms / 60_000));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours > 0) return `${hours} ชม. ${minutes} นาที`;
+  return `${minutes} นาที`;
+};
+
+/**
+ * Full breakdown of time driven (days / hours / minutes) — never hides a unit.
+ * 90_000_000 → "1 วัน 1 ชม. 0 นาที"
+ */
+export const formatDrivenTime = (ms: number) => {
+  const totalMinutes = Math.max(0, Math.floor(ms / 60_000));
+  const days = Math.floor(totalMinutes / (60 * 24));
+  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+  const minutes = totalMinutes % 60;
+
+  return [
+    days > 0 ? `${days} วัน` : null,
+    hours > 0 ? `${hours} ชม.` : null,
+    `${minutes} นาที`,
+  ]
+    .filter(Boolean)
+    .join(" ");
+};
+
+/** "สมชาย ใจดี" → "สใ" · "" → "?" */
+export const formatInitials = (name: string) => {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  const first = parts[0].charAt(0);
+  const last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : "";
+  return (first + last).toUpperCase();
+};
+
 /** "วันนี้ · 15:01 – 18:01" หรือ "2 พ.ย. 2569 · 15:01 – 18:01" */
 export const formatShiftWindow = (
   startInput: Date | string,
